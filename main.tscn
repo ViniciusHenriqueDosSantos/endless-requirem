@@ -1,0 +1,101 @@
+[gd_scene format=3 uid="uid://bl11gqx5u7fl7"]
+
+[ext_resource type="Texture2D" uid="uid://73b6ghvi565n" path="res://icon.svg" id="1"]
+[ext_resource type="Script" uid="uid://bjhw34mjekh7c" path="res://movement.cs" id="2_0xm2m"]
+[ext_resource type="Script" uid="uid://d2t5j7v03umsp" path="res://Enemy.cs" id="3_h2yge"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gcte5"]
+size = Vector2(59, 58)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_tya6g"]
+size = Vector2(58, 56)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_x78qx"]
+size = Vector2(66, 62)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy"]
+size = Vector2(64, 64)
+
+[node name="main" type="Node2D" unique_id=1907293955]
+
+[node name="Player" type="CharacterBody2D" parent="." unique_id=1546800666]
+motion_mode = 1
+script = ExtResource("2_0xm2m")
+
+[node name="Sprite2D" type="Sprite2D" parent="Player" unique_id=425382631]
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=379332554]
+position = Vector2(2.5, 3)
+shape = SubResource("RectangleShape2D_gcte5")
+
+[node name="Camera2D" type="Camera2D" parent="Player" unique_id=629301309]
+
+[node name="HurtBox" type="Area2D" parent="Player" unique_id=189057777]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player/HurtBox" unique_id=911471424]
+shape = SubResource("RectangleShape2D_tya6g")
+
+[node name="Obstacle" type="StaticBody2D" parent="." unique_id=1614808636 groups=["obstacles"]]
+position = Vector2(391, 185)
+
+[node name="Sprite2D" type="Sprite2D" parent="Obstacle" unique_id=1094829775]
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Obstacle" unique_id=616778370]
+shape = SubResource("RectangleShape2D_x78qx")
+
+[node name="Obstacle2" type="StaticBody2D" parent="." unique_id=1840171940 groups=["obstacles"]]
+position = Vector2(252, 22)
+
+[node name="Sprite2D" type="Sprite2D" parent="Obstacle2" unique_id=1381323336]
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Obstacle2" unique_id=2076766408]
+shape = SubResource("RectangleShape2D_x78qx")
+
+[node name="Obstacle3" type="StaticBody2D" parent="." unique_id=541685437 groups=["obstacles"]]
+position = Vector2(-171, 190)
+
+[node name="Sprite2D" type="Sprite2D" parent="Obstacle3" unique_id=619058270]
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Obstacle3" unique_id=1560138254]
+shape = SubResource("RectangleShape2D_x78qx")
+
+[node name="Obstacle4" type="StaticBody2D" parent="." unique_id=1701407192 groups=["obstacles"]]
+position = Vector2(115, 186)
+
+[node name="Sprite2D" type="Sprite2D" parent="Obstacle4" unique_id=2119012798]
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Obstacle4" unique_id=922684456]
+shape = SubResource("RectangleShape2D_x78qx")
+
+[node name="Obstacle5" type="StaticBody2D" parent="." unique_id=295521091 groups=["obstacles"]]
+position = Vector2(415, -183)
+
+[node name="Sprite2D" type="Sprite2D" parent="Obstacle5" unique_id=1926505946]
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Obstacle5" unique_id=725990455]
+shape = SubResource("RectangleShape2D_x78qx")
+
+[node name="Enemy" type="CharacterBody2D" parent="." unique_id=560968185]
+position = Vector2(-300, -200)
+motion_mode = 1
+script = ExtResource("3_h2yge")
+
+[node name="Sprite2D" type="Sprite2D" parent="Enemy" unique_id=1694603259]
+modulate = Color(0.7806669, 0, 0.20518118, 1)
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Enemy" unique_id=717191370]
+shape = SubResource("RectangleShape2D_enemy")
