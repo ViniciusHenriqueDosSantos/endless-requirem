@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Weapon" format=3]
+
+[ext_resource type="Script" path="res://objects/weapon/Weapon.cs" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+Name = "Canhão Perfurante"
+Cooldown = 0.85
+BulletSpeed = 450.0
+BulletScale = 0.28
+Damage = 3
+Piercing = true
+Color = Color(0.3, 0.9, 1, 1)
+Shake = 7.0
+Pellets = 1
+SpreadDegrees = 0.0

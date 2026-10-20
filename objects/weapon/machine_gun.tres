@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Weapon" format=3]
+
+[ext_resource type="Script" path="res://objects/weapon/Weapon.cs" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+Name = "Metralhadora"
+Cooldown = 0.16
+BulletSpeed = 600.0
+BulletScale = 0.14
+Damage = 1
+Piercing = false
+Color = Color(1, 0.9, 0.2, 1)
+Shake = 2.0
+Pellets = 1
+SpreadDegrees = 0.0

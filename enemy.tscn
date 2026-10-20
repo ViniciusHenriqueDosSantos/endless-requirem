@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://bqly5oisuybfq"]
+
+[ext_resource type="Script" path="res://Enemy.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://icon.svg" id="2_icon"]
+[ext_resource type="PackedScene" path="res://heal_drop.tscn" id="3_heal"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy"]
+size = Vector2(120, 122)
+
+[node name="Enemy" type="CharacterBody2D" unique_id=1463812935]
+motion_mode = 1
+script = ExtResource("1_script")
+Type = null
+HealDropScene = ExtResource("3_heal")
+HitKnockback = null
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=927158492]
+texture = ExtResource("2_icon")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=313771303]
+position = Vector2(0, 1)
+shape = SubResource("RectangleShape2D_enemy")

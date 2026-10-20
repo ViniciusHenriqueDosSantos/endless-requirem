@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://dl3eu4cvwecou"]
+
+[ext_resource type="Script" uid="uid://bjhw34mjekh7c" path="res://objects/player/Player.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://73b6ghvi565n" path="res://sprites/icon.svg" id="2_icon"]
+[ext_resource type="Script" uid="uid://cxe4i4uesb4hh" path="res://objects/weapon/Weapon.cs" id="3_1jxqw"]
+[ext_resource type="PackedScene" path="res://objects/bullet/bullet.tscn" id="3_bullet"]
+[ext_resource type="Resource" path="res://objects/weapon/machine_gun.tres" id="4_mg"]
+[ext_resource type="Resource" path="res://objects/weapon/shotgun.tres" id="5_sg"]
+[ext_resource type="Resource" path="res://objects/weapon/cannon.tres" id="6_cn"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(59, 58)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hurtbox"]
+size = Vector2(66, 66)
+
+[node name="Player" type="CharacterBody2D" unique_id=1880250877]
+motion_mode = 1
+script = ExtResource("1_script")
+BulletScene = ExtResource("3_bullet")
+Weapons = Array[ExtResource("3_1jxqw")]([ExtResource("4_mg"), ExtResource("5_sg"), ExtResource("6_cn")])
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=525284412]
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("2_icon")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1546240037]
+position = Vector2(-1, 1)
+shape = SubResource("RectangleShape2D_body")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=311991839]
+position_smoothing_enabled = true
+position_smoothing_speed = 7.0
+
+[node name="HurtBox" type="Area2D" parent="." unique_id=1798655389]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox" unique_id=208615254]
+shape = SubResource("RectangleShape2D_hurtbox")
