@@ -9,7 +9,7 @@
 [ext_resource type="Resource" path="res://objects/weapon/cannon.tres" id="6_cn"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
-size = Vector2(59, 58)
+size = Vector2(40, 16)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hurtbox"]
 size = Vector2(66, 66)
@@ -21,18 +21,21 @@ BulletScene = ExtResource("3_bullet")
 Weapons = Array[ExtResource("3_1jxqw")]([ExtResource("4_mg"), ExtResource("5_sg"), ExtResource("6_cn")])
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=525284412]
+position = Vector2(0, -32)
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("2_icon")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1546240037]
-position = Vector2(-1, 1)
+position = Vector2(0, -8)
 shape = SubResource("RectangleShape2D_body")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=311991839]
+position = Vector2(0, -32)
 position_smoothing_enabled = true
 position_smoothing_speed = 7.0
 
 [node name="HurtBox" type="Area2D" parent="." unique_id=1798655389]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox" unique_id=208615254]
+position = Vector2(0, -32)
 shape = SubResource("RectangleShape2D_hurtbox")
