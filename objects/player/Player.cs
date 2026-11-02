@@ -17,6 +17,9 @@ public partial class Player : CharacterBody2D
 	private static readonly Color HurtColor = new(1f, 0.3f, 0.3f, 0.6f);
 	private static readonly Color DashColor = new(0.4f, 1f, 1f);
 
+	// A origem do jogador fica nos pés (visão 3/4). O tiro sai da altura do corpo.
+	private static readonly Vector2 MuzzleOffset = new(0, -32);
+
 	public event Action StatsChanged;
 
 	public int Health { get; private set; }
@@ -68,9 +71,9 @@ public partial class Player : CharacterBody2D
 
 	private void CheckEnemyContact()
 	{
-		foreach (Node2D body in _hurtBox.GetOverlappingBodies())
+		foreach (Area2D area in _hurtBox.GetOverlappingAreas())
 		{
-			if (body is Enemy enemy)
+			if (area.GetParent() is Enemy enemy)
 			{
 				TakeDamage(enemy);
 				return;
@@ -175,7 +178,8 @@ public partial class Player : CharacterBody2D
 
 	private void Shoot()
 	{
-		Vector2 aim = (GetGlobalMousePosition() - GlobalPosition).Normalized();
+		Vector2 muzzle = GlobalPosition + MuzzleOffset;
+		Vector2 aim = (GetGlobalMousePosition() - muzzle).Normalized();
 		if (aim == Vector2.Zero) aim = Vector2.Right;
 
 		_fireCooldown = Weapon.Cooldown;
@@ -186,7 +190,7 @@ public partial class Player : CharacterBody2D
 			Bullet bullet = BulletScene.Instantiate<Bullet>();
 			bullet.Weapon = Weapon;
 			bullet.Direction = aim.Rotated(Mathf.DegToRad(spread));
-			bullet.GlobalPosition = GlobalPosition;
+			bullet.GlobalPosition = muzzle;
 			GetParent().AddChild(bullet);
 		}
 		TriggerShake(Weapon.Shake);

@@ -4,7 +4,7 @@ Jogo de ação e tiro top-down feito em **Godot 4.7.2 (.NET / C#)** para a disci
 
 2061. A IA chamada MENTORA fechou as faculdades. Você volta ao campus abandonado, cheio de fantasmas de alunos que nunca se formaram, para buscar o seu diploma.
 
-> Estado atual: arena de testes com ondas infinitas de inimigos. As salas, os chefes e as fases estão sendo construídos aos poucos.
+> Estado atual: sala de teste com 3 salas (segura → arena com portas que trancam → segura). Os chefes e as fases estão sendo construídos aos poucos. A arena antiga de ondas infinitas continua em `main.tscn`.
 
 ---
 
@@ -42,7 +42,8 @@ Armas: 1 = Metralhadora · 2 = Escopeta · 3 = Canhão Perfurante.
 ## 4. Como o código está organizado
 
 ```
-main.tscn / Main.cs     cena principal (arena de testes e gerador de inimigos)
+levels/test_rooms.tscn  sala de teste da MVP 1 (é a que abre com F5)
+main.tscn / Main.cs     arena antiga de ondas infinitas
 objects/                uma pasta por objeto do jogo
   player/               jogador: movimento, dash, vida, tiro
   enemy/                inimigos (Normal, Fast, Tank)
@@ -51,11 +52,20 @@ objects/                uma pasta por objeto do jogo
   heal_drop/            item de cura
   hud/                  textos na tela
   obstacle/             obstáculo
+  door/                 porta que tranca e abre
+  room/                 sala: tranca as portas e solta ondas de inimigos
   arena_grid/           grade do chão
+tilesets/               peças de chão e parede (por enquanto, provisórias)
 sprites/                imagens
 ```
 
 ---
+
+### Como montar uma sala nova
+1. Pinte chão e paredes nas camadas **Floor** e **Walls** (aba **TileMap** embaixo, com a camada selecionada).
+2. Arraste `objects/room/room.tscn` para a cena e coloque no **canto de cima à esquerda do chão** da sala.
+3. No Inspetor, ajuste **Size** (largura e altura do chão em pixels; 1 tile = 64) e **Waves** (0 = sala segura).
+4. Arraste `objects/door/door.tscn` **para dentro da sala** (como filha dela) em cada abertura da parede.
 
 ## 5. Como trabalhamos com Git (GitHub Desktop)
 
