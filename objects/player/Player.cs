@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 public partial class Player : CharacterBody2D
 {
@@ -25,11 +26,15 @@ public partial class Player : CharacterBody2D
 	public int Health { get; private set; }
 	public int Score { get; private set; }
 	public Weapon Weapon { get; private set; }
+	public int Ammo => _ammo[Weapon];
+	public bool IsReloading => _reloadTimer > 0;
 
 	private float _invulnerableTimer = 0f;
 	private float _dashTimer = 0f;
 	private float _dashCooldownTimer = 0f;
 	private float _fireCooldown = 0f;
+	private float _reloadTimer = 0f;
+	private readonly Dictionary<Weapon, int> _ammo = new();
 	private float _shakeStrength = 0f;
 	private Vector2 _knockback = Vector2.Zero;
 
@@ -41,6 +46,8 @@ public partial class Player : CharacterBody2D
 	{
 		Health = MaxHealth;
 		Weapon = Weapons[0];
+		foreach (Weapon weapon in Weapons)
+			_ammo[weapon] = weapon.MagazineSize;
 		AddToGroup("player");
 
 		_sprite = GetNode<Sprite2D>("Sprite2D");
@@ -122,6 +129,7 @@ public partial class Player : CharacterBody2D
 	private void SelectWeapon(int index)
 	{
 		Weapon = Weapons[Mathf.PosMod(index, Weapons.Count)];
+		_reloadTimer = Ammo <= 0 ? Weapon.ReloadTime : 0;
 		StatsChanged?.Invoke();
 	}
 
@@ -172,6 +180,17 @@ public partial class Player : CharacterBody2D
 		if (_fireCooldown > 0)
 			_fireCooldown -= dt;
 
+		if (_reloadTimer > 0)
+		{
+			_reloadTimer -= dt;
+			if (_reloadTimer <= 0)
+			{
+				_ammo[Weapon] = Weapon.MagazineSize;
+				StatsChanged?.Invoke();
+			}
+			return;
+		}
+
 		if (Input.IsActionPressed("shoot") && _fireCooldown <= 0)
 			Shoot();
 	}
@@ -193,6 +212,13 @@ public partial class Player : CharacterBody2D
 			bullet.GlobalPosition = muzzle;
 			GetParent().AddChild(bullet);
 		}
+		_knockback -= aim * Weapon.Recoil;
+
+		_ammo[Weapon]--;
+		if (_ammo[Weapon] <= 0)
+			_reloadTimer = Weapon.ReloadTime;
+		StatsChanged?.Invoke();
+
 		TriggerShake(Weapon.Shake);
 	}
 
