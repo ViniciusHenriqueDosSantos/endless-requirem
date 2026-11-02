@@ -11,6 +11,9 @@ public partial class Weapon : Resource
 	[Export] public bool Piercing;
 	[Export] public Color Color = Colors.White;
 	[Export] public float Shake;
+	[Export] public float Recoil;
+	[Export] public int MagazineSize = 10;
+	[Export] public float ReloadTime = 1f;
 	[Export] public int Pellets = 1;
 	[Export] public float SpreadDegrees;
 }
