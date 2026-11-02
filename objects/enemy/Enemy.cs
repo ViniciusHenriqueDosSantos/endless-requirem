@@ -9,7 +9,7 @@ public partial class Enemy : CharacterBody2D
 
 	private static readonly Dictionary<Kind, Stats> StatsByKind = new()
 	{
-		[Kind.Normal] = new(Speed: 150f, Health: 3, ScoreValue: 10, new Color(0.78f, 0f, 0.2f), Scale: 0.5f),
+		[Kind.Normal] = new(Speed: 170f, Health: 3, ScoreValue: 10, new Color(0.78f, 0f, 0.2f), Scale: 0.5f),
 		[Kind.Fast] = new(Speed: 215f, Health: 2, ScoreValue: 15, new Color(1f, 0.55f, 0f), Scale: 0.38f),
 		[Kind.Tank] = new(Speed: 95f, Health: 8, ScoreValue: 30, new Color(0.6f, 0.15f, 0.85f), Scale: 0.75f),
 	};

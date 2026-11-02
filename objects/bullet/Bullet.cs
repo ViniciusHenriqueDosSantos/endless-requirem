@@ -31,8 +31,16 @@ public partial class Bullet : Area2D
 	}
 
 	// Paredes, portas trancadas e obstáculos param o tiro.
+	// Pilhas de papel levam dano.
 	private void OnBodyEntered(Node2D body)
 	{
+		if (body is PaperPile pile && !pile.IsDestroyed)
+		{
+			pile.TakeHit(Weapon.Damage);
+			QueueFree();
+			return;
+		}
+
 		if (body.IsInGroup("obstacles"))
 			QueueFree();
 	}

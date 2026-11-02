@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_script")
-Name = "Metralhadora"
+Name = "Laser"
 Cooldown = 0.16
 BulletSpeed = 600.0
 BulletScale = 0.14
