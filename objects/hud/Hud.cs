@@ -21,7 +21,7 @@ public partial class Hud : CanvasLayer
 
 	private void Refresh()
 	{
-		_label.Text = $"Vida: {Player.Health}/{Player.MaxHealth}  |  Pontos: {Player.Score}  |  Arma [1/2/3/Scroll]: {Player.Weapon.Name}\n" +
+		_label.Text = $"Vida: {Player.Health}/{Player.MaxHealth}  |  Pontos: {Player.Score}  |  Arma [1/2/3/Scroll]: {Player.Weapon.Name} ({(Player.IsReloading ? "recarregando..." : $"{Player.Ammo}/{Player.Weapon.MagazineSize}")})\n" +
 					  "[WASD] Mover  |  [Segurar Mouse Esq] Atirar  |  [Espaço] Dash";
 	}
 }
