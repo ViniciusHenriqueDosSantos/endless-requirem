@@ -35,6 +35,8 @@ public partial class PaperPile : StaticBody2D
 		if (Engine.IsEditorHint()) return;
 
 		AddToGroup("obstacles");
+		CollisionLayer = Prop.FurnitureLayer;
+		CollisionMask = 0;
 		_collision = new CollisionShape2D
 		{
 			Shape = new RectangleShape2D { Size = new Vector2(PileSize.X, Depth) },

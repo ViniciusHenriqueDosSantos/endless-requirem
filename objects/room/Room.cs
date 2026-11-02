@@ -8,6 +8,7 @@ using System.Collections.Generic;
 //   Segura:        Waves = 0 e SurviveTime = 0. Nada acontece.
 //   Ondas:         Waves > 0. Cada onda traz EnemiesPerWave inimigos, +1 a cada onda seguinte.
 //   Sobrevivência: SurviveTime > 0. Inimigos surgem sem parar até o tempo acabar.
+//   Chefe:         HasBoss ligado. Tranca ao entrar e só abre quando alguém chamar FinishFight().
 //
 // StartOnEnter desligado: a luta só começa quando alguém chamar StartFight()
 //   (ex.: o micro-ondas do RU).
@@ -16,6 +17,7 @@ using System.Collections.Generic;
 //
 // Pontos de surgimento: filhos Marker2D com nome começando em "Spawn".
 //   Sem eles, os inimigos surgem em qualquer lugar dentro de Size.
+//   SpawnAnywhere ligado: metade dos fantasmas surge em qualquer ponto livre do chão da sala.
 // RespawnPoint: onde o jogador volta se for reprovado nesta sala.
 [Tool]
 public partial class Room : Node2D
@@ -37,6 +39,8 @@ public partial class Room : Node2D
 	[Export] public float SurviveSpawnInterval = 1.5f;
 	[Export] public int SurviveMaxAlive = 6;
 
+	[Export] public bool SpawnAnywhere;
+	[Export] public bool HasBoss;
 	[Export] public bool StartOnEnter = true;
 	[Export] public bool Active = true;
 	[Export] public Marker2D RespawnPoint;
@@ -66,6 +70,7 @@ public partial class Room : Node2D
 	private Label _banner;
 	private float _bannerTimer;
 
+	public int AliveEnemies => _enemies.Count;
 	public bool IsCleared => _state == State.Cleared;
 	public bool IsFighting => _state == State.Fighting;
 	public float TimeLeft => _timeLeft;
@@ -104,8 +109,8 @@ public partial class Room : Node2D
 		_banner.AddThemeConstantOverride("outline_size", 8);
 		_banner.AddThemeColorOverride("font_outline_color", Colors.Black);
 		_banner.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.TopWide);
-		_banner.OffsetTop = 130;
-		_banner.OffsetBottom = 190;
+		_banner.OffsetTop = 180;
+		_banner.OffsetBottom = 240;
 		layer.AddChild(_banner);
 		AddChild(layer);
 	}
@@ -120,7 +125,7 @@ public partial class Room : Node2D
 		EmitSignal(SignalName.Entered);
 		if (_state != State.Waiting) return;
 
-		if (Waves <= 0 && !IsSurvival)
+		if (Waves <= 0 && !IsSurvival && !HasBoss)
 		{
 			_state = State.Cleared;
 			return;
@@ -150,6 +155,18 @@ public partial class Room : Node2D
 		EmitSignal(SignalName.Started);
 	}
 
+	// Sala de chefe: o roteiro da fase chama quando o chefe cai.
+	public void FinishFight()
+	{
+		if (_state != State.Fighting) return;
+
+		FreeEnemies();
+		Clear();
+	}
+
+	// Inimigo extra (ex.: reforços chamados pelo chefe). Some se a sala for reiniciada.
+	public void SpawnExtraEnemy() => SpawnEnemy();
+
 	// Volta a sala ao estado inicial (usado quando o jogador é reprovado).
 	public void ResetRoom()
 	{
@@ -173,7 +190,7 @@ public partial class Room : Node2D
 
 	public override void _PhysicsProcess(double delta)
 	{
-		if (Engine.IsEditorHint() || _state != State.Fighting) return;
+		if (Engine.IsEditorHint() || _state != State.Fighting || HasBoss) return;
 
 		float dt = (float)delta;
 		if (IsSurvival)
@@ -272,15 +289,20 @@ public partial class Room : Node2D
 			if (child is Marker2D marker && marker.Name.ToString().StartsWith("Spawn"))
 				markers.Add(marker.Position);
 
-		Vector2 point = Size / 2;
-		for (int i = 0; i < 20; i++)
+		Vector2 point = markers.Count > 0 ? markers[0] : Size / 2;
+		for (int i = 0; i < 30; i++)
 		{
-			point = markers.Count > 0
+			bool useMarker = markers.Count > 0 && !(SpawnAnywhere && GD.Randf() < 0.5f);
+			Vector2 candidate = useMarker
 				? markers[GD.RandRange(0, markers.Count - 1)]
 				: new Vector2(
 					(float)GD.RandRange(SpawnMargin, Size.X - SpawnMargin),
 					(float)GD.RandRange(SpawnMargin, Size.Y - SpawnMargin));
 
+			// Só no chão livre da sala (nunca no vazio, dentro de parede ou de balcão).
+			if (!GhostNav.IsFreeFloor(this, ToGlobal(candidate))) continue;
+
+			point = candidate;
 			if (!IsInstanceValid(_player) || ToGlobal(point).DistanceTo(_player.GlobalPosition) >= MinSpawnDistance)
 				break;
 		}

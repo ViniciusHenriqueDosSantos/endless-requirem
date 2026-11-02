@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="BossConfig" format=3]
+
+[ext_resource type="Script" path="res://objects/boss/BossConfig.cs" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+Name = "TIA DA CANTINA"
+BodyColor = Color(0.93, 0.55, 0.4, 1)
+Health = 60
+Cycles = 3
+ShieldDownTime = 8.0
+TargetHealth = 6
+ProjectileName = "salgado"
+ProjectileColor = Color(0.95, 0.68, 0.25, 1)
+Pellets = 5
+SpreadDegrees = 14.0
+ProjectileSpeed = 260.0
+FireInterval = 1.3
+SummonInterval = 6.0
+SummonMaxAlive = 2
+SummonOnLastCycle = false
+SummonCount = 0
+MoveSpeed = 120.0
+ScoreValue = 500
