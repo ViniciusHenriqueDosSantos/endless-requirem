@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://objects/door/door.tscn" id="4_door"]
 [ext_resource type="PackedScene" path="res://objects/obstacle/obstacle.tscn" id="5_obstacle"]
 [ext_resource type="PackedScene" path="res://objects/hud/hud.tscn" id="6_hud"]
+[ext_resource type="PackedScene" path="res://objects/level_exit/level_exit.tscn" id="7_exit"]
 
 [node name="TestRooms" type="Node2D"]
 y_sort_enabled = true
@@ -74,6 +75,10 @@ text = "FIM DO TESTE (segura)
 Se você chegou aqui, a MVP 1 funcionou!"
 horizontal_alignment = 1
 autowrap_mode = 3
+
+[node name="LevelExit" parent="." instance=ExtResource("7_exit")]
+position = Vector2(576, 320)
+TargetLevel = "res://levels/test_rooms_2.tscn"
 
 [node name="Hud" parent="." node_paths=PackedStringArray("Player") instance=ExtResource("6_hud")]
 Player = NodePath("../Player")

@@ -167,9 +167,10 @@ public partial class Hud : CanvasLayer
 		string weapons = string.Join("   ", Player.OwnedWeapons.Select((weapon, i) =>
 			weapon == Player.Weapon ? $"[{i + 1}: {weapon.Name}]" : $"{i + 1}: {weapon.Name}"));
 
+		string ammo = Player.IsReloading ? "recarregando..." : $"{Player.Ammo}/{Player.Weapon.MagazineSize}";
 		string items = Player.ItemNames.Count > 0 ? "  |  Itens: " + string.Join(", ", Player.ItemNames) : "";
 
-		_label.Text = $"Vida: {Player.Health}/{Player.MaxHealth}  |  Armas: {weapons}{items}\n" +
+		_label.Text = $"Vida: {Player.Health}/{Player.MaxHealth}  |  Armas: {weapons}  ({ammo}){items}\n" +
 					  "[WASD] Mover  |  [Mouse] Mirar e atirar  |  [Espaço] Dash";
 	}
 }

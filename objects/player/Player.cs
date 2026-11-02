@@ -36,6 +36,8 @@ public partial class Player : CharacterBody2D
 	public int Health { get; private set; }
 	public int Score { get; private set; }
 	public Weapon Weapon { get; private set; }
+	public int Ammo => _ammo[Weapon];
+	public bool IsReloading => _reloadTimer > 0;
 
 	private readonly List<Weapon> _ownedWeapons = new();
 	public IReadOnlyList<Weapon> OwnedWeapons => _ownedWeapons;
@@ -48,6 +50,8 @@ public partial class Player : CharacterBody2D
 	private float _dashTimer = 0f;
 	private float _dashCooldownTimer = 0f;
 	private float _fireCooldown = 0f;
+	private float _reloadTimer = 0f;
+	private readonly Dictionary<Weapon, int> _ammo = new();
 	private float _shakeStrength = 0f;
 	private Vector2 _knockback = Vector2.Zero;
 
@@ -58,6 +62,8 @@ public partial class Player : CharacterBody2D
 	public override void _Ready()
 	{
 		Health = MaxHealth;
+		foreach (Weapon weapon in Weapons)
+			_ammo[weapon] = weapon.MagazineSize;
 		AddToGroup("player");
 		SetCollisionMaskValue((int)Prop.FurnitureLayer, true);
 
@@ -99,6 +105,8 @@ public partial class Player : CharacterBody2D
 	{
 		if (!_ownedWeapons.Contains(weapon))
 			_ownedWeapons.Add(weapon);
+		_ammo[weapon] = weapon.MagazineSize;
+		_reloadTimer = 0;
 		Weapon = weapon;
 		StatsChanged?.Invoke();
 	}
@@ -126,6 +134,9 @@ public partial class Player : CharacterBody2D
 		_knockback = Vector2.Zero;
 		_dashTimer = 0f;
 		_invulnerableTimer = ReviveInvulnerabilityTime;
+		_reloadTimer = 0;
+		foreach (Weapon weapon in _ownedWeapons)
+			_ammo[weapon] = weapon.MagazineSize;
 		_camera?.CallDeferred(Camera2D.MethodName.ResetSmoothing);
 		StatsChanged?.Invoke();
 	}
@@ -202,6 +213,7 @@ public partial class Player : CharacterBody2D
 	private void SelectWeapon(int index)
 	{
 		Weapon = _ownedWeapons[Mathf.PosMod(index, _ownedWeapons.Count)];
+		_reloadTimer = Ammo <= 0 ? Weapon.ReloadTime : 0;
 		StatsChanged?.Invoke();
 	}
 
@@ -252,6 +264,17 @@ public partial class Player : CharacterBody2D
 		if (_fireCooldown > 0)
 			_fireCooldown -= dt;
 
+		if (_reloadTimer > 0)
+		{
+			_reloadTimer -= dt;
+			if (_reloadTimer <= 0)
+			{
+				_ammo[Weapon] = Weapon.MagazineSize;
+				StatsChanged?.Invoke();
+			}
+			return;
+		}
+
 		if (Input.IsActionPressed("shoot") && _fireCooldown <= 0)
 			Shoot();
 	}
@@ -273,6 +296,13 @@ public partial class Player : CharacterBody2D
 			bullet.GlobalPosition = muzzle;
 			GetParent().AddChild(bullet);
 		}
+		_knockback -= aim * Weapon.Recoil;
+
+		_ammo[Weapon]--;
+		if (_ammo[Weapon] <= 0)
+			_reloadTimer = Weapon.ReloadTime;
+		StatsChanged?.Invoke();
+
 		TriggerShake(Weapon.Shake);
 	}
 
