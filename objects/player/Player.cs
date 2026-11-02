@@ -11,9 +11,16 @@ public partial class Player : CharacterBody2D
 	[Export] public int MaxHealth = 5;
 	[Export] public float KnockbackDecay = 1800f;
 	[Export] public PackedScene BulletScene;
+
+	// Todas as armas do jogo, em ordem. A primeira é a inicial (Laser).
 	[Export] public Godot.Collections.Array<Weapon> Weapons = new();
 
+	// Ligado: começa com todas as armas (bom para testes).
+	// Desligado: começa só com a primeira e ganha as outras pelos chefes.
+	[Export] public bool StartWithAllWeapons = true;
+
 	private const float InvulnerabilityTime = 1.0f;
+	private const float ReviveInvulnerabilityTime = 1.5f;
 	private const float DamageShake = 10f;
 	private static readonly Color HurtColor = new(1f, 0.3f, 0.3f, 0.6f);
 	private static readonly Color DashColor = new(0.4f, 1f, 1f);
@@ -23,11 +30,21 @@ public partial class Player : CharacterBody2D
 
 	public event Action StatsChanged;
 
+	// Avisado quando a vida zera. Se ninguém estiver ouvindo, a cena recomeça.
+	public event Action Died;
+
 	public int Health { get; private set; }
 	public int Score { get; private set; }
 	public Weapon Weapon { get; private set; }
 	public int Ammo => _ammo[Weapon];
 	public bool IsReloading => _reloadTimer > 0;
+
+	private readonly List<Weapon> _ownedWeapons = new();
+	public IReadOnlyList<Weapon> OwnedWeapons => _ownedWeapons;
+
+	// Itens carregados: nome interno -> nome mostrado na tela.
+	private readonly Dictionary<string, string> _items = new();
+	public IReadOnlyCollection<string> ItemNames => _items.Values;
 
 	private float _invulnerableTimer = 0f;
 	private float _dashTimer = 0f;
@@ -45,10 +62,16 @@ public partial class Player : CharacterBody2D
 	public override void _Ready()
 	{
 		Health = MaxHealth;
-		Weapon = Weapons[0];
 		foreach (Weapon weapon in Weapons)
 			_ammo[weapon] = weapon.MagazineSize;
 		AddToGroup("player");
+		SetCollisionMaskValue((int)Prop.FurnitureLayer, true);
+
+		if (StartWithAllWeapons)
+			_ownedWeapons.AddRange(Weapons);
+		else
+			_ownedWeapons.Add(Weapons[0]);
+		Weapon = _ownedWeapons[0];
 
 		_sprite = GetNode<Sprite2D>("Sprite2D");
 		_hurtBox = GetNode<Area2D>("HurtBox");
@@ -71,6 +94,53 @@ public partial class Player : CharacterBody2D
 		return true;
 	}
 
+	public void HealFull()
+	{
+		Health = MaxHealth;
+		StatsChanged?.Invoke();
+	}
+
+	// Ganha uma arma nova e já troca para ela.
+	public void AddWeapon(Weapon weapon)
+	{
+		if (!_ownedWeapons.Contains(weapon))
+			_ownedWeapons.Add(weapon);
+		_ammo[weapon] = weapon.MagazineSize;
+		_reloadTimer = 0;
+		Weapon = weapon;
+		StatsChanged?.Invoke();
+	}
+
+	public void AddItem(string id, string displayName)
+	{
+		_items[id] = displayName;
+		StatsChanged?.Invoke();
+	}
+
+	public bool HasItem(string id) => _items.ContainsKey(id);
+
+	public void RemoveItem(string id)
+	{
+		if (_items.Remove(id))
+			StatsChanged?.Invoke();
+	}
+
+	// Volta à vida em outro lugar, com a vida cheia (depois do "REPROVADO").
+	public void Revive(Vector2 position)
+	{
+		Health = MaxHealth;
+		GlobalPosition = position;
+		Velocity = Vector2.Zero;
+		_knockback = Vector2.Zero;
+		_dashTimer = 0f;
+		_invulnerableTimer = ReviveInvulnerabilityTime;
+		_reloadTimer = 0;
+		foreach (Weapon weapon in _ownedWeapons)
+			_ammo[weapon] = weapon.MagazineSize;
+		_camera?.CallDeferred(Camera2D.MethodName.ResetSmoothing);
+		StatsChanged?.Invoke();
+	}
+
 	public void TriggerShake(float strength)
 	{
 		_shakeStrength = Mathf.Max(_shakeStrength, strength);
@@ -90,15 +160,29 @@ public partial class Player : CharacterBody2D
 
 	private void TakeDamage(Enemy enemy)
 	{
-		if (_dashTimer > 0 || _invulnerableTimer > 0) return;
+		TakeHit(enemy.GlobalPosition, enemy.HitKnockback);
+	}
 
-		_knockback = (GlobalPosition - enemy.GlobalPosition).Normalized() * enemy.HitKnockback;
+	// Dano vindo de qualquer coisa (inimigo, projétil do chefe...).
+	public void TakeHit(Vector2 fromPosition, float knockback)
+	{
+		if (Health <= 0 || _dashTimer > 0 || _invulnerableTimer > 0) return;
+
+		_knockback = (GlobalPosition - fromPosition).Normalized() * knockback;
 		Health--;
 		_invulnerableTimer = InvulnerabilityTime;
 		TriggerShake(DamageShake);
 		StatsChanged?.Invoke();
 
 		if (Health <= 0)
+			Die();
+	}
+
+	private void Die()
+	{
+		if (Died != null)
+			Died.Invoke();
+		else
 			GetTree().CallDeferred(SceneTree.MethodName.ReloadCurrentScene);
 	}
 
@@ -106,17 +190,17 @@ public partial class Player : CharacterBody2D
 	{
 		if (@event.IsActionPressed("weapon_next"))
 		{
-			SelectWeapon(Weapons.IndexOf(Weapon) + 1);
+			SelectWeapon(_ownedWeapons.IndexOf(Weapon) + 1);
 			return;
 		}
 
 		if (@event.IsActionPressed("weapon_prev"))
 		{
-			SelectWeapon(Weapons.IndexOf(Weapon) - 1);
+			SelectWeapon(_ownedWeapons.IndexOf(Weapon) - 1);
 			return;
 		}
 
-		for (int i = 0; i < Weapons.Count; i++)
+		for (int i = 0; i < _ownedWeapons.Count; i++)
 		{
 			if (@event.IsActionPressed($"weapon_{i + 1}"))
 			{
@@ -128,7 +212,7 @@ public partial class Player : CharacterBody2D
 
 	private void SelectWeapon(int index)
 	{
-		Weapon = Weapons[Mathf.PosMod(index, Weapons.Count)];
+		Weapon = _ownedWeapons[Mathf.PosMod(index, _ownedWeapons.Count)];
 		_reloadTimer = Ammo <= 0 ? Weapon.ReloadTime : 0;
 		StatsChanged?.Invoke();
 	}
@@ -247,7 +331,7 @@ public partial class Player : CharacterBody2D
 		}
 		else
 		{
-			Velocity = dir * Speed + _knockback ;
+			Velocity = dir * Speed + _knockback;
 		}
 
 		MoveAndSlide();

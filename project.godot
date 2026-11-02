@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="endless_requirem"
-run/main_scene="res://levels/test_rooms.tscn"
+run/main_scene="res://levels/fase_1.tscn"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 config/icon="res://sprites/icon.svg"
 

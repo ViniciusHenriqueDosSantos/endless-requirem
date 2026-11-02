@@ -1,6 +1,6 @@
 [gd_scene format=4]
 
-[ext_resource type="TileSet" path="res://tilesets/placeholder_tileset.tres" id="1_tiles"]
+[ext_resource type="TileSet" path="res://tilesets/placeholder_tileset_outer.tres" id="1_tiles"]
 [ext_resource type="PackedScene" path="res://objects/player/player.tscn" id="2_player"]
 [ext_resource type="PackedScene" path="res://objects/room/room.tscn" id="3_room"]
 [ext_resource type="PackedScene" path="res://objects/door/door.tscn" id="4_door"]

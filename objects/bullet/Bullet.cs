@@ -15,11 +15,13 @@ public partial class Bullet : Area2D
 		Scale = Vector2.One * Weapon.BulletScale;
 		Modulate = Weapon.Color;
 
+		SetCollisionMaskValue((int)Prop.FurnitureLayer, true);
 		AreaEntered += OnAreaEntered;
 		BodyEntered += OnBodyEntered;
 	}
 
 	// O tiro acerta a HitBox (o corpo inteiro) do inimigo, não a colisão dos pés.
+	// Também acerta o chefe e os alvos dele (IHittable).
 	private void OnAreaEntered(Area2D area)
 	{
 		if (area.GetParent() is Enemy enemy)
@@ -27,12 +29,32 @@ public partial class Bullet : Area2D
 			enemy.TakeDamage(Weapon.Damage, Direction);
 			if (!Weapon.Piercing)
 				QueueFree();
+			return;
+		}
+
+		IHittable target = area as IHittable ?? area.GetParent() as IHittable;
+		if (target != null)
+		{
+			target.TakeHit(Weapon.Damage, Direction);
+			QueueFree();
 		}
 	}
 
 	// Paredes, portas trancadas e obstáculos param o tiro.
+	// Pilhas de papel levam dano.
 	private void OnBodyEntered(Node2D body)
 	{
+		// Móveis baixos: o tiro passa por cima.
+		if (body is Prop prop && !prop.Tall)
+			return;
+
+		if (body is PaperPile pile && !pile.IsDestroyed)
+		{
+			pile.TakeHit(Weapon.Damage);
+			QueueFree();
+			return;
+		}
+
 		if (body.IsInGroup("obstacles"))
 			QueueFree();
 	}

@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://objects/boss/Boss.cs" id="1_script"]
+[ext_resource type="PackedScene" path="res://objects/boss/boss_projectile.tscn" id="2_projectile"]
+
+[node name="Boss" type="StaticBody2D"]
+script = ExtResource("1_script")
+ProjectileScene = ExtResource("2_projectile")
