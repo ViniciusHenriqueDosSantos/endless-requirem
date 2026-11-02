@@ -4,7 +4,7 @@ Jogo de ação e tiro top-down feito em **Godot 4.7.2 (.NET / C#)** para a disci
 
 2061. A IA chamada MENTORA fechou as faculdades. Você volta ao campus abandonado, cheio de fantasmas de alunos que nunca se formaram, para buscar o seu diploma.
 
-> Estado atual: **Fase 1 jogável em cinza** (Entrada → Portaria → RU → Corredor → Cantina → Elevador). O chefe da Cantina chega na MVP 2b. A sala de teste (`levels/test_rooms.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
+> Estado atual: **Fase 1 completa em cinza** (Entrada → Portaria → RU → Corredor → Cantina com a Tia da Cantina → Elevador). A arte chega na MVP 3. A sala de teste (`levels/test_rooms.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
 
 ---
 
@@ -64,6 +64,7 @@ objects/                uma pasta por objeto do jogo
   item_slot/            lugar que recebe um item (micro-ondas)
   area_trigger/         área que avisa quando o jogador entra (elevador)
   message_screen/       tela cheia: REPROVADO, fim de fase
+  boss/                 chefe (um código só; cada chefe é um .tres, ex.: tia_cantina.tres)
   arena_grid/           grade do chão
 tilesets/               peças de chão e parede (por enquanto, provisórias)
 sprites/                imagens

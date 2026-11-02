@@ -4,6 +4,14 @@ using Godot;
 // A origem fica na BASE do objeto (visão 3/4): o desenho sobe a partir dela,
 // e a colisão ocupa só a faixa de baixo (Depth), para dar a sensação de profundidade.
 // Aparece no editor também, para facilitar a montagem das salas.
+//
+// Móveis ficam na camada de colisão 2: o jogador e os tiros batem neles,
+// mas os fantasmas atravessam (são fantasmas!). Paredes e portas ficam na camada 1.
+//
+// Cobertura de mão única:
+//   - móvel baixo (mesa, sinuca, balcão): o tiro do jogador passa por cima;
+//     os projéteis do chefe param nele; fantasmas atravessam devagar.
+//   - móvel alto (Tall ligado: prédio, guarita): bloqueia todos os tiros.
 [Tool]
 public partial class Prop : StaticBody2D
 {
@@ -27,8 +35,34 @@ public partial class Prop : StaticBody2D
 	[Export] public int FontSize { get => _fontSize; set { _fontSize = value; QueueRedraw(); } }
 	[Export] public Color TextColor { get => _textColor; set { _textColor = value; QueueRedraw(); } }
 
+	// Miolo de outra cor (ex.: jardim verde com borda de concreto). Transparente = sem miolo.
+	private Color _innerColor = new(0, 0, 0, 0);
+	[Export] public Color InnerColor { get => _innerColor; set { _innerColor = value; QueueRedraw(); } }
+	private const float InnerBorder = 14f;
+
 	// Desligado: o jogador e os tiros passam por cima/por trás.
 	[Export] public bool Solid = true;
+
+	// Alto: bloqueia também os tiros do jogador.
+	[Export] public bool Tall;
+
+	// Balcão de onde o chefe atira: os projéteis dele atravessam este móvel.
+	[Export] public bool BossCounter;
+
+	// Ligado: fantasmas também não atravessam (balcões). Usa a camada 4 (bit 8),
+	// a mesma das paredes de fora do mapa.
+	[Export] public bool BlocksGhosts;
+	public const uint GhostBlockerLayer = 8;
+
+	// Camada de colisão dos móveis (ver comentário no topo). A camada 2 vale o bit 2,
+	// então o mesmo número serve para CollisionLayer e para SetCollisionMaskValue.
+	public const uint FurnitureLayer = 2;
+
+	// Retângulo do desenho no mundo. Os projéteis do chefe param ao entrar nele.
+	public Rect2 GlobalVisualRect => new(GlobalPosition + new Vector2(-Size.X / 2, -Size.Y), Size);
+
+	// Retângulo da base no mundo (onde fica a colisão). Fantasmas dentro dele andam devagar.
+	public Rect2 GlobalFootRect => new(GlobalPosition + new Vector2(-Size.X / 2, -Depth), new Vector2(Size.X, Depth));
 
 	public override void _Ready()
 	{
@@ -36,6 +70,9 @@ public partial class Prop : StaticBody2D
 		if (Engine.IsEditorHint() || !Solid) return;
 
 		AddToGroup("obstacles");
+		AddToGroup("cover");
+		CollisionLayer = BlocksGhosts ? FurnitureLayer | GhostBlockerLayer : FurnitureLayer;
+		CollisionMask = 0;
 		AddChild(new CollisionShape2D
 		{
 			Shape = new RectangleShape2D { Size = new Vector2(Size.X, Depth) },
@@ -54,6 +91,9 @@ public partial class Prop : StaticBody2D
 			DrawRect(new Rect2(body.Position, new Vector2(Size.X, topHeight)), Color.Lightened(0.25f));
 			DrawRect(body, Color.Darkened(0.5f), false, 2f);
 		}
+
+		if (InnerColor.A > 0)
+			DrawRect(body.Grow(-InnerBorder), InnerColor);
 
 		if (string.IsNullOrEmpty(Text)) return;
 

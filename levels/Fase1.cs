@@ -5,7 +5,7 @@ using Godot;
 // As peças (salas, portas, coletáveis) ficam na cena levels/fase_1.tscn.
 //
 // Ordem: pilhas de papel (crachá) -> catraca -> RU (marmita + micro-ondas, sobreviver)
-//        -> corredor assombrado -> Cantina -> elevador.
+//        -> corredor assombrado -> Cantina (Tia da Cantina) -> escopeta -> elevador.
 public partial class Fase1 : Node2D
 {
 	[Export] public Player Player;
@@ -16,14 +16,20 @@ public partial class Fase1 : Node2D
 	[Export] public Node2D Pilhas;
 	[Export] public Door Catraca;
 	[Export] public Room Ru;
+	[Export] public Door PortaEntradaRu;
 	[Export] public Pickup Marmita;
 	[Export] public ItemSlot Microondas;
 	[Export] public Room Corredor;
 	[Export] public Room Cantina;
 	[Export] public Door CantinaPorta1;
 	[Export] public Door CantinaPorta2;
+	[Export] public Boss Tia;
+	[Export] public Pickup Escopeta;
 	[Export] public Door PortaElevador;
 	[Export] public AreaTrigger Elevador;
+
+	private static readonly Vector2 EscopetaDropOffset = new(0, 190);
+	private static readonly Vector2 TiaPointerOffset = new(0, -60);
 
 	private Vector2 _startPosition;
 	private Room _lastRoom;
@@ -44,8 +50,12 @@ public partial class Fase1 : Node2D
 		Marmita.PickedUp += _ => Hud.SetObjective("Esquente a marmita no micro-ondas");
 		Microondas.Used += () => Ru.StartFight();
 		Ru.Cleared += OnRuCleared;
+		// Voltou ao corredor depois do RU: a entrada do RU fecha de vez.
+		Corredor.Entered += () => PortaEntradaRu.Lock();
 		Corredor.Cleared += OnCorredorCleared;
-		Cantina.Entered += OnCantinaEntered;
+		Cantina.Started += () => Tia.StartFight();
+		Tia.Defeated += OnTiaDefeated;
+		Escopeta.PickedUp += _ => Hud.SetObjective("Vá ao elevador (corredor à esquerda do balcão)");
 		Elevador.PlayerEntered += OnElevadorEntered;
 
 		// Guarda a última sala onde começou uma luta: é nela que o jogador recomeça.
@@ -91,6 +101,15 @@ public partial class Fase1 : Node2D
 
 		if (Ru.IsFighting)
 			Hud.SetObjective($"Sobreviva até o micro-ondas apitar: {Mathf.CeilToInt(Ru.TimeLeft)} s");
+
+		if (Tia.IsFighting)
+		{
+			Hud.SetBoss(Tia.DisplayName, Tia.HealthRatio, Tia.IsShielded);
+			Hud.PointTo(Tia.GlobalPosition + TiaPointerOffset, "TIA");
+			Hud.SetObjective(Tia.IsShielded
+				? $"Destrua os alvos nos cantos para baixar o escudo ({Tia.TargetsLeft} restantes)"
+				: $"Escudo baixo! Atire na Tia: {Mathf.CeilToInt(Tia.VulnerableTimeLeft)} s");
+		}
 	}
 
 	private void OnRuEntered()
@@ -114,17 +133,18 @@ public partial class Fase1 : Node2D
 	{
 		CantinaPorta1.Unlock();
 		CantinaPorta2.Unlock();
-		Hud.SetObjective("Entre na Cantina");
+		Hud.SetObjective("Entre na Cantina e enfrente a Tia");
 	}
 
-	private void OnCantinaEntered()
+	private void OnTiaDefeated()
 	{
-		if (!PortaElevador.IsLocked) return;
-
-		// Provisório: a Tia da Cantina chega na MVP 2b. Por enquanto, o elevador já abre.
-		Hud.ShowMessage("A Tia da Cantina chega na MVP 2b. O elevador já está liberado.", 5f);
+		Cantina.FinishFight();
+		Hud.HideBoss();
+		// A escopeta cai na frente do balcão, onde o jogador alcança.
+		Escopeta.Reveal(Tia.GlobalPosition + EscopetaDropOffset);
 		PortaElevador.Unlock();
-		Hud.SetObjective("Vá ao elevador (corredor à esquerda do balcão)");
+		Hud.ShowMessage("A Tia da Cantina caiu! Ela deixou algo para trás...", 4f);
+		Hud.SetObjective("Pegue a escopeta");
 	}
 
 	private void OnElevadorEntered()
@@ -166,6 +186,12 @@ public partial class Fase1 : Node2D
 				_lastRoom.ResetRoom();
 				if (_lastRoom == Ru)
 					ResetRu();
+				if (_lastRoom == Cantina)
+				{
+					Tia.ResetBoss();
+					Hud.HideBoss();
+					Hud.SetObjective("Entre na Cantina e enfrente a Tia");
+				}
 			}
 
 			if (_lastRoom.RespawnPoint != null)

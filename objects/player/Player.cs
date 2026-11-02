@@ -59,6 +59,7 @@ public partial class Player : CharacterBody2D
 	{
 		Health = MaxHealth;
 		AddToGroup("player");
+		SetCollisionMaskValue((int)Prop.FurnitureLayer, true);
 
 		if (StartWithAllWeapons)
 			_ownedWeapons.AddRange(Weapons);
