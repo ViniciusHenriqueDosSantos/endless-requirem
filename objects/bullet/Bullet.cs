@@ -15,21 +15,26 @@ public partial class Bullet : Area2D
 		Scale = Vector2.One * Weapon.BulletScale;
 		Modulate = Weapon.Color;
 
+		AreaEntered += OnAreaEntered;
 		BodyEntered += OnBodyEntered;
 	}
 
-	private void OnBodyEntered(Node2D body)
+	// O tiro acerta a HitBox (o corpo inteiro) do inimigo, não a colisão dos pés.
+	private void OnAreaEntered(Area2D area)
 	{
-		if (body is Enemy enemy)
+		if (area.GetParent() is Enemy enemy)
 		{
 			enemy.TakeDamage(Weapon.Damage, Direction);
 			if (!Weapon.Piercing)
 				QueueFree();
 		}
-		else if (body.IsInGroup("obstacles"))
-		{
+	}
+
+	// Paredes, portas trancadas e obstáculos param o tiro.
+	private void OnBodyEntered(Node2D body)
+	{
+		if (body.IsInGroup("obstacles"))
 			QueueFree();
-		}
 	}
 
 	public override void _PhysicsProcess(double delta)

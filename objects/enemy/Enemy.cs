@@ -28,6 +28,7 @@ public partial class Enemy : CharacterBody2D
 	private Player _player;
 	private Sprite2D _sprite;
 	private CollisionShape2D _collision;
+	private Area2D _hitBox;
 	private Vector2 _knockback = Vector2.Zero;
 
 	public override void _Ready()
@@ -35,13 +36,17 @@ public partial class Enemy : CharacterBody2D
 		_player = GetTree().GetFirstNodeInGroup("player") as Player;
 		_sprite = GetNode<Sprite2D>("Sprite2D");
 		_collision = GetNode<CollisionShape2D>("CollisionShape2D");
+		_hitBox = GetNode<Area2D>("HitBox");
 
 		_stats = StatsByKind[Type];
 		_health = _stats.Health;
 		_sprite.Modulate = _stats.Color;
+		// A origem fica nos pés: tudo que está acima dela encolhe/cresce junto com o tipo.
 		_sprite.Scale = Vector2.One * _stats.Scale;
+		_sprite.Position *= _stats.Scale;
 		_collision.Scale = Vector2.One * _stats.Scale;
 		_collision.Position *= _stats.Scale;
+		_hitBox.Scale = Vector2.One * _stats.Scale;
 	}
 
 	public void TakeDamage(int damage, Vector2 hitDirection)

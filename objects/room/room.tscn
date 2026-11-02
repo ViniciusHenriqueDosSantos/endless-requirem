@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://objects/room/Room.cs" id="1_script"]
+[ext_resource type="PackedScene" path="res://objects/enemy/enemy.tscn" id="2_enemy"]
+
+[node name="Room" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("1_script")
+EnemyScene = ExtResource("2_enemy")
