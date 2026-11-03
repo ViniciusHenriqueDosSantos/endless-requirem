@@ -91,9 +91,9 @@ for key, n in nodes.items():
 LABELS = {}
 LABELS["fase_1"] = [("ENTRADA", 18, 57.5), ("PORTARIA", 24, 45.2), ("CALÇADA", 9, 63.5), ("CORREDOR", 27, 30), ("RU", 12, 27.3),
           ("CANTINA", 12, 12.2), ("ELEVADOR", 9, 1.3)]
-LABELS["fase_2"] = [("BIBLIOTECA", 9, 11), ("HALL DAS CARONAS", 12, 36.5), ("CORREDOR", 26.5, 30), ("ACHADOS", 34.5, 16.6),
+LABELS["fase_2"] = [("BIBLIOTECA", 9, 11), ("HALL DAS CARONAS", 12, 38.5), ("CORREDOR", 26.5, 30), ("ACHADOS", 34.5, 16.6),
                     ("ENTRADA BIBL.", 21, 22.5), ("ELEVADOR (quebrado)", 21, 5.5), ("ESCADA", 26.5, 1.6),
-                    ("CHEGADA", 21, 45.2), ("ESTUDO", 9, 3.4)]
+                    ("CHEGADA", 21, 47.2), ("SALAS DE ESTUDO", 9.5, 0.9)]
 LABELS["escada"] = [("SAÍDA 4º ANDAR", 11.5, 0.6), ("COMEÇO", 3.5, 23.4)]
 import os as _os
 labels = LABELS.get(_os.path.splitext(_os.path.basename(src))[0], [])
