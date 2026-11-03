@@ -1,0 +1,903 @@
+[gd_scene format=4]
+
+[ext_resource type="Script" path="res://levels/Escada.cs" id="escada"]
+[ext_resource type="PackedScene" path="res://objects/player/player.tscn" id="player"]
+[ext_resource type="PackedScene" path="res://objects/hud/hud.tscn" id="hud"]
+[ext_resource type="PackedScene" path="res://objects/message_screen/message_screen.tscn" id="message_screen"]
+[ext_resource type="PackedScene" path="res://objects/room/room.tscn" id="room"]
+[ext_resource type="PackedScene" path="res://objects/area_trigger/area_trigger.tscn" id="area_trigger"]
+[ext_resource type="TileSet" path="res://tilesets/placeholder_tileset.tres" id="tiles"]
+[ext_resource type="TileSet" path="res://tilesets/placeholder_tileset_outer.tres" id="tiles_outer"]
+[ext_resource type="PackedScene" path="res://objects/prop/prop.tscn" id="prop"]
+
+[node name="Escada" type="Node2D" node_paths=PackedStringArray("Player", "Hud", "Screen", "Subida", "Andar3", "Topo")]
+y_sort_enabled = true
+script = ExtResource("escada")
+Player = NodePath("Player")
+Hud = NodePath("Hud")
+Screen = NodePath("MessageScreen")
+Subida = NodePath("Subida")
+Andar3 = NodePath("Andar3")
+Topo = NodePath("Topo")
+
+[node name="Floor" type="TileMapLayer" parent="." groups=["floor"]]
+z_index = -10
+texture_filter = 1
+scale = Vector2(4, 4)
+tile_map_data = PackedByteArray("AAACAAIAAAAAAAAAAAADAAIAAAABAAAAAAAEAAIAAAAAAAAAAAAFAAIAAAABAAAAAAAGAAIAAAAAAAAAAAAHAAIAAAABAAAAAAAIAAIAAAAAAAAAAAAJAAIAAAABAAAAAAAKAAIAAAAAAAAAAAALAAIAAAABAAAAAAAMAAIAAAAAAAAAAAANAAIAAAABAAAAAAAOAAIAAAAAAAAAAAAPAAIAAAABAAAAAAAQAAIAAAAAAAAAAAARAAIAAAABAAAAAAASAAIAAAAAAAAAAAATAAIAAAABAAAAAAAUAAIAAAAAAAAAAAAVAAIAAAABAAAAAAAWAAIAAAAAAAAAAAACAAMAAAABAAAAAAADAAMAAAAAAAAAAAAEAAMAAAABAAAAAAAFAAMAAAAAAAAAAAAGAAMAAAABAAAAAAAHAAMAAAAAAAAAAAAIAAMAAAABAAAAAAAJAAMAAAAAAAAAAAAKAAMAAAABAAAAAAALAAMAAAAAAAAAAAAMAAMAAAABAAAAAAANAAMAAAAAAAAAAAAOAAMAAAABAAAAAAAPAAMAAAAAAAAAAAAQAAMAAAABAAAAAAARAAMAAAAAAAAAAAASAAMAAAABAAAAAAATAAMAAAAAAAAAAAAUAAMAAAABAAAAAAAVAAMAAAAAAAAAAAAWAAMAAAABAAAAAAACAAQAAAAAAAAAAAADAAQAAAABAAAAAAAEAAQAAAAAAAAAAAAFAAQAAAABAAAAAAAGAAQAAAAAAAAAAAAHAAQAAAABAAAAAAAIAAQAAAAAAAAAAAAJAAQAAAABAAAAAAAKAAQAAAAAAAAAAAALAAQAAAABAAAAAAAMAAQAAAAAAAAAAAANAAQAAAABAAAAAAAOAAQAAAAAAAAAAAAPAAQAAAABAAAAAAAQAAQAAAAAAAAAAAARAAQAAAABAAAAAAASAAQAAAAAAAAAAAATAAQAAAABAAAAAAAUAAQAAAAAAAAAAAAVAAQAAAABAAAAAAAWAAQAAAAAAAAAAAACAAUAAAABAAAAAAADAAUAAAAAAAAAAAAEAAUAAAABAAAAAAAUAAUAAAABAAAAAAAVAAUAAAAAAAAAAAAWAAUAAAABAAAAAAACAAYAAAAAAAAAAAADAAYAAAABAAAAAAAEAAYAAAAAAAAAAAAGAAYAAAAAAAAAAAAHAAYAAAABAAAAAAAIAAYAAAAAAAAAAAAJAAYAAAABAAAAAAAKAAYAAAAAAAAAAAALAAYAAAABAAAAAAAMAAYAAAAAAAAAAAANAAYAAAABAAAAAAAOAAYAAAAAAAAAAAAPAAYAAAABAAAAAAAQAAYAAAAAAAAAAAARAAYAAAABAAAAAAASAAYAAAAAAAAAAAAUAAYAAAAAAAAAAAAVAAYAAAABAAAAAAAWAAYAAAAAAAAAAAACAAcAAAABAAAAAAADAAcAAAAAAAAAAAAEAAcAAAABAAAAAAAGAAcAAAABAAAAAAAHAAcAAAAAAAAAAAAIAAcAAAABAAAAAAAJAAcAAAAAAAAAAAAKAAcAAAABAAAAAAALAAcAAAAAAAAAAAAMAAcAAAABAAAAAAANAAcAAAAAAAAAAAAOAAcAAAABAAAAAAAPAAcAAAAAAAAAAAAQAAcAAAABAAAAAAARAAcAAAAAAAAAAAASAAcAAAABAAAAAAAUAAcAAAABAAAAAAAVAAcAAAAAAAAAAAAWAAcAAAABAAAAAAACAAgAAAAAAAAAAAADAAgAAAABAAAAAAAEAAgAAAAAAAAAAAAGAAgAAAAAAAAAAAAHAAgAAAABAAAAAAAIAAgAAAAAAAAAAAAJAAgAAAABAAAAAAAKAAgAAAAAAAAAAAALAAgAAAABAAAAAAAMAAgAAAAAAAAAAAANAAgAAAABAAAAAAAOAAgAAAAAAAAAAAAPAAgAAAABAAAAAAAQAAgAAAAAAAAAAAARAAgAAAABAAAAAAASAAgAAAAAAAAAAAAUAAgAAAAAAAAAAAAVAAgAAAABAAAAAAAWAAgAAAAAAAAAAAACAAkAAAABAAAAAAADAAkAAAAAAAAAAAAEAAkAAAABAAAAAAAGAAkAAAABAAAAAAAHAAkAAAAAAAAAAAAIAAkAAAABAAAAAAAQAAkAAAABAAAAAAARAAkAAAAAAAAAAAASAAkAAAABAAAAAAAUAAkAAAABAAAAAAAVAAkAAAAAAAAAAAAWAAkAAAABAAAAAAACAAoAAAAAAAAAAAADAAoAAAABAAAAAAAEAAoAAAAAAAAAAAAGAAoAAAAAAAAAAAAHAAoAAAABAAAAAAAIAAoAAAAAAAAAAAAKAAoAAAAAAAAAAAALAAoAAAABAAAAAAAMAAoAAAAAAAAAAAANAAoAAAABAAAAAAAOAAoAAAAAAAAAAAAQAAoAAAAAAAAAAAARAAoAAAABAAAAAAASAAoAAAAAAAAAAAAUAAoAAAAAAAAAAAAVAAoAAAABAAAAAAAWAAoAAAAAAAAAAAACAAsAAAABAAAAAAADAAsAAAAAAAAAAAAEAAsAAAABAAAAAAAGAAsAAAABAAAAAAAHAAsAAAAAAAAAAAAIAAsAAAABAAAAAAAKAAsAAAABAAAAAAALAAsAAAAAAAAAAAAMAAsAAAABAAAAAAANAAsAAAAAAAAAAAAOAAsAAAABAAAAAAAQAAsAAAABAAAAAAARAAsAAAAAAAAAAAASAAsAAAABAAAAAAAUAAsAAAABAAAAAAAVAAsAAAAAAAAAAAAWAAsAAAABAAAAAAACAAwAAAAAAAAAAAADAAwAAAABAAAAAAAEAAwAAAAAAAAAAAAGAAwAAAAAAAAAAAAHAAwAAAABAAAAAAAIAAwAAAAAAAAAAAAKAAwAAAAAAAAAAAALAAwAAAABAAAAAAAMAAwAAAAAAAAAAAANAAwAAAABAAAAAAAOAAwAAAAAAAAAAAAQAAwAAAAAAAAAAAARAAwAAAABAAAAAAASAAwAAAAAAAAAAAAUAAwAAAAAAAAAAAAVAAwAAAABAAAAAAAWAAwAAAAAAAAAAAACAA0AAAABAAAAAAADAA0AAAAAAAAAAAAEAA0AAAABAAAAAAAGAA0AAAABAAAAAAAHAA0AAAAAAAAAAAAIAA0AAAABAAAAAAAKAA0AAAABAAAAAAALAA0AAAAAAAAAAAAMAA0AAAABAAAAAAANAA0AAAAAAAAAAAAOAA0AAAABAAAAAAAQAA0AAAABAAAAAAARAA0AAAAAAAAAAAASAA0AAAABAAAAAAAUAA0AAAABAAAAAAAVAA0AAAAAAAAAAAAWAA0AAAABAAAAAAACAA4AAAAAAAAAAAADAA4AAAABAAAAAAAEAA4AAAAAAAAAAAAGAA4AAAAAAAAAAAAHAA4AAAABAAAAAAAIAA4AAAAAAAAAAAAKAA4AAAAAAAAAAAALAA4AAAABAAAAAAAMAA4AAAAAAAAAAAANAA4AAAABAAAAAAAOAA4AAAAAAAAAAAAQAA4AAAAAAAAAAAARAA4AAAABAAAAAAASAA4AAAAAAAAAAAAUAA4AAAAAAAAAAAAVAA4AAAABAAAAAAAWAA4AAAAAAAAAAAACAA8AAAABAAAAAAADAA8AAAAAAAAAAAAEAA8AAAABAAAAAAAGAA8AAAABAAAAAAAHAA8AAAAAAAAAAAAIAA8AAAABAAAAAAAKAA8AAAABAAAAAAALAA8AAAAAAAAAAAAMAA8AAAABAAAAAAAQAA8AAAABAAAAAAARAA8AAAAAAAAAAAASAA8AAAABAAAAAAAUAA8AAAABAAAAAAAVAA8AAAAAAAAAAAAWAA8AAAABAAAAAAACABAAAAAAAAAAAAADABAAAAABAAAAAAAEABAAAAAAAAAAAAAGABAAAAAAAAAAAAAHABAAAAABAAAAAAAIABAAAAAAAAAAAAAKABAAAAAAAAAAAAALABAAAAABAAAAAAAMABAAAAAAAAAAAAANABAAAAABAAAAAAAOABAAAAAAAAAAAAAPABAAAAABAAAAAAAQABAAAAAAAAAAAAARABAAAAABAAAAAAASABAAAAAAAAAAAAAUABAAAAAAAAAAAAAVABAAAAABAAAAAAAWABAAAAAAAAAAAAACABEAAAABAAAAAAADABEAAAAAAAAAAAAEABEAAAABAAAAAAAGABEAAAABAAAAAAAHABEAAAAAAAAAAAAIABEAAAABAAAAAAAKABEAAAABAAAAAAALABEAAAAAAAAAAAAMABEAAAABAAAAAAANABEAAAAAAAAAAAAOABEAAAABAAAAAAAPABEAAAAAAAAAAAAQABEAAAABAAAAAAARABEAAAAAAAAAAAASABEAAAABAAAAAAAUABEAAAABAAAAAAAVABEAAAAAAAAAAAAWABEAAAABAAAAAAACABIAAAAAAAAAAAADABIAAAABAAAAAAAEABIAAAAAAAAAAAAGABIAAAAAAAAAAAAHABIAAAABAAAAAAAIABIAAAAAAAAAAAAKABIAAAAAAAAAAAALABIAAAABAAAAAAAMABIAAAAAAAAAAAANABIAAAABAAAAAAAOABIAAAAAAAAAAAAPABIAAAABAAAAAAAQABIAAAAAAAAAAAARABIAAAABAAAAAAASABIAAAAAAAAAAAAUABIAAAAAAAAAAAAVABIAAAABAAAAAAAWABIAAAAAAAAAAAACABMAAAABAAAAAAADABMAAAAAAAAAAAAEABMAAAABAAAAAAAGABMAAAABAAAAAAAHABMAAAAAAAAAAAAIABMAAAABAAAAAAAUABMAAAABAAAAAAAVABMAAAAAAAAAAAAWABMAAAABAAAAAAACABQAAAAAAAAAAAADABQAAAABAAAAAAAEABQAAAAAAAAAAAAGABQAAAAAAAAAAAAHABQAAAABAAAAAAAIABQAAAAAAAAAAAAJABQAAAABAAAAAAAKABQAAAAAAAAAAAALABQAAAABAAAAAAAMABQAAAAAAAAAAAANABQAAAABAAAAAAAOABQAAAAAAAAAAAAPABQAAAABAAAAAAAQABQAAAAAAAAAAAARABQAAAABAAAAAAASABQAAAAAAAAAAAATABQAAAABAAAAAAAUABQAAAAAAAAAAAAVABQAAAABAAAAAAAWABQAAAAAAAAAAAACABUAAAABAAAAAAADABUAAAAAAAAAAAAEABUAAAABAAAAAAAGABUAAAABAAAAAAAHABUAAAAAAAAAAAAIABUAAAABAAAAAAAJABUAAAAAAAAAAAAKABUAAAABAAAAAAALABUAAAAAAAAAAAAMABUAAAABAAAAAAANABUAAAAAAAAAAAAOABUAAAABAAAAAAAPABUAAAAAAAAAAAAQABUAAAABAAAAAAARABUAAAAAAAAAAAASABUAAAABAAAAAAATABUAAAAAAAAAAAAUABUAAAABAAAAAAAVABUAAAAAAAAAAAAWABUAAAABAAAAAAACABYAAAAAAAAAAAADABYAAAABAAAAAAAEABYAAAAAAAAAAAAGABYAAAAAAAAAAAAHABYAAAABAAAAAAAIABYAAAAAAAAAAAAJABYAAAABAAAAAAAKABYAAAAAAAAAAAALABYAAAABAAAAAAAMABYAAAAAAAAAAAANABYAAAABAAAAAAAOABYAAAAAAAAAAAAPABYAAAABAAAAAAAQABYAAAAAAAAAAAARABYAAAABAAAAAAASABYAAAAAAAAAAAATABYAAAABAAAAAAAUABYAAAAAAAAAAAAVABYAAAABAAAAAAAWABYAAAAAAAAAAAABABcAAAAAAAAAAAACABcAAAABAAAAAAADABcAAAAAAAAAAAAEABcAAAABAAAAAAABABgAAAABAAAAAAACABgAAAAAAAAAAAADABgAAAABAAAAAAAEABgAAAAAAAAAAAABABkAAAAAAAAAAAACABkAAAABAAAAAAADABkAAAAAAAAAAAAEABkAAAABAAAAAAABABoAAAABAAAAAAACABoAAAAAAAAAAAADABoAAAABAAAAAAAEABoAAAAAAAAAAAA=")
+tile_set = ExtResource("tiles")
+
+[node name="Walls" type="TileMapLayer" parent="." groups=["obstacles"]]
+y_sort_enabled = true
+texture_filter = 1
+scale = Vector2(4, 4)
+tile_map_data = PackedByteArray("AAAFAAUAAAACAAAAAAAGAAUAAAADAAAAAAAHAAUAAAADAAAAAAAIAAUAAAADAAAAAAAJAAUAAAADAAAAAAAKAAUAAAADAAAAAAALAAUAAAADAAAAAAAMAAUAAAADAAAAAAANAAUAAAADAAAAAAAOAAUAAAADAAAAAAAPAAUAAAADAAAAAAAQAAUAAAADAAAAAAARAAUAAAADAAAAAAASAAUAAAADAAAAAAATAAUAAAACAAAAAAAFAAYAAAACAAAAAAATAAYAAAACAAAAAAAFAAcAAAACAAAAAAATAAcAAAACAAAAAAAFAAgAAAACAAAAAAATAAgAAAACAAAAAAAFAAkAAAACAAAAAAAJAAkAAAACAAAAAAAKAAkAAAADAAAAAAALAAkAAAADAAAAAAAMAAkAAAADAAAAAAANAAkAAAADAAAAAAAOAAkAAAADAAAAAAAPAAkAAAACAAAAAAATAAkAAAACAAAAAAAFAAoAAAACAAAAAAAJAAoAAAACAAAAAAAPAAoAAAACAAAAAAATAAoAAAACAAAAAAAFAAsAAAACAAAAAAAJAAsAAAACAAAAAAAPAAsAAAACAAAAAAATAAsAAAACAAAAAAAFAAwAAAACAAAAAAAJAAwAAAACAAAAAAAPAAwAAAACAAAAAAATAAwAAAACAAAAAAAFAA0AAAACAAAAAAAJAA0AAAACAAAAAAAPAA0AAAACAAAAAAATAA0AAAACAAAAAAAFAA4AAAACAAAAAAAJAA4AAAACAAAAAAAPAA4AAAACAAAAAAATAA4AAAACAAAAAAAFAA8AAAACAAAAAAAJAA8AAAACAAAAAAANAA8AAAADAAAAAAAOAA8AAAADAAAAAAAPAA8AAAADAAAAAAATAA8AAAACAAAAAAAFABAAAAACAAAAAAAJABAAAAACAAAAAAATABAAAAACAAAAAAAFABEAAAACAAAAAAAJABEAAAACAAAAAAATABEAAAACAAAAAAAFABIAAAACAAAAAAAJABIAAAACAAAAAAATABIAAAACAAAAAAAFABMAAAACAAAAAAAJABMAAAADAAAAAAAKABMAAAADAAAAAAALABMAAAADAAAAAAAMABMAAAADAAAAAAANABMAAAADAAAAAAAOABMAAAADAAAAAAAPABMAAAADAAAAAAAQABMAAAADAAAAAAARABMAAAADAAAAAAASABMAAAADAAAAAAATABMAAAADAAAAAAAFABQAAAACAAAAAAAFABUAAAACAAAAAAAFABYAAAACAAAAAAA=")
+tile_set = ExtResource("tiles")
+
+[node name="OuterWalls" type="TileMapLayer" parent="." groups=["obstacles", "outer_walls"]]
+y_sort_enabled = true
+texture_filter = 1
+scale = Vector2(4, 4)
+tile_map_data = PackedByteArray("AAABAAEAAAACAAAAAAACAAEAAAADAAAAAAADAAEAAAADAAAAAAAEAAEAAAADAAAAAAAFAAEAAAADAAAAAAAGAAEAAAADAAAAAAAHAAEAAAADAAAAAAAIAAEAAAADAAAAAAAJAAEAAAADAAAAAAAKAAEAAAADAAAAAAALAAEAAAADAAAAAAAMAAEAAAADAAAAAAANAAEAAAADAAAAAAAOAAEAAAADAAAAAAAPAAEAAAADAAAAAAAQAAEAAAADAAAAAAARAAEAAAADAAAAAAASAAEAAAADAAAAAAATAAEAAAADAAAAAAAUAAEAAAADAAAAAAAVAAEAAAADAAAAAAAWAAEAAAADAAAAAAAXAAEAAAACAAAAAAABAAIAAAACAAAAAAAXAAIAAAACAAAAAAABAAMAAAACAAAAAAAXAAMAAAACAAAAAAABAAQAAAACAAAAAAAXAAQAAAACAAAAAAABAAUAAAACAAAAAAAXAAUAAAACAAAAAAABAAYAAAACAAAAAAAXAAYAAAACAAAAAAABAAcAAAACAAAAAAAXAAcAAAACAAAAAAABAAgAAAACAAAAAAAXAAgAAAACAAAAAAABAAkAAAACAAAAAAAXAAkAAAACAAAAAAABAAoAAAACAAAAAAAXAAoAAAACAAAAAAABAAsAAAACAAAAAAAXAAsAAAACAAAAAAABAAwAAAACAAAAAAAXAAwAAAACAAAAAAABAA0AAAACAAAAAAAXAA0AAAACAAAAAAABAA4AAAACAAAAAAAXAA4AAAACAAAAAAABAA8AAAACAAAAAAAXAA8AAAACAAAAAAABABAAAAACAAAAAAAXABAAAAACAAAAAAABABEAAAACAAAAAAAXABEAAAACAAAAAAABABIAAAACAAAAAAAXABIAAAACAAAAAAABABMAAAACAAAAAAAXABMAAAACAAAAAAABABQAAAACAAAAAAAXABQAAAACAAAAAAABABUAAAACAAAAAAAXABUAAAACAAAAAAAAABYAAAACAAAAAAABABYAAAADAAAAAAAXABYAAAACAAAAAAAAABcAAAACAAAAAAAFABcAAAACAAAAAAAGABcAAAACAAAAAAAHABcAAAACAAAAAAAIABcAAAACAAAAAAAJABcAAAACAAAAAAAKABcAAAACAAAAAAALABcAAAACAAAAAAAMABcAAAACAAAAAAANABcAAAACAAAAAAAOABcAAAACAAAAAAAPABcAAAACAAAAAAAQABcAAAACAAAAAAARABcAAAACAAAAAAASABcAAAACAAAAAAATABcAAAACAAAAAAAUABcAAAACAAAAAAAVABcAAAACAAAAAAAWABcAAAACAAAAAAAXABcAAAACAAAAAAAAABgAAAACAAAAAAAFABgAAAACAAAAAAAAABkAAAACAAAAAAAFABkAAAACAAAAAAAAABoAAAACAAAAAAAFABoAAAACAAAAAAAAABsAAAACAAAAAAABABsAAAACAAAAAAACABsAAAACAAAAAAADABsAAAACAAAAAAAEABsAAAACAAAAAAAFABsAAAACAAAAAAA=")
+tile_set = ExtResource("tiles_outer")
+
+[node name="Subida" parent="." node_paths=PackedStringArray("RespawnPoint") instance=ExtResource("room")]
+position = Vector2(128, 128)
+Size = Vector2(1344, 1344)
+Waves = 0
+SurviveTime = 9999.0
+SurviveSpawnInterval = 1.5
+SurviveMaxAlive = 5
+SpawnAnywhere = true
+RespawnPoint = NodePath("Respawn")
+
+[node name="Respawn" type="Marker2D" parent="Subida"]
+position = Vector2(64, 1472)
+
+[node name="Andar3" parent="." instance=ExtResource("area_trigger")]
+position = Vector2(384, 896)
+Size = Vector2(192, 128)
+Color = Color(0.3, 1, 0.55, 0.12)
+
+[node name="Topo" parent="." instance=ExtResource("area_trigger")]
+position = Vector2(704, 704)
+Size = Vector2(192, 192)
+Text = "4º ANDAR"
+
+[node name="PlacaEscada" parent="." instance=ExtResource("prop")]
+z_index = 1
+position = Vector2(192, 1480)
+Size = Vector2(220, 30)
+Color = Color(0, 0, 0, 0)
+Text = "ESCADA  -  2º ANDAR"
+FontSize = 16
+TextColor = Color(0.95, 0.9, 0.6, 1)
+Solid = false
+
+[node name="Degrau_2_2" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 128.0
+offset_top = 156.0
+offset_right = 192.0
+offset_bottom = 164.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_2_6" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 128.0
+offset_top = 412.0
+offset_right = 192.0
+offset_bottom = 420.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_2_10" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 128.0
+offset_top = 668.0
+offset_right = 192.0
+offset_bottom = 676.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_2_14" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 128.0
+offset_top = 924.0
+offset_right = 192.0
+offset_bottom = 932.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_2_18" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 128.0
+offset_top = 1180.0
+offset_right = 192.0
+offset_bottom = 1188.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_2_22" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 128.0
+offset_top = 1436.0
+offset_right = 192.0
+offset_bottom = 1444.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_3_5" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 192.0
+offset_top = 348.0
+offset_right = 256.0
+offset_bottom = 356.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_3_9" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 192.0
+offset_top = 604.0
+offset_right = 256.0
+offset_bottom = 612.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_3_13" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 192.0
+offset_top = 860.0
+offset_right = 256.0
+offset_bottom = 868.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_3_17" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 192.0
+offset_top = 1116.0
+offset_right = 256.0
+offset_bottom = 1124.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_3_21" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 192.0
+offset_top = 1372.0
+offset_right = 256.0
+offset_bottom = 1380.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_4_4" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 256.0
+offset_top = 284.0
+offset_right = 320.0
+offset_bottom = 292.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_4_8" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 256.0
+offset_top = 540.0
+offset_right = 320.0
+offset_bottom = 548.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_4_12" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 256.0
+offset_top = 796.0
+offset_right = 320.0
+offset_bottom = 804.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_4_16" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 256.0
+offset_top = 1052.0
+offset_right = 320.0
+offset_bottom = 1060.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_4_20" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 256.0
+offset_top = 1308.0
+offset_right = 320.0
+offset_bottom = 1316.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_5_3" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 320.0
+offset_top = 220.0
+offset_right = 384.0
+offset_bottom = 228.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_6_2" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 384.0
+offset_top = 156.0
+offset_right = 448.0
+offset_bottom = 164.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_6_6" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 384.0
+offset_top = 412.0
+offset_right = 448.0
+offset_bottom = 420.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_6_10" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 384.0
+offset_top = 668.0
+offset_right = 448.0
+offset_bottom = 676.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_6_14" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 384.0
+offset_top = 924.0
+offset_right = 448.0
+offset_bottom = 932.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_6_18" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 384.0
+offset_top = 1180.0
+offset_right = 448.0
+offset_bottom = 1188.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_6_22" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 384.0
+offset_top = 1436.0
+offset_right = 448.0
+offset_bottom = 1444.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_7_9" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 448.0
+offset_top = 604.0
+offset_right = 512.0
+offset_bottom = 612.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_7_13" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 448.0
+offset_top = 860.0
+offset_right = 512.0
+offset_bottom = 868.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_7_17" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 448.0
+offset_top = 1116.0
+offset_right = 512.0
+offset_bottom = 1124.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_7_21" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 448.0
+offset_top = 1372.0
+offset_right = 512.0
+offset_bottom = 1380.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_8_4" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 512.0
+offset_top = 284.0
+offset_right = 576.0
+offset_bottom = 292.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_8_8" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 512.0
+offset_top = 540.0
+offset_right = 576.0
+offset_bottom = 548.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_8_12" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 512.0
+offset_top = 796.0
+offset_right = 576.0
+offset_bottom = 804.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_8_16" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 512.0
+offset_top = 1052.0
+offset_right = 576.0
+offset_bottom = 1060.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_8_20" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 512.0
+offset_top = 1308.0
+offset_right = 576.0
+offset_bottom = 1316.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_9_3" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 576.0
+offset_top = 220.0
+offset_right = 640.0
+offset_bottom = 228.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_9_7" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 576.0
+offset_top = 476.0
+offset_right = 640.0
+offset_bottom = 484.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_10_2" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 640.0
+offset_top = 156.0
+offset_right = 704.0
+offset_bottom = 164.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_10_6" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 640.0
+offset_top = 412.0
+offset_right = 704.0
+offset_bottom = 420.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_10_10" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 640.0
+offset_top = 668.0
+offset_right = 704.0
+offset_bottom = 676.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_10_14" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 640.0
+offset_top = 924.0
+offset_right = 704.0
+offset_bottom = 932.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_10_18" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 640.0
+offset_top = 1180.0
+offset_right = 704.0
+offset_bottom = 1188.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_10_22" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 640.0
+offset_top = 1436.0
+offset_right = 704.0
+offset_bottom = 1444.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_11_13" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 704.0
+offset_top = 860.0
+offset_right = 768.0
+offset_bottom = 868.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_11_17" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 704.0
+offset_top = 1116.0
+offset_right = 768.0
+offset_bottom = 1124.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_11_21" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 704.0
+offset_top = 1372.0
+offset_right = 768.0
+offset_bottom = 1380.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_12_4" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 768.0
+offset_top = 284.0
+offset_right = 832.0
+offset_bottom = 292.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_12_8" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 768.0
+offset_top = 540.0
+offset_right = 832.0
+offset_bottom = 548.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_12_12" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 768.0
+offset_top = 796.0
+offset_right = 832.0
+offset_bottom = 804.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_12_16" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 768.0
+offset_top = 1052.0
+offset_right = 832.0
+offset_bottom = 1060.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_12_20" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 768.0
+offset_top = 1308.0
+offset_right = 832.0
+offset_bottom = 1316.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_13_3" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 832.0
+offset_top = 220.0
+offset_right = 896.0
+offset_bottom = 228.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_13_7" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 832.0
+offset_top = 476.0
+offset_right = 896.0
+offset_bottom = 484.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_13_11" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 832.0
+offset_top = 732.0
+offset_right = 896.0
+offset_bottom = 740.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_14_2" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 896.0
+offset_top = 156.0
+offset_right = 960.0
+offset_bottom = 164.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_14_6" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 896.0
+offset_top = 412.0
+offset_right = 960.0
+offset_bottom = 420.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_14_10" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 896.0
+offset_top = 668.0
+offset_right = 960.0
+offset_bottom = 676.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_14_14" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 896.0
+offset_top = 924.0
+offset_right = 960.0
+offset_bottom = 932.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_14_18" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 896.0
+offset_top = 1180.0
+offset_right = 960.0
+offset_bottom = 1188.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_14_22" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 896.0
+offset_top = 1436.0
+offset_right = 960.0
+offset_bottom = 1444.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_15_17" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 960.0
+offset_top = 1116.0
+offset_right = 1024.0
+offset_bottom = 1124.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_15_21" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 960.0
+offset_top = 1372.0
+offset_right = 1024.0
+offset_bottom = 1380.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_16_4" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1024.0
+offset_top = 284.0
+offset_right = 1088.0
+offset_bottom = 292.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_16_8" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1024.0
+offset_top = 540.0
+offset_right = 1088.0
+offset_bottom = 548.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_16_12" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1024.0
+offset_top = 796.0
+offset_right = 1088.0
+offset_bottom = 804.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_16_16" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1024.0
+offset_top = 1052.0
+offset_right = 1088.0
+offset_bottom = 1060.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_16_20" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1024.0
+offset_top = 1308.0
+offset_right = 1088.0
+offset_bottom = 1316.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_17_3" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1088.0
+offset_top = 220.0
+offset_right = 1152.0
+offset_bottom = 228.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_17_7" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1088.0
+offset_top = 476.0
+offset_right = 1152.0
+offset_bottom = 484.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_17_11" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1088.0
+offset_top = 732.0
+offset_right = 1152.0
+offset_bottom = 740.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_17_15" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1088.0
+offset_top = 988.0
+offset_right = 1152.0
+offset_bottom = 996.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_18_2" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1152.0
+offset_top = 156.0
+offset_right = 1216.0
+offset_bottom = 164.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_18_6" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1152.0
+offset_top = 412.0
+offset_right = 1216.0
+offset_bottom = 420.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_18_10" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1152.0
+offset_top = 668.0
+offset_right = 1216.0
+offset_bottom = 676.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_18_14" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1152.0
+offset_top = 924.0
+offset_right = 1216.0
+offset_bottom = 932.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_18_18" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1152.0
+offset_top = 1180.0
+offset_right = 1216.0
+offset_bottom = 1188.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_18_22" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1152.0
+offset_top = 1436.0
+offset_right = 1216.0
+offset_bottom = 1444.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_19_21" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1216.0
+offset_top = 1372.0
+offset_right = 1280.0
+offset_bottom = 1380.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_20_4" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1280.0
+offset_top = 284.0
+offset_right = 1344.0
+offset_bottom = 292.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_20_8" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1280.0
+offset_top = 540.0
+offset_right = 1344.0
+offset_bottom = 548.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_20_12" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1280.0
+offset_top = 796.0
+offset_right = 1344.0
+offset_bottom = 804.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_20_16" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1280.0
+offset_top = 1052.0
+offset_right = 1344.0
+offset_bottom = 1060.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_20_20" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1280.0
+offset_top = 1308.0
+offset_right = 1344.0
+offset_bottom = 1316.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_21_3" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1344.0
+offset_top = 220.0
+offset_right = 1408.0
+offset_bottom = 228.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_21_7" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1344.0
+offset_top = 476.0
+offset_right = 1408.0
+offset_bottom = 484.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_21_11" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1344.0
+offset_top = 732.0
+offset_right = 1408.0
+offset_bottom = 740.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_21_15" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1344.0
+offset_top = 988.0
+offset_right = 1408.0
+offset_bottom = 996.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_21_19" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1344.0
+offset_top = 1244.0
+offset_right = 1408.0
+offset_bottom = 1252.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_22_2" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1408.0
+offset_top = 156.0
+offset_right = 1472.0
+offset_bottom = 164.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_22_6" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1408.0
+offset_top = 412.0
+offset_right = 1472.0
+offset_bottom = 420.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_22_10" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1408.0
+offset_top = 668.0
+offset_right = 1472.0
+offset_bottom = 676.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_22_14" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1408.0
+offset_top = 924.0
+offset_right = 1472.0
+offset_bottom = 932.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_22_18" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1408.0
+offset_top = 1180.0
+offset_right = 1472.0
+offset_bottom = 1188.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Degrau_22_22" type="ColorRect" parent="."]
+z_index = -5
+offset_left = 1408.0
+offset_top = 1436.0
+offset_right = 1472.0
+offset_bottom = 1444.0
+mouse_filter = 2
+color = Color(0.75, 0.7, 0.6, 0.6)
+
+[node name="Player" parent="." instance=ExtResource("player")]
+position = Vector2(192, 1632)
+StartWithAllWeapons = false
+
+[node name="Hud" parent="." node_paths=PackedStringArray("Player") instance=ExtResource("hud")]
+Player = NodePath("../Player")
+
+[node name="MessageScreen" parent="." instance=ExtResource("message_screen")]
