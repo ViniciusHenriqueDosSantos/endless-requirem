@@ -11,6 +11,9 @@ public partial class Door : StaticBody2D
 {
 	[Signal] public delegate void UnlockedEventHandler();
 
+	// O jogador encostou com a porta trancada (e a mensagem apareceu).
+	[Signal] public delegate void LockedTouchedEventHandler();
+
 	private Vector2 _size = new(128, 64);
 	private bool _startsLocked;
 	private Color _color = new(0.1f, 0.85f, 0.45f);
@@ -21,6 +24,10 @@ public partial class Door : StaticBody2D
 	[Export] public string RequiredItem = "";
 	[Export] public string LockedMessage = "Trancado.";
 	[Export] public string UnlockMessage = "";
+
+	// Ligado: mostra LockedMessage quando o jogador encosta na porta trancada,
+	// mesmo sem RequiredItem (ex.: "Biblioteca fechada").
+	[Export] public bool MessageWhenLocked;
 
 	private const float BarWidth = 6f;
 	private const float BarSpacing = 16f;
@@ -46,7 +53,7 @@ public partial class Door : StaticBody2D
 		};
 		AddChild(_collision);
 
-		if (RequiredItem != "")
+		if (RequiredItem != "" || MessageWhenLocked)
 			CreateKeySensor();
 	}
 
@@ -69,15 +76,16 @@ public partial class Door : StaticBody2D
 
 		Hud hud = GetTree().GetFirstNodeInGroup("hud") as Hud;
 
-		if (player.HasItem(RequiredItem))
+		if (RequiredItem != "" && player.HasItem(RequiredItem))
 		{
 			Unlock();
 			if (UnlockMessage != "")
-				hud?.ShowMessage(UnlockMessage);
+				hud?.ShowMessage(UnlockMessage, 3.5f);
 		}
-		else
+		else if (LockedMessage != "")
 		{
-			hud?.ShowMessage(LockedMessage);
+			hud?.ShowMessage(LockedMessage, 4f);
+			EmitSignal(SignalName.LockedTouched);
 		}
 	}
 

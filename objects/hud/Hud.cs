@@ -20,6 +20,7 @@ public partial class Hud : CanvasLayer
 	// Distância da borda da tela onde a seta aparece.
 	private const float PointerMargin = 48f;
 	private ScreenPointer _pointer;
+	private Label _counter;
 
 	public override void _Ready()
 	{
@@ -41,6 +42,16 @@ public partial class Hud : CanvasLayer
 		AddChild(_message);
 
 		CreateBossBar();
+
+		// Contador grande no canto (ex.: andar da escada). Escondido até alguém usar.
+		_counter = MakeLabel(40, new Color(0.55f, 1f, 0.7f));
+		_counter.HorizontalAlignment = HorizontalAlignment.Right;
+		_counter.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.TopRight);
+		_counter.OffsetLeft = -360;
+		_counter.OffsetRight = -24;
+		_counter.OffsetTop = 16;
+		_counter.OffsetBottom = 70;
+		AddChild(_counter);
 
 		_pointer = new ScreenPointer { Visible = false, MouseFilter = Control.MouseFilterEnum.Ignore };
 		_pointer.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
@@ -116,6 +127,11 @@ public partial class Hud : CanvasLayer
 			Mathf.Clamp(screen.Y, inner.Position.Y, inner.End.Y));
 		_pointer.Label = label;
 		_pointer.PointAt(clamped, (screen - view.GetCenter()).Angle());
+	}
+
+	public void SetCounter(string text)
+	{
+		_counter.Text = text;
 	}
 
 	public void HidePointer()
