@@ -10,7 +10,7 @@ using System.Collections.Generic;
 //   -> Achados e Perdidos (caixas: uma tem o livro, algumas têm fantasma)
 //   -> devolução do livro -> biblioteca abre
 //   -> Bibliotecário (furtividade com as luminárias, depois luta) -> Canhão + chave da escada
-//   -> porta da escada -> escada em espiral (levels/escada.tscn).
+//   -> porta da escada -> escada até o 4º andar (levels/escada.tscn).
 public partial class Fase2 : LevelBase
 {
 	[Export] public Door PortaBiblioteca;
