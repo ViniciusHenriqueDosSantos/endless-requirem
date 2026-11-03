@@ -24,8 +24,19 @@ def tiles(name):
     for i in range(2, len(data), 12):
         x, y, s, ax, ay, alt = struct.unpack('<hhHHHH', data[i:i+12]); yield x, y, ax
 _all = [c for name in ("Floor", "Walls", "OuterWalls") if name in nodes for c in tiles(name)]
-W, H = (max(c[0] for c in _all) + 2) * 16, (max(c[1] for c in _all) + 2) * 16
-img = Image.new("RGB", (W + 260, H), (18, 20, 24)); d = ImageDraw.Draw(img)
+OX, OY = -min(min(c[0] for c in _all), 0) * 16, -min(min(c[1] for c in _all), 0) * 16   # tiles com coordenada negativa
+W, H = (max(c[0] for c in _all) + 2) * 16 + OX, (max(c[1] for c in _all) + 2) * 16 + OY
+img = Image.new("RGB", (W + 260, H), (18, 20, 24)); _d = ImageDraw.Draw(img)
+class _Off:
+    """Desenha deslocado (OX, OY) para caber o que está em coordenada negativa; a legenda passa raw=True."""
+    def _xy(self, xy):
+        if isinstance(xy[0], (list, tuple)): return [(a + OX, b + OY) for a, b in xy]
+        return [v + (OX if i % 2 == 0 else OY) for i, v in enumerate(xy)]
+    def rectangle(self, xy, raw=False, **k): _d.rectangle(xy if raw else self._xy(xy), **k)
+    def ellipse(self, xy, **k): _d.ellipse(self._xy(xy), **k)
+    def line(self, xy, **k): _d.line(self._xy(xy), **k)
+    def text(self, xy, t, raw=False, **k): _d.text(xy if raw else (xy[0] + OX, xy[1] + OY), t, **k)
+d = _Off()
 try:
     f = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 11)
     fb = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 15)
@@ -101,7 +112,7 @@ LABELS = {}
 LABELS["fase_1"] = [("ENTRADA", 18, 57.5), ("PORTARIA", 24, 45.2), ("CALÇADA", 9, 63.5), ("CORREDOR", 27, 30), ("RU", 12, 27.3),
           ("CANTINA", 12, 12.2), ("ELEVADOR", 9, 1.3)]
 LABELS["fase_2"] = [("BIBLIOTECA", 9, 11), ("HALL DAS CARONAS", 12, 38.5), ("CORREDOR", 26.5, 30), ("ACHADOS", 33.5, 16.2),
-                    ("ENTRADA BIBL.", 21.5, 17.4), ("ELEVADOR (quebrado)", 26.8, 1.8), ("ESCADA", 21, 15.6),
+                    ("ENTRADA BIBL.", 21.5, 17.4), ("ELEVADOR (quebrado)", 27.3, -7.3), ("ESCADA", 21, -6.4),
                     ("CHEGADA (elevador)", 26.5, 47.6), ("SALAS DE ESTUDO", 12, 1.2)]
 LABELS["escada"] = [("SAÍDA (aparece no 4º)", 11.5, 0.6), ("COMEÇO", 3.5, 23.4)]
 import os as _os
@@ -111,7 +122,7 @@ for t, tx, ty in labels:
 leg = [((255,255,255), "jogador (começo)"), ((220,214,194), "pilha de papel"), ((102,191,255), "crachá (sorteado)"), ((255,153,64), "marmita"),
        ((242,204,77), "catraca"), ((26,217,115), "porta (tranca)"), ((237,140,102), "Tia da Cantina"), ((107,122,199), "Bibliotecária"), ((255,230,120), "luminária"), ((230,50,50), "alvos do escudo"), ((40,120,70), "elevador / escada (fim)"), ((150,40,215), "fantasma pesado parado"),
        ((255,90,90), "x  surgem fantasmas"), ((120,200,255), "R  volta se reprovado"), ((80,255,150), "contorno de sala"), ((150,70,200), "borda: fantasma não passa")]
-lx = W + 16
+lx = W + 16 - OX
 d.text((lx, 20), _os.path.basename(src).replace(".tscn", "") + " — planta", fill=(255,255,255), font=fb)
 for i, (c, t) in enumerate(leg):
     yy = 56 + i * 26

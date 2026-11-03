@@ -73,7 +73,7 @@ SurviveSpawnInterval = 1.5
 SurviveMaxAlive = 5
 SpawnAnywhere = true
 EnemyHealthScale = 0.6
-EnemySpeedScale = 1.2
+EnemySpeedScale = 1.1
 RespawnPoint = NodePath("Respawn")
 
 [node name="Respawn" type="Marker2D" parent="Subida"]
