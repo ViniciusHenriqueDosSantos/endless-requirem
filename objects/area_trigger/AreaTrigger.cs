@@ -39,6 +39,9 @@ public partial class AreaTrigger : Area2D
 		EmitSignal(SignalName.PlayerEntered);
 	}
 
+	// Volta a poder disparar (usado quando o jogador é reprovado).
+	public void ResetTrigger() => _fired = false;
+
 	public override void _Draw()
 	{
 		DrawRect(new Rect2(Vector2.Zero, Size), Color);
