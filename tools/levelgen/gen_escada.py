@@ -1,6 +1,7 @@
 # Gera levels/escada.tscn: escada circular vista de cima (fim da Fase 2).
 # É uma volta só: o jogador dá voltas no mesmo anel e cada volta completa é um andar
-# (o contador na tela mostra onde ele está). No 4º andar a porta de saída abre.
+# (o contador na tela mostra o andar e o tempo). Corrida contra o relógio, com fantasmas
+# pesados parados nos degraus. A porta de saída só aparece no 4º andar (antes é parede).
 # Uso: python3 tools/levelgen/gen_escada.py levels/escada.tscn
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
@@ -48,9 +49,17 @@ for i, (x, y, t) in enumerate([(3, 15, "↑"), (3, 9, "↑"), (6, 6, "→"), (16
     L.prop(f"Seta{i}", ".", x * T + 32, y * T + 48, 64, 64, col(0, 0, 0, 0), t, font=40,
            text_color=col(0.55, 0.5, 0.42, 0.8), solid=False, z=-4)
 
+# fantasmas pesados parados nos degraus (um por lado, na faixa do meio)
+L.node("Bloqueios", type="Node2D")
+for i, (x, y) in enumerate([(3.5, 8.5), (15.5, 6.5), (19.5, 15.5), (7.5, 18.5)]):
+    L.node(f"Bloqueio{i}", "Bloqueios", type="Marker2D", props={"position": v(x * T, y * T + 32)})
+
+# saída do 4º andar: parece parede até chegar lá; o patamar fica coberto
 L.node("PortaSaida", inst="door", props={"position": v(11 * T + 32, 5 * T), "Size": v(3 * T, 64), "StartsLocked": "true",
-       "MessageWhenLocked": "true", "Color": col(0.9, 0.75, 0.3, 1),
-       "LockedMessage": '"Porta do 4º andar. Ainda não chegou lá: continue subindo."'})
+       "WallStyle": "true", "Color": col(0.9, 0.75, 0.3, 1)})
+L.node("CoberturaSaida", type="ColorRect", props={"z_index": "20", "offset_left": f"{8 * T}.0", "offset_top": "0.0",
+       "offset_right": f"{15 * T}.0", "offset_bottom": f"{4 * T}.0", "mouse_filter": "2",
+       "color": col(0.149, 0.161, 0.188, 1)})
 L.node("Saida", inst="area_trigger", props={"position": v(9 * T, 1 * T), "Size": v(5 * T, 3 * T), "Text": '"4º ANDAR"'})
 L.prop("PlacaEntrada", ".", 3 * T + 32, 20 * T + 8, 220, 30, col(0, 0, 0, 0), "ESCADA", font=16,
        text_color=col(0.95, 0.9, 0.6), solid=False, z=1)
@@ -60,6 +69,6 @@ L.node("Hud", inst="hud", props={"Player": 'NodePath("../Player")'}, node_paths=
 L.node("MessageScreen", inst="message_screen")
 
 paths = {"Player": "Player", "Hud": "Hud", "Screen": "MessageScreen", "Subida": "Subida", "Marcos": "Marcos",
-         "PortaSaida": "PortaSaida", "Saida": "Saida"}
+         "Bloqueios": "Bloqueios", "PortaSaida": "PortaSaida", "Saida": "Saida", "CoberturaSaida": "CoberturaSaida"}
 L.write(sys.argv[1], root_node("Escada", "escada", paths))
 print("chão", len(L.floor))

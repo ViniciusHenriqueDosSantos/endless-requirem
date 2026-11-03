@@ -5,11 +5,11 @@ using System.Collections.Generic;
 //
 // Ordem:
 //   chegada -> porta da biblioteca (fechada: falta um livro)
-//   -> Achados e Perdidos (trancado: a chave está com o motorista da van)
-//   -> Hall das Caronas (as cadeiras bloqueiam a saída, 3 ondas, o motorista solta a chave)
+//   -> Achados e Perdidos (trancado: a chave está com o zelador)
+//   -> Hall das Caronas (as cadeiras bloqueiam a saída, 3 ondas, o zelador solta a chave)
 //   -> Achados e Perdidos (caixas: uma tem o livro, algumas têm fantasma)
 //   -> devolução do livro -> biblioteca abre
-//   -> Bibliotecário (furtividade com as luminárias, depois luta) -> Canhão + chave da escada
+//   -> Bibliotecária (furtividade com as luminárias, depois luta) -> Canhão + chave da escada
 //   -> porta da escada -> escada até o 4º andar (levels/escada.tscn).
 public partial class Fase2 : LevelBase
 {
@@ -33,7 +33,10 @@ public partial class Fase2 : LevelBase
 	[Export] public Node2D CadeirasDaSaida;
 
 	private const string EscadaScene = "res://levels/escada.tscn";
-	private const int GhostBoxes = 3;
+	private const int MinGhostsBeforeBook = 2;
+	private const int MaxBoxGhosts = 4;
+	private const float GhostChanceBeforeBook = 0.45f;
+	private const float GhostChanceAfter = 0.25f;
 	private static readonly Vector2 PointerOffset = new(0, -40);
 	private static readonly Vector2 BossPointerOffset = new(0, -60);
 
@@ -51,7 +54,7 @@ public partial class Fase2 : LevelBase
 
 	private const string AchadosShortMessage = "ACHADOS E PERDIDOS - trancado.";
 	private const string AchadosFullMessage =
-		"ACHADOS E PERDIDOS - trancado. \"Chave com o motorista da van (Hall das Caronas).\"";
+		"ACHADOS E PERDIDOS - trancado. \"Chave com o zelador (Hall das Caronas).\"";
 
 	private bool _libraryTold;
 	private bool _achadosTold;
@@ -60,6 +63,8 @@ public partial class Fase2 : LevelBase
 	private bool _libraryOpen;
 	private bool _rewardsRevealed;
 	private int _messageIndex;
+	private int _boxGhosts;
+	private readonly List<PaperPile> _boxes = new();
 
 	protected override void SetupDefaultLoadout()
 	{
@@ -101,52 +106,72 @@ public partial class Fase2 : LevelBase
 
 	// ---------- Achados e Perdidos ----------
 
-	// Sorteia a caixa do livro e as caixas com fantasma. Muda a cada partida.
+	// O conteúdo de cada caixa é decidido na hora em que ela quebra:
+	// - antes do livro saem pelo menos 2 fantasmas (obrigatório);
+	// - depois disso o livro pode sair em qualquer caixa, e a última caixa sempre tem o livro.
 	private void SetupBoxes()
 	{
-		List<PaperPile> boxes = new();
 		foreach (Node child in Caixas.GetChildren())
 			if (child is PaperPile box)
-				boxes.Add(box);
+			{
+				_boxes.Add(box);
+				box.Destroyed += OnBoxOpened;
+			}
+	}
 
-		int bookIndex = GD.RandRange(0, boxes.Count - 1);
-		boxes[bookIndex].HidesItem = true;
-
-		List<PaperPile> others = new();
-		for (int i = 0; i < boxes.Count; i++)
-			if (i != bookIndex)
-				others.Add(boxes[i]);
-
-		for (int i = 0; i < GhostBoxes && others.Count > 0; i++)
-		{
-			int pick = GD.RandRange(0, others.Count - 1);
-			others[pick].HidesGhost = true;
-			others.RemoveAt(pick);
-		}
-
-		foreach (PaperPile box in boxes)
-			box.Destroyed += OnBoxOpened;
+	private int BoxesLeft()
+	{
+		int count = 0;
+		foreach (PaperPile box in _boxes)
+			if (!box.IsDestroyed)
+				count++;
+		return count;
 	}
 
 	private void OnBoxOpened(PaperPile box)
 	{
-		if (box.HidesItem)
-		{
-			_bookRevealed = true;
-			Livro.Reveal(box.GlobalPosition);
-			Hud.ShowMessage("\"Cálculo I\"! Atrasado desde 2041.", 3f);
-			return;
-		}
+		int left = BoxesLeft(); // caixas fechadas depois desta
 
-		if (box.HidesGhost)
+		if (!_bookRevealed)
 		{
-			Achados.SpawnEnemyAt(box.GlobalPosition, Enemy.Kind.Normal);
-			Hud.ShowMessage("Tinha um fantasma aí dentro!", 2f);
+			if (_boxGhosts < MinGhostsBeforeBook)
+			{
+				// Ainda faltam fantasmas: garante que sobra caixa para eles e para o livro.
+				int needed = MinGhostsBeforeBook - _boxGhosts;
+				if (left <= needed || GD.Randf() < GhostChanceBeforeBook)
+				{
+					ReleaseGhost(box);
+					return;
+				}
+			}
+			else if (left == 0 || GD.Randf() < 1f / (left + 1))
+			{
+				_bookRevealed = true;
+				Livro.Reveal(box.GlobalPosition);
+				Hud.ShowMessage("\"Cálculo I\"! Atrasado desde 2041.", 3f);
+				return;
+			}
+			else if (_boxGhosts < MaxBoxGhosts && GD.Randf() < GhostChanceAfter)
+			{
+				ReleaseGhost(box);
+				return;
+			}
+		}
+		else if (_boxGhosts < MaxBoxGhosts && GD.Randf() < GhostChanceAfter)
+		{
+			ReleaseGhost(box);
 			return;
 		}
 
 		Hud.ShowMessage(BoxMessages[_messageIndex % BoxMessages.Length], 2.5f);
 		_messageIndex++;
+	}
+
+	private void ReleaseGhost(PaperPile box)
+	{
+		_boxGhosts++;
+		Achados.SpawnEnemyAt(box.GlobalPosition, Enemy.Kind.Normal);
+		Hud.ShowMessage("Tinha um fantasma aí dentro!", 2f);
 	}
 
 	// ---------- Hall das Caronas ----------
@@ -185,7 +210,7 @@ public partial class Fase2 : LevelBase
 		if (drop == Vector2.Zero || !GhostNav.TryNearestFreeFloor(this, drop, out drop))
 			drop = CentroHall.GlobalPosition;
 		Chave.Reveal(drop);
-		Hud.ShowMessage("O motorista deixou cair uma chave: \"ACHADOS E PERDIDOS\".", 4f);
+		Hud.ShowMessage("O zelador deixou cair o molho de chaves: \"ACHADOS E PERDIDOS\".", 4f);
 	}
 
 	// ---------- Biblioteca ----------
@@ -203,7 +228,7 @@ public partial class Fase2 : LevelBase
 		Biblioteca.FinishFight();
 		Hud.HideBoss();
 		RevealRewards(Bibliotecario.GlobalPosition);
-		Hud.ShowMessage("O Bibliotecário caiu! Ele deixou o Canhão e uma chave.", 4f);
+		Hud.ShowMessage("A Bibliotecária caiu! Ela deixou o Canhão e uma chave.", 4f);
 	}
 
 	private void RevealRewards(Vector2 around)
@@ -264,9 +289,9 @@ public partial class Fase2 : LevelBase
 
 		if (Bibliotecario.InFight)
 		{
-			Hud.SetObjective("Derrote o Bibliotecário");
+			Hud.SetObjective("Derrote a Bibliotecária");
 			Hud.SetBoss(Bibliotecario.DisplayName, Bibliotecario.HealthRatio, false);
-			Hud.PointTo(Bibliotecario.GlobalPosition + BossPointerOffset, "BIBLIOTECÁRIO");
+			Hud.PointTo(Bibliotecario.GlobalPosition + BossPointerOffset, "BIBLIOTECÁRIA");
 			return;
 		}
 
@@ -290,7 +315,7 @@ public partial class Fase2 : LevelBase
 		else if (_keyRevealed)
 			Objective("Pegue a chave", Chave.GlobalPosition, "CHAVE");
 		else if (_achadosTold)
-			Objective("Pegue a chave com o motorista da van (Hall das Caronas)", CentroHall.GlobalPosition, "HALL");
+			Objective("Pegue a chave com o zelador (Hall das Caronas)", CentroHall.GlobalPosition, "HALL");
 		else if (_libraryTold)
 			Objective("Procure o livro nos Achados e Perdidos", PortaAchados.GlobalPosition, "ACHADOS");
 		else

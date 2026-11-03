@@ -85,22 +85,24 @@ for key, n in nodes.items():
         x, y = gpos(key); d.ellipse([x*K-6, y*K-6, x*K+6, y*K+6], fill=(255, 255, 255))
     if n["type"] == "Marker2D" and n["name"].startswith("Spawn"):
         x, y = gpos(key); d.text((x*K, y*K), "x", fill=(255, 90, 90), font=f, anchor="mm")
+    if n["type"] == "Marker2D" and n["name"].startswith("Bloqueio"):
+        x, y = gpos(key); d.ellipse([x*K-9, y*K-20, x*K+9, y*K-2], fill=(150, 40, 215), outline=(255, 255, 255))
     if n["type"] == "Marker2D" and n["name"] == "Respawn":
         x, y = gpos(key); d.text((x*K, y*K), "R", fill=(120, 200, 255), font=f, anchor="mm")
 # legendas
 LABELS = {}
 LABELS["fase_1"] = [("ENTRADA", 18, 57.5), ("PORTARIA", 24, 45.2), ("CALÇADA", 9, 63.5), ("CORREDOR", 27, 30), ("RU", 12, 27.3),
           ("CANTINA", 12, 12.2), ("ELEVADOR", 9, 1.3)]
-LABELS["fase_2"] = [("BIBLIOTECA", 9, 11), ("HALL DAS CARONAS", 12, 38.5), ("CORREDOR", 26.5, 30), ("ACHADOS", 34.5, 16.6),
-                    ("ENTRADA BIBL.", 21, 22.5), ("ELEVADOR (quebrado)", 21, 5.5), ("ESCADA", 26.5, 1.6),
-                    ("CHEGADA", 21, 47.2), ("SALAS DE ESTUDO", 9.5, 0.9)]
-LABELS["escada"] = [("SAÍDA 4º ANDAR", 11.5, 0.6), ("COMEÇO", 3.5, 23.4)]
+LABELS["fase_2"] = [("BIBLIOTECA", 9, 11), ("HALL DAS CARONAS", 12, 38.5), ("CORREDOR", 26.5, 30), ("ACHADOS", 34.5, 15.2),
+                    ("ENTRADA BIBL.", 21.5, 17.4), ("ELEVADOR (quebrado)", 26.5, 6.6), ("ESCADA", 21, 9.4),
+                    ("CHEGADA (elevador)", 26.5, 47.6), ("SALAS DE ESTUDO", 12, 1.2)]
+LABELS["escada"] = [("SAÍDA (aparece no 4º)", 11.5, 0.6), ("COMEÇO", 3.5, 23.4)]
 import os as _os
 labels = LABELS.get(_os.path.splitext(_os.path.basename(src))[0], [])
 for t, tx, ty in labels:
     d.text((tx*16, ty*16), t, fill=(255, 255, 255), font=fb, anchor="mm", stroke_width=3, stroke_fill=(0, 0, 0))
 leg = [((255,255,255), "jogador (começo)"), ((220,214,194), "pilha de papel"), ((102,191,255), "crachá (sorteado)"), ((255,153,64), "marmita"),
-       ((242,204,77), "catraca"), ((26,217,115), "porta (tranca)"), ((237,140,102), "Tia da Cantina"), ((107,122,199), "Bibliotecário"), ((255,230,120), "luminária"), ((230,50,50), "alvos do escudo"), ((40,120,70), "elevador (fim)"),
+       ((242,204,77), "catraca"), ((26,217,115), "porta (tranca)"), ((237,140,102), "Tia da Cantina"), ((107,122,199), "Bibliotecária"), ((255,230,120), "luminária"), ((230,50,50), "alvos do escudo"), ((40,120,70), "elevador / escada (fim)"), ((150,40,215), "fantasma pesado parado"),
        ((255,90,90), "x  surgem fantasmas"), ((120,200,255), "R  volta se reprovado"), ((80,255,150), "contorno de sala"), ((150,70,200), "borda: fantasma não passa")]
 lx = W + 16
 d.text((lx, 20), _os.path.basename(src).replace(".tscn", "") + " — planta", fill=(255,255,255), font=fb)

@@ -1,7 +1,7 @@
 using Godot;
 using System.Collections.Generic;
 
-// O Bibliotecário: chefe da Fase 2, em dois atos.
+// A Bibliotecária: chefe da Fase 2, em dois atos.
 //
 // Ato 1 (furtividade): patrulha a biblioteca com uma lanterna (cone de visão).
 //   Estantes altas e paredes bloqueiam a visão. Se vê o jogador: "SHHH!", atira um leque
@@ -41,6 +41,11 @@ public partial class Librarian : CharacterBody2D, IHittable
 	private const float AlertTime = 2.2f;
 	private const float InvestigateTime = 1.6f;
 	private const int AlertSummons = 2;
+
+	// Fantasmas que vagam pela biblioteca durante a furtividade (além dos chamados pelo "SHHH!").
+	private const float StealthFirstSummon = 3f;
+	private const float StealthSummonInterval = 8.5f;
+	private const int StealthMaxAlive = 2;
 	private const float KeepMinDistance = 220f;
 	private const float KeepMaxDistance = 380f;
 	private const float RepathInterval = 0.3f;
@@ -79,7 +84,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 	public bool IsDefeated => _phase == Phase.Dead;
 	public bool IsAlerted => _alertTimer > 0;
 	public float HealthRatio => Config == null ? 0f : (float)_health / Config.Health;
-	public string DisplayName => Config?.Name ?? "Bibliotecário";
+	public string DisplayName => Config?.Name ?? "Bibliotecária";
 
 	public int LampsLeft
 	{
@@ -146,6 +151,14 @@ public partial class Librarian : CharacterBody2D, IHittable
 			_lamps.Add(lamp);
 		}
 
+		FindPlayer();
+	}
+
+	// O jogador pode ainda não estar no grupo "player" quando este _Ready roda
+	// (a ordem dos nós na cena decide). Por isso procuramos de novo quando a luta começa.
+	private void FindPlayer()
+	{
+		if (IsInstanceValid(_player)) return;
 		_player = GetTree().GetFirstNodeInGroup("player") as Player;
 		if (_player != null)
 			_player.Fired += OnPlayerFired;
@@ -161,7 +174,9 @@ public partial class Librarian : CharacterBody2D, IHittable
 	{
 		if (_phase != Phase.Idle) return;
 
+		FindPlayer();
 		_patrolIndex = 0;
+		_summonTimer = StealthFirstSummon;
 		if (LampsLeft == 0)
 		{
 			BreakShield();
@@ -275,7 +290,9 @@ public partial class Librarian : CharacterBody2D, IHittable
 
 	public override void _PhysicsProcess(double delta)
 	{
-		if (Engine.IsEditorHint() || !IsFighting || !IsInstanceValid(_player)) return;
+		if (Engine.IsEditorHint() || !IsFighting) return;
+		FindPlayer();
+		if (!IsInstanceValid(_player)) return;
 
 		float dt = (float)delta;
 		if (_phase == Phase.Stealth)
@@ -290,6 +307,14 @@ public partial class Librarian : CharacterBody2D, IHittable
 
 	private void UpdateStealth(float dt)
 	{
+		_summonTimer -= dt;
+		if (_summonTimer <= 0 && _room != null)
+		{
+			_summonTimer = StealthSummonInterval;
+			if (_room.AliveEnemies < StealthMaxAlive)
+				_room.SpawnExtraEnemy();
+		}
+
 		if (CanSeePlayer())
 			Spotted();
 

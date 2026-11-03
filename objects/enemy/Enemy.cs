@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 public partial class Enemy : CharacterBody2D
 {
+	// Ligado: o fantasma fica parado onde nasceu (bloqueio). Quem cria liga antes de pôr na cena.
+	public bool Stationary;
+
 	public enum Kind { Normal, Fast, Tank }
 
 	private readonly record struct Stats(float Speed, int Health, int ScoreValue, Color Color, float Scale);
@@ -150,6 +153,13 @@ public partial class Enemy : CharacterBody2D
 		}
 
 		_knockback = _knockback.MoveToward(Vector2.Zero, KnockbackDecay * dt);
+
+		// Parado de propósito (ex.: fantasma pesado bloqueando a escada): não persegue, só machuca quem encosta.
+		if (Stationary)
+		{
+			Velocity = Vector2.Zero;
+			return;
+		}
 
 		Vector2 toPlayer = _player.GlobalPosition - GlobalPosition;
 		float distance = toPlayer.Length();
