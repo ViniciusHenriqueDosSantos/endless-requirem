@@ -7,7 +7,7 @@ from lib import Level, T, v, col, px, root_node, CONCRETE, WHITE, BEGE, WOOD
 L = Level()
 
 # ---------- planta (tiles, retângulos inclusivos) ----------
-L.add_floor(24, 1, 29, 46)    # corredor principal (os dois elevadores ficam na parede da esquerda)
+L.add_floor(24, -8, 29, 46)   # corredor principal (os dois elevadores ficam na parede da esquerda)
 L.add_floor(2, 34, 22, 40)    # Hall das Caronas
 L.add_floor(23, 36, 23, 38)   # abertura Hall -> corredor (as cadeiras bloqueiam)
 L.add_floor(1, 35, 1, 39)     # parada do Uniride (parede da esquerda do Hall: portão trancado)
@@ -28,8 +28,8 @@ for x in STUDY_DOORS:
     L.add_floor(x, 5, x, 5)
 L.add_floor(31, 17, 35, 22)   # Achados e Perdidos (sala pequena)
 L.add_floor(30, 19, 30, 20)   # porta dos Achados
-L.add_floor(20, 9, 22, 14)    # patamar da escada (logo abaixo do elevador quebrado)
-L.add_floor(23, 11, 23, 12)   # porta da escada
+L.add_floor(20, -5, 22, -1)   # patamar da escada (acima das salas de estudo, logo abaixo do elevador quebrado)
+L.add_floor(23, -4, 23, -3)   # porta da escada
 L.build_walls()
 
 # ---------- recursos ----------
@@ -59,19 +59,19 @@ def wall_runs(x, y0, y1):
             yield run[0], run[-1]
             run = []
 n = 0
-for x in (23, 30):
-    for a, b in wall_runs(x, 0, 47):
+for x, facing in ((23, "1"), (30, "2")):       # 1 = parede da esquerda, 2 = parede da direita (texto virado para o corredor)
+    for a, b in wall_runs(x, -9, 47):
         if b - a < 1: continue
         n += 1
         L.node(f"Assinaturas{n}", type="Node2D", props={"z_index": "1", "position": v(x * T, a * T),
-               "script": 'ExtResource("sig")', "Size": v(T, (b - a + 1) * T), "Seed": str(n * 7919)})
-L.node("AssinaturasTopo", type="Node2D", props={"z_index": "1", "position": v(24 * T, 0),
-       "script": 'ExtResource("sig")', "Size": v(6 * T, T), "Seed": "4242"})
+               "script": 'ExtResource("sig")', "Size": v(T, (b - a + 1) * T), "Seed": str(n * 7919), "Facing": facing})
+L.node("AssinaturasTopo", type="Node2D", props={"z_index": "1", "position": v(24 * T, -9 * T),
+       "script": 'ExtResource("sig")', "Size": v(6 * T, T), "Seed": "4242", "Facing": "0"})
 
 # ---------- Hall das Caronas ----------
 hall = (2 * T, 34 * T)
 L.node("Hall", inst="room", props={"position": v(*hall), "Size": v(22 * T, 7 * T), "Waves": "3", "EnemiesPerWave": "6",
-       "FastChance": "55", "EnemyHealthScale": "0.6", "EnemySpeedScale": "1.2",  "SpawnAnywhere": "true", "FinalWaveTank": "true", "StartOnEnter": "false",
+       "FastChance": "0", "EnemyHealthScale": "0.6", "EnemySpeedScale": "1.1",  "SpawnAnywhere": "true", "FinalWaveTank": "true", "StartOnEnter": "false",
        "FinalWaveMessage": '"O ZELADOR CHEGOU!"', "RespawnPoint": 'NodePath("Respawn")'}, node_paths=["RespawnPoint"])
 L.node("Barreira", "Hall", inst="door", props={"position": v(23 * T + 32 - hall[0], 39 * T - hall[1]),
        "Size": v(64, 3 * T), "ChairStyle": "true"})
@@ -96,7 +96,7 @@ L.node("Chave", inst="pickup", props={"position": v(12 * T, 37 * T), "ItemId": '
 
 # ---------- Achados e Perdidos ----------
 ach = (31 * T, 17 * T)
-L.node("Achados", inst="room", props={"position": v(*ach), "Size": v(5 * T, 6 * T), "Waves": "0", "EnemyHealthScale": "0.6", "EnemySpeedScale": "1.2"})
+L.node("Achados", inst="room", props={"position": v(*ach), "Size": v(5 * T, 6 * T), "Waves": "0", "EnemyHealthScale": "0.6", "EnemySpeedScale": "1.1"})
 L.node("PortaAchados", inst="door", props={"position": v(30 * T + 32, 21 * T), "Size": v(64, 2 * T),
        "StartsLocked": "true", "RequiredItem": '"chave_achados"', "Color": col(0.9, 0.6, 0.3, 1),
        "LockedMessage": '"ACHADOS E PERDIDOS - trancado. \\"Chave com o zelador (Hall das Caronas).\\""'})
@@ -125,7 +125,7 @@ L.node("Devolucao", inst="item_slot", props={"position": v(20 * T + 32, 21 * T),
 # ---------- biblioteca ----------
 bib = (2 * T, 2 * T)
 L.node("Biblioteca", inst="room", props={"position": v(*bib), "Size": v(17 * T, 30 * T), "Waves": "0", "HasBoss": "true",
-       "FastChance": "60", "EnemyHealthScale": "0.6", "EnemySpeedScale": "1.2",  "SpawnAnywhere": "true", "RespawnPoint": 'NodePath("Respawn")'}, node_paths=["RespawnPoint"])
+       "FastChance": "0", "EnemyHealthScale": "0.6", "EnemySpeedScale": "1.1",  "SpawnAnywhere": "true", "RespawnPoint": 'NodePath("Respawn")'}, node_paths=["RespawnPoint"])
 L.node("PortaBiblioteca", "Biblioteca", inst="door", props={"position": v(19 * T + 32 - bib[0], 24 * T - bib[1]),
        "Size": v(64, 3 * T), "StartsLocked": "true", "MessageWhenLocked": "true", "Color": col(0.6, 0.5, 0.9, 1),
        "LockedMessage": '"BIBLIOTECA FECHADA. Devolução pendente: \\"Cálculo I\\" (atrasado desde 2041). ...Shhh! Sem o livro, sem entrada."'})
@@ -172,21 +172,16 @@ L.prop("PlacaBiblioteca", ".", 19 * T + 32, 20 * T + 8, 180, 30, col(0, 0, 0, 0)
        text_color=col(0.85, 0.8, 1), solid=False, z=1)
 
 # ---------- elevador quebrado + escada (parede da esquerda, em cima; a escada logo abaixo) ----------
-L.prop("ElevadorQuebrado", ".", 24 * T + 24, 6 * T, 48, 3 * T, CONCRETE, "E\nL\nE\nV", depth=3 * T, font=13,
+L.prop("ElevadorQuebrado", ".", 24 * T + 24, -5 * T, 48, 3 * T, CONCRETE, "E\nL\nE\nV", depth=3 * T, font=13,
        tall=True, inner=col(0.35, 0.2, 0.2))
-L.node("AvisoElevador", inst="item_slot", props={"position": v(25 * T, 5 * T), "Size": v(200, 220),
-       "RequiredItem": '"nunca"', "MissingMessage": '"ELEVADOR - fora de serviço desde 2049. Use a escada logo abaixo."'})
-L.node("PortaEscada", inst="door", props={"position": v(23 * T + 32, 13 * T), "Size": v(64, 2 * T), "StartsLocked": "true",
+L.node("AvisoElevador", inst="item_slot", props={"position": v(25 * T, -6 * T), "Size": v(200, 220),
+       "RequiredItem": '"nunca"', "MissingMessage": '"ELEVADOR - fora de serviço desde 2049. Use a escada aqui do lado."'})
+L.node("PortaEscada", inst="door", props={"position": v(23 * T + 32, -2 * T), "Size": v(64, 2 * T), "StartsLocked": "true",
        "RequiredItem": '"chave_escada"', "Color": col(0.9, 0.75, 0.3, 1),
        "LockedMessage": '"ESCADA - trancada. A chave está com a Bibliotecária."', "UnlockMessage": '"A porta da escada abriu."'})
-L.prop("PlacaEscada", ".", 25 * T + 32, 11 * T - 4, 140, 30, col(0, 0, 0, 0), "ESCADA", font=16,
+L.prop("PlacaEscada", ".", 25 * T + 32, -4 * T + 4, 140, 30, col(0, 0, 0, 0), "ESCADA", font=16,
        text_color=col(0.95, 0.9, 0.6), solid=False, z=1)
-# degraus pintados no patamar
-for i in range(6):
-    L.node(f"Degrau{i}", type="ColorRect", props={"z_index": "-5", "offset_left": f"{20 * T}.0",
-           "offset_top": f"{9 * T + 16 + i * T}.0", "offset_right": f"{22 * T}.0", "offset_bottom": f"{9 * T + 24 + i * T}.0",
-           "mouse_filter": "2", "color": col(0.55, 0.5, 0.42, 0.6)})
-L.node("Escada", inst="area_trigger", props={"position": v(20 * T, 9 * T), "Size": v(2 * T, 6 * T), "Text": '"ESCADA"'})
+L.node("Escada", inst="area_trigger", props={"position": v(20 * T, -5 * T), "Size": v(2 * T, 5 * T), "Text": '"ESCADA"'})
 
 # ---------- jogador / interface ----------
 L.node("Player", inst="player", props={"position": v(26 * T + 32, 45 * T + 32), "StartWithAllWeapons": "false"})

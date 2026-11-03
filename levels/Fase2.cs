@@ -58,7 +58,6 @@ public partial class Fase2 : LevelBase
 
 	private bool _libraryTold;
 	private bool _achadosTold;
-	private bool _keyRevealed;
 	private bool _bookRevealed;
 	private bool _libraryOpen;
 	private bool _rewardsRevealed;
@@ -205,7 +204,6 @@ public partial class Fase2 : LevelBase
 	private void OnHallCleared()
 	{
 		SetExitChairsVisible(true);
-		_keyRevealed = true;
 		Vector2 drop = Hall.FinalEnemyPosition;
 		if (drop == Vector2.Zero || !GhostNav.TryNearestFreeFloor(this, drop, out drop))
 			drop = CentroHall.GlobalPosition;
@@ -268,58 +266,45 @@ public partial class Fase2 : LevelBase
 		UpdateObjective();
 	}
 
+	// O único objetivo mostrado é ir até a biblioteca. Como conseguir entrar (livro, Achados, chave)
+	// o jogador descobre sozinho pelas mensagens das portas. Na biblioteca, a tela ajuda na luta.
 	private void UpdateObjective()
 	{
-		if (Hall.IsFighting)
-		{
-			Hud.SetObjective("Vença os fantasmas do Hall das Caronas");
-			Hud.HidePointer();
-			return;
-		}
-
 		if (Bibliotecario.IsHunting)
 		{
 			int seconds = Mathf.CeilToInt(Bibliotecario.HuntTimeLeft);
 			Hud.SetObjective($"ELA TE VIU! Fique longe da luz (lanterna e luminárias) por {seconds} s");
-			Hud.SetBoss(Bibliotecario.DisplayName, Bibliotecario.HealthRatio, false);
+			Hud.HideBoss();
 			Hud.PointTo(Bibliotecario.GlobalPosition + BossPointerOffset, "BIBLIOTECÁRIA");
 			return;
 		}
 
-		if (Bibliotecario.IsPatrolling)
+		if (Bibliotecario.InStealth)
 		{
-			string lamps = Bibliotecario.LampsLeft > 0 ? $"  |  Luminárias acesas: {Bibliotecario.LampsLeft}" : "";
-			Hud.SetObjective($"Derrote a Bibliotecária: fique no escuro e atire pelas costas (dano x2){lamps}");
+			Hud.SetObjective($"Apague as luminárias das salas de estudo sem ser vista na luz ({Bibliotecario.LampsLeft} restantes)");
+			Hud.HideBoss();
+			ShieldLamp lamp = Bibliotecario.NearestLamp(Player.GlobalPosition);
+			if (lamp != null)
+				Hud.PointTo(lamp.GlobalPosition + PointerOffset, "LUMINÁRIA");
+			return;
+		}
+
+		if (Bibliotecario.IsAttacking)
+		{
+			Hud.SetObjective("Derrote a Bibliotecária");
 			Hud.SetBoss(Bibliotecario.DisplayName, Bibliotecario.HealthRatio, false);
 			Hud.PointTo(Bibliotecario.GlobalPosition + BossPointerOffset, "BIBLIOTECÁRIA");
 			return;
 		}
 
-		bool hasKey = Player.HasItem("chave_achados");
-		bool hasBook = Player.HasItem("livro");
+		if (Bibliotecario.IsDefeated || _libraryOpen || Hall.IsFighting)
+		{
+			Hud.SetObjective("");
+			Hud.HidePointer();
+			return;
+		}
 
-		if (Player.HasItem("chave_escada") || (Bibliotecario.IsDefeated && Canhao.IsCollected && ChaveEscada.IsCollected))
-			Objective("Suba pela escada (porta no fim do corredor)", PortaEscada.GlobalPosition, "ESCADA");
-		else if (_rewardsRevealed && !ChaveEscada.IsCollected)
-			Objective("Pegue o Canhão e a chave da escada", ChaveEscada.GlobalPosition, "CHAVE");
-		else if (_libraryOpen)
-			Objective("Entre na biblioteca", PortaBiblioteca.GlobalPosition, "BIBLIOTECA");
-		else if (hasBook)
-			Objective("Devolva o livro na caixa de devolução da biblioteca", Devolucao.GlobalPosition, "DEVOLUÇÃO");
-		else if (_bookRevealed)
-			Objective("Pegue o livro", Livro.GlobalPosition, "LIVRO");
-		else if (!PortaAchados.IsLocked)
-			Objective("Atire nas caixas e encontre o livro", Achados.GlobalPosition + Achados.Size / 2, "ACHADOS");
-		else if (hasKey)
-			Objective("Abra os Achados e Perdidos", PortaAchados.GlobalPosition, "ACHADOS");
-		else if (_keyRevealed)
-			Objective("Pegue a chave", Chave.GlobalPosition, "CHAVE");
-		else if (_achadosTold)
-			Objective("Pegue a chave com o zelador (Hall das Caronas)", CentroHall.GlobalPosition, "HALL");
-		else if (_libraryTold)
-			Objective("Procure o livro nos Achados e Perdidos", PortaAchados.GlobalPosition, "ACHADOS");
-		else
-			Objective("Vá até a biblioteca", PortaBiblioteca.GlobalPosition, "BIBLIOTECA");
+		Objective("Vá até a biblioteca", PortaBiblioteca.GlobalPosition, "BIBLIOTECA");
 	}
 
 	private void Objective(string text, Vector2 target, string label)

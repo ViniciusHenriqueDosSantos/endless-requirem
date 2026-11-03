@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 // A Bibliotecária: chefe da Fase 2. Ela é surda e se orienta pela luz.
 //
-// Patrulha: anda pela biblioteca com uma lanterna (cone de luz). Estantes altas e paredes tapam a luz.
-//   Não ouve tiros; tiro pelas costas (sem ela ter te visto) vale o DOBRO de dano.
-//   Quando leva um tiro, ela sente e se vira para o lado de onde veio.
-//   As luminárias das salas de estudo também iluminam: ficar na luz delas com ela olhando
-//   (sem parede ou estante no meio) também denuncia você. Dá para apagá-las (fique perto por 2 s).
-// Caçada: se ela te pega na luz, corre atrás de você, atira leques de livros e chama fantasmas.
-//   Para ela te perder, fique LONGE DA LUZ por 20 segundos seguidos (pegou de novo = recomeça).
+// Ato 1 - furtividade: apague as 4 luminárias das salas de estudo (fique perto de cada uma por 2 s).
+//   Patrulha: ela anda com uma lanterna (cone de luz). Estantes altas e paredes tapam a luz.
+//     Não ouve tiros; se leva um tiro, sente e se vira para o lado de onde veio (mas não se machuca ainda).
+//     A luz das luminárias acesas também te entrega se ela estiver olhando para aquele lado.
+//   Caçada: se ela te pega na luz, corre atrás de você, atira livros e chama fantasmas.
+//     Para ela te perder, fique LONGE DA LUZ por 20 segundos seguidos (pegou de novo = recomeça).
+// Ato 2 - ataque: com as 4 luminárias apagadas ela fica furiosa e parte para cima. Agora leva dano.
 //
 // Fica dentro da sala da biblioteca (Room com HasBoss). Quem chama StartFight é o roteiro da fase.
 [Tool]
@@ -31,7 +31,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 	// Segundos longe da luz para ela desistir da caçada.
 	[Export] public float HuntTime = 20f;
 
-	private enum Phase { Idle, Patrol, Hunt, Dead }
+	private enum Phase { Idle, Patrol, Hunt, Attack, Dead }
 
 	private static readonly Vector2 BodySize = new(88, 116);
 	private static readonly Vector2 Eye = new(0, -60);
@@ -45,7 +45,6 @@ public partial class Librarian : CharacterBody2D, IHittable
 	private const float TurnSpeed = 5f;
 	private const float FeelHitTime = 1.4f;
 	private const int SpottedSummons = 2;
-	private const int SneakDamageMultiplier = 2;
 
 	// Fantasmas que vagam pela biblioteca durante a patrulha.
 	private const float PatrolFirstSummon = 3f;
@@ -83,9 +82,10 @@ public partial class Librarian : CharacterBody2D, IHittable
 	private readonly List<ShieldLamp> _lamps = new();
 	private readonly List<BossProjectile> _projectiles = new();
 
-	public bool IsFighting => _phase == Phase.Patrol || _phase == Phase.Hunt;
-	public bool IsPatrolling => _phase == Phase.Patrol;
+	public bool IsFighting => _phase == Phase.Patrol || _phase == Phase.Hunt || _phase == Phase.Attack;
+	public bool InStealth => _phase == Phase.Patrol || _phase == Phase.Hunt;
 	public bool IsHunting => _phase == Phase.Hunt;
+	public bool IsAttacking => _phase == Phase.Attack;
 	public bool IsDefeated => _phase == Phase.Dead;
 	public float HuntTimeLeft => _huntTimer;
 	public float HealthRatio => Config == null ? 0f : (float)_health / Config.Health;
@@ -101,6 +101,16 @@ public partial class Librarian : CharacterBody2D, IHittable
 					count++;
 			return count;
 		}
+	}
+
+	// Luminária acesa mais perto de um ponto (para a seta de objetivo).
+	public ShieldLamp NearestLamp(Vector2 from)
+	{
+		ShieldLamp best = null;
+		foreach (ShieldLamp lamp in _lamps)
+			if (!lamp.IsOff && (best == null || lamp.GlobalPosition.DistanceTo(from) < best.GlobalPosition.DistanceTo(from)))
+				best = lamp;
+		return best;
 	}
 
 	public override void _Ready()
@@ -154,8 +164,25 @@ public partial class Librarian : CharacterBody2D, IHittable
 		FindPlayer();
 		_patrolIndex = 0;
 		_summonTimer = PatrolFirstSummon;
+		if (LampsLeft == 0)
+		{
+			StartAttack();
+			return;
+		}
 		StartPatrol();
-		ShowMessage("Ela é surda, mas enxerga qualquer um na luz. Ataque pelas costas!", 4.5f);
+		ShowMessage("Ela é surda, mas enxerga qualquer um na luz. Apague as 4 luminárias sem ser vista.", 4.5f);
+	}
+
+	// Ato 2: sem as luminárias, ela parte para cima de vez.
+	private void StartAttack()
+	{
+		_phase = Phase.Attack;
+		SetLampsArmed(false);
+		_fireTimer = 1.0f;
+		_summonTimer = Config.SummonInterval;
+		_player?.TriggerShake(12f);
+		ShowMessage("A biblioteca ficou no escuro... e ela partiu para cima! \"SILÊNCIO!\"", 3.5f);
+		QueueRedraw();
 	}
 
 	private void StartPatrol()
@@ -185,21 +212,25 @@ public partial class Librarian : CharacterBody2D, IHittable
 	private void OnLampSwitchedOff()
 	{
 		int left = LampsLeft;
-		ShowMessage(left > 0 ? $"Luminária apagada! Menos luz para ela. Faltam {left}." : "Biblioteca no escuro! Agora só a lanterna dela te entrega.", 3f);
+		if (left > 0)
+			ShowMessage($"Luminária apagada! Faltam {left}.", 2.5f);
+		else if (InStealth)
+			StartAttack();
 	}
 
 	public void TakeHit(int damage, Vector2 direction)
 	{
-		if (!IsFighting) return;
-
 		if (_phase == Phase.Patrol)
 		{
 			// Surda: não ouviu o tiro, mas sentiu. Vira para o lado de onde ele veio.
-			damage *= SneakDamageMultiplier;
 			if (direction != Vector2.Zero)
 				_targetFacing = (-direction).Angle();
 			_feelTimer = FeelHitTime;
+			return;
 		}
+
+		// Só se machuca quando parte para o ataque (luminárias apagadas).
+		if (_phase != Phase.Attack) return;
 
 		_health -= damage;
 		_flash = HitFlashTime;
@@ -259,8 +290,10 @@ public partial class Librarian : CharacterBody2D, IHittable
 		float dt = (float)delta;
 		if (_phase == Phase.Patrol)
 			UpdatePatrol(dt);
-		else
+		else if (_phase == Phase.Hunt)
 			UpdateHunt(dt);
+		else
+			UpdateAttack(dt);
 
 		_facing = Mathf.LerpAngle(_facing, _targetFacing, Mathf.Min(1f, TurnSpeed * dt));
 	}
@@ -406,6 +439,21 @@ public partial class Librarian : CharacterBody2D, IHittable
 			return;
 		}
 
+		Chase(dt, distance, toPlayer, seen);
+	}
+
+	// ---------- Ataque ----------
+
+	private void UpdateAttack(float dt)
+	{
+		Vector2 toPlayer = _player.GlobalPosition - GlobalPosition;
+		_targetFacing = toPlayer.Angle();
+		Chase(dt, toPlayer.Length(), toPlayer, true);
+	}
+
+	// Corre atrás mantendo distância, atira leques (só em quem está vendo) e chama fantasmas.
+	private void Chase(float dt, float distance, Vector2 toPlayer, bool canShoot)
+	{
 		Vector2 target;
 		if (distance > KeepMaxDistance)
 			target = _player.GlobalPosition;
@@ -421,7 +469,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 
 		// Só atira em quem ela está vendo.
 		_fireTimer -= dt;
-		if (_fireTimer <= 0 && seen)
+		if (_fireTimer <= 0 && canShoot)
 		{
 			FireFan();
 			_fireTimer = Config.FireInterval * (HealthRatio < 0.5f ? 0.75f : 1f);
@@ -519,7 +567,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 		// Lanterna (cone de luz): amarela na patrulha, vermelha na caçada.
 		if (editor || IsFighting)
 		{
-			Color light = IsHunting ? new Color(1f, 0.3f, 0.25f, 0.2f) : new Color(1f, 0.92f, 0.5f, 0.16f);
+			Color light = IsHunting || IsAttacking ? new Color(1f, 0.3f, 0.25f, 0.2f) : new Color(1f, 0.92f, 0.5f, 0.16f);
 			const int segments = 10;
 			Vector2[] cone = new Vector2[segments + 2];
 			cone[0] = Eye;

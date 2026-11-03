@@ -34,7 +34,7 @@ L.prop("PlacaVao", ".", 11 * T + 32, 13 * T, 360, 40, col(0, 0, 0, 0), "vão da 
 # sala única: fantasmas surgem sem parar enquanto o jogador sobe
 L.node("Subida", inst="room", props={"position": v(X0 * T, Y0 * T), "Size": v((X1 - X0 + 1) * T, (Y1 - Y0 + 1) * T),
        "Waves": "0", "SurviveTime": "9999.0", "SurviveSpawnInterval": "1.5", "SurviveMaxAlive": "5",
-       "SpawnAnywhere": "true", "EnemyHealthScale": "0.6", "EnemySpeedScale": "1.2",
+       "SpawnAnywhere": "true", "EnemyHealthScale": "0.6", "EnemySpeedScale": "1.1",
        "RespawnPoint": 'NodePath("Respawn")'}, node_paths=["RespawnPoint"])
 L.node("Respawn", "Subida", type="Marker2D", props={"position": v(3 * T + 32 - X0 * T, 21 * T + 32 - Y0 * T)})
 
