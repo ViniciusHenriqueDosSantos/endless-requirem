@@ -26,6 +26,11 @@ public partial class Door : StaticBody2D
 	// Destrancada, as cadeiras somem (voltam para o lugar).
 	private bool _chairStyle;
 	[Export] public bool ChairStyle { get => _chairStyle; set { _chairStyle = value; QueueRedraw(); } }
+
+	// Porta escondida: trancada, parece um pedaço de parede (ex.: saída do 4º andar na escada).
+	private bool _wallStyle;
+	[Export] public bool WallStyle { get => _wallStyle; set { _wallStyle = value; QueueRedraw(); } }
+
 	[Export] public string RequiredItem = "";
 	[Export] public string LockedMessage = "Trancado.";
 	[Export] public string UnlockMessage = "";
@@ -120,6 +125,14 @@ public partial class Door : StaticBody2D
 		{
 			if (locked || Engine.IsEditorHint())
 				DrawChairPile(rect, locked);
+			return;
+		}
+
+		if (WallStyle && locked)
+		{
+			// Mesmas cores da parede do tileset (frente da parede).
+			DrawRect(rect, new Color(0.588f, 0.596f, 0.612f));
+			DrawRect(rect, new Color(0.463f, 0.471f, 0.494f), false, 2f);
 			return;
 		}
 

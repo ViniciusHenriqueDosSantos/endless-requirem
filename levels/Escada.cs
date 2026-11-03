@@ -2,9 +2,14 @@ using Godot;
 using System.Collections.Generic;
 
 // Escada (fim da Fase 2), vista de cima: uma volta só, em torno do vão da escada.
-// O jogador dá voltas no mesmo anel; cada volta completa sobe um andar (2º -> 3º -> 4º).
-// O contador na tela mostra o andar e quanto falta da volta. No 4º andar, a porta de saída abre.
-// Os fantasmas surgem sem parar e cortam caminho pelo vão do meio.
+// Corrida contra o tempo: suba do 2º ao 4º andar antes do relógio zerar.
+//   - Cada volta completa no anel sobe um andar (o contador mostra andar e tempo).
+//   - Fantasmas pesados ficam PARADOS nos degraus, bloqueando o caminho:
+//     ou você gasta tempo derrubando, ou passa raspando e leva dano.
+//     A cada andar novo, os que você derrubou voltam.
+//   - Fantasmas rápidos perseguem e cortam caminho pelo vão do meio.
+//   - A porta do 4º andar não existe (é parede) até você chegar no 4º andar.
+// Tempo acabou = REPROVADO, e a subida recomeça do 2º andar.
 // Peças em levels/escada.tscn.
 public partial class Escada : LevelBase
 {
@@ -12,18 +17,32 @@ public partial class Escada : LevelBase
 
 	// Nó com os 4 marcos da volta (AreaTrigger), na ordem da subida: esquerda, cima, direita, baixo.
 	[Export] public Node2D Marcos;
+
+	// Nó com os pontos (Marker2D) onde ficam os fantasmas pesados parados.
+	[Export] public Node2D Bloqueios;
 	[Export] public Door PortaSaida;
 	[Export] public AreaTrigger Saida;
+
+	// Cobre o patamar do 4º andar enquanto ele ainda "não existe".
+	[Export] public CanvasItem CoberturaSaida;
+
+	// Segundos para chegar ao 4º andar (o relógio começa quando você entra no anel).
+	[Export] public float TimeLimit = 60f;
 
 	// Próxima cena: a Fase 3 ainda não existe; por enquanto volta ao começo do jogo.
 	private const string NextScene = "res://levels/fase_1.tscn";
 	private const int FirstFloor = 2;
 	private const int LastFloor = 4;
+	private const float LowTime = 10f;
 
 	private readonly List<AreaTrigger> _marks = new();
+	private readonly List<Marker2D> _blockPoints = new();
+	private readonly Dictionary<Marker2D, Enemy> _blockers = new();
 	private int _floor = FirstFloor;
 	private int _nextMark;
 	private int _marksPassed;
+	private float _timeLeft;
+	private bool _running;
 
 	protected override void SetupDefaultLoadout()
 	{
@@ -44,12 +63,17 @@ public partial class Escada : LevelBase
 			_marks.Add(mark);
 		}
 
+		foreach (Node child in Bloqueios.GetChildren())
+			if (child is Marker2D point)
+				_blockPoints.Add(point);
+
 		TrackRooms(Subida);
+		Subida.Started += OnClimbStarted;
 		Saida.PlayerEntered += OnReachedTop;
 
 		ResetClimb();
-		Hud.SetObjective("Suba a escada até o 4º andar (siga as setas)");
-		Hud.ShowMessage("O elevador quebrou. Só resta a escada... e eles sabem disso.", 4f);
+		Hud.SetObjective($"Suba até o 4º andar em {TimeLimit:0} segundos (siga as setas)");
+		Hud.ShowMessage("O elevador quebrou. Só resta a escada... e o tempo está correndo.", 4f);
 	}
 
 	private void ResetClimb()
@@ -57,11 +81,45 @@ public partial class Escada : LevelBase
 		_floor = FirstFloor;
 		_nextMark = 0;
 		_marksPassed = 0;
+		_timeLeft = TimeLimit;
+		_running = false;
 		foreach (AreaTrigger mark in _marks)
 			mark.ResetTrigger();
-		PortaSaida.Lock();
+		_blockers.Clear();
+		SetExitVisible(false);
 		ApplyDifficulty();
 		UpdateCounter();
+	}
+
+	// Entrou no anel: o relógio começa e os fantasmas pesados aparecem nos degraus.
+	private void OnClimbStarted()
+	{
+		_running = true;
+		PlaceBlockers();
+	}
+
+	// Põe um fantasma pesado parado em cada ponto que estiver vazio.
+	private void PlaceBlockers()
+	{
+		foreach (Marker2D point in _blockPoints)
+		{
+			if (_blockers.TryGetValue(point, out Enemy old) && IsInstanceValid(old) && !old.IsQueuedForDeletion())
+				continue;
+
+			Enemy blocker = Subida.SpawnEnemyAt(point.GlobalPosition, Enemy.Kind.Tank);
+			blocker.Stationary = true;
+			_blockers[point] = blocker;
+		}
+	}
+
+	// A saída só "existe" no 4º andar: antes disso é parede e o patamar fica coberto.
+	private void SetExitVisible(bool visible)
+	{
+		if (visible)
+			PortaSaida.Unlock();
+		else
+			PortaSaida.Lock();
+		CoberturaSaida.Visible = !visible;
 	}
 
 	private void OnMarkPassed(int index)
@@ -88,47 +146,44 @@ public partial class Escada : LevelBase
 			ApplyDifficulty();
 			if (_floor == LastFloor)
 			{
-				PortaSaida.Unlock();
-				Hud.ShowMessage("4º ANDAR! A porta lá em cima abriu.", 3.5f);
+				SetExitVisible(true);
+				Hud.ShowMessage("4º ANDAR! Uma porta apareceu lá em cima. Corre!", 3.5f);
 			}
 			else
 			{
-				Hud.ShowMessage($"{_floor}º andar! Mais fantasmas subindo atrás de você...", 3f);
+				PlaceBlockers();
+				Hud.ShowMessage($"{_floor}º andar! Os fantasmas pesados voltaram aos degraus...", 3f);
 			}
 		}
 
 		UpdateCounter();
 	}
 
-	// Mais fantasmas a cada andar; Fast a partir do 3º.
+	// Mais perseguidores e mais rápidos a cada andar. Os bloqueios contam no limite da sala.
 	private void ApplyDifficulty()
 	{
 		bool firstFloor = _floor == FirstFloor;
-		Subida.SurviveSpawnInterval = firstFloor ? 1.5f : 0.9f;
-		Subida.SurviveMaxAlive = firstFloor ? 5 : 8;
-		Subida.FastChance = firstFloor ? 0 : 45;
+		Subida.SurviveSpawnInterval = firstFloor ? 1.6f : 1.0f;
+		Subida.SurviveMaxAlive = _blockPoints.Count + (firstFloor ? 3 : 5);
+		Subida.FastChance = firstFloor ? 50 : 80;
 	}
 
-	// "3º ANDAR  (50%)": andar atual e quanto da volta já foi feito.
+	// "3º ANDAR  0:42": andar atual e tempo que falta.
 	private void UpdateCounter()
 	{
-		if (_floor >= LastFloor)
-		{
-			Hud.SetCounter($"{LastFloor}º ANDAR");
-			return;
-		}
-
-		int quarters = _marksPassed == 0 ? 0 : (_marksPassed - 1) % _marks.Count;
-		Hud.SetCounter($"{_floor}º ANDAR  ({quarters * 100 / _marks.Count}%)");
+		int seconds = Mathf.CeilToInt(Mathf.Max(_timeLeft, 0f));
+		Hud.SetCounter($"{_floor}º ANDAR   {seconds / 60}:{seconds % 60:00}");
 	}
 
 	private void OnReachedTop()
 	{
+		_running = false;
 		Subida.FinishFight();
 		Hud.HidePointer();
+		int seconds = Mathf.CeilToInt(_timeLeft);
 		FinishLevel(
 			"FIM DA FASE 2",
-			"Silêncio, enfim. Lá em cima, os servidores estão acordando.",
+			$"Chegou ao 4º andar com {seconds} segundos de sobra.\nLá em cima, os servidores estão acordando.",
 			NextScene,
 			"Fase 3 em construção. Aperte qualquer tecla para voltar ao começo.");
 	}
@@ -136,6 +191,22 @@ public partial class Escada : LevelBase
 	public override void _Process(double delta)
 	{
 		base._Process(delta);
+
+		if (_running)
+		{
+			float before = _timeLeft;
+			_timeLeft -= (float)delta;
+			if (before > LowTime && _timeLeft <= LowTime)
+				Hud.ShowMessage("10 segundos!", 2f);
+			UpdateCounter();
+
+			if (_timeLeft <= 0)
+			{
+				_running = false;
+				Fail("O tempo acabou! A aula no 4º andar começou sem você.\nVocê volta para o 2º andar.");
+				return;
+			}
+		}
 
 		// Seta: próximo marco da volta, ou a porta de saída no 4º andar.
 		if (_floor >= LastFloor)
@@ -146,7 +217,7 @@ public partial class Escada : LevelBase
 
 	protected override void OnBeforeRespawn()
 	{
-		// Reprovado: recomeça a subida do 2º andar.
+		// Reprovado (vida ou tempo): recomeça a subida do 2º andar.
 		ResetClimb();
 	}
 }

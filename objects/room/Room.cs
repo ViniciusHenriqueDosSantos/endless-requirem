@@ -275,7 +275,7 @@ public partial class Room : Node2D
 	{
 		if (_spawnFinalEnemy)
 		{
-			// Inimigo especial da última onda (ex.: o motorista da van). Guarda onde ele caiu.
+			// Inimigo especial da última onda (ex.: o zelador). Guarda onde ele caiu.
 			_spawnFinalEnemy = false;
 			Enemy special = CreateEnemy(Enemy.Kind.Tank, PickSpawnPoint());
 			special.TreeExiting += () => FinalEnemyPosition = special.GlobalPosition;

@@ -1,8 +1,8 @@
 using Godot;
 
-// Luminária que alimenta o escudo do Bibliotecário (uma em cada sala de estudo).
+// Luminária que alimenta o escudo da Bibliotecária (uma em cada sala de estudo).
 // Para desligar: o jogador fica perto dela por DisableTime segundos sem ser visto.
-// Se o Bibliotecário vir o jogador nesse meio tempo, a barrinha volta ao zero.
+// Se a Bibliotecária vir o jogador nesse meio tempo, a barrinha volta ao zero.
 // Desligada, não liga nunca mais.
 [Tool]
 public partial class ShieldLamp : Area2D
@@ -19,7 +19,7 @@ public partial class ShieldLamp : Area2D
 	private bool _off;
 	private float _time;
 
-	// Quem liga e desliga a possibilidade de mexer na luminária (o Bibliotecário).
+	// Quem liga e desliga a possibilidade de mexer na luminária (a Bibliotecária).
 	public bool Armed;
 	public bool IsOff => _off;
 	public float Progress => _progress;
@@ -35,7 +35,7 @@ public partial class ShieldLamp : Area2D
 		BodyExited += body => { if (body is Player) _playerInside = false; };
 	}
 
-	// Chamado pelo Bibliotecário quando ele vê o jogador.
+	// Chamado pela Bibliotecária quando ele vê o jogador.
 	public void Interrupt()
 	{
 		if (!_off)

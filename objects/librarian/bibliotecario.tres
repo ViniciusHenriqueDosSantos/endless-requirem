@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_script")
-Name = "BIBLIOTECÁRIO"
+Name = "BIBLIOTECÁRIA"
 BodyColor = Color(0.42, 0.48, 0.78, 1)
 Health = 45
 Cycles = 1

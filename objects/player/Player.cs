@@ -33,7 +33,7 @@ public partial class Player : CharacterBody2D
 	// Avisado quando a vida zera. Se ninguém estiver ouvindo, a cena recomeça.
 	public event Action Died;
 
-	// Avisado a cada tiro (o Bibliotecário escuta o barulho).
+	// Avisado a cada tiro (a Bibliotecária escuta o barulho).
 	public event Action Fired;
 
 	public int Health { get; private set; }

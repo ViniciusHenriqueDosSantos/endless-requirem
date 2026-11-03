@@ -94,6 +94,13 @@ public partial class LevelBase : Node2D
 		Player.Revive(position);
 	}
 
+	// Reprovado por outro motivo que não a vida (ex.: o tempo acabou). Ao fechar, recomeça o trecho.
+	protected void Fail(string reason)
+	{
+		if (_finished) return;
+		Screen.Open("REPROVADO", reason);
+	}
+
 	// Para a fase desfazer o que é dela quando uma sala recomeça (ex.: chefe volta ao início).
 	protected virtual void OnRoomReset(Room room) { }
 

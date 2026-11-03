@@ -11,7 +11,7 @@
 [ext_resource type="TileSet" path="res://tilesets/placeholder_tileset_outer.tres" id="tiles_outer"]
 [ext_resource type="PackedScene" path="res://objects/prop/prop.tscn" id="prop"]
 
-[node name="Escada" type="Node2D" node_paths=PackedStringArray("Player", "Hud", "Screen", "Subida", "Marcos", "PortaSaida", "Saida")]
+[node name="Escada" type="Node2D" node_paths=PackedStringArray("Player", "Hud", "Screen", "Subida", "Marcos", "Bloqueios", "PortaSaida", "Saida", "CoberturaSaida")]
 y_sort_enabled = true
 script = ExtResource("escada")
 Player = NodePath("Player")
@@ -19,8 +19,10 @@ Hud = NodePath("Hud")
 Screen = NodePath("MessageScreen")
 Subida = NodePath("Subida")
 Marcos = NodePath("Marcos")
+Bloqueios = NodePath("Bloqueios")
 PortaSaida = NodePath("PortaSaida")
 Saida = NodePath("Saida")
+CoberturaSaida = NodePath("CoberturaSaida")
 
 [node name="Floor" type="TileMapLayer" parent="." groups=["floor"]]
 z_index = -10
@@ -177,13 +179,35 @@ FontSize = 40
 TextColor = Color(0.55, 0.5, 0.42, 0.8)
 Solid = false
 
+[node name="Bloqueios" type="Node2D" parent="."]
+
+[node name="Bloqueio0" type="Marker2D" parent="Bloqueios"]
+position = Vector2(224, 576)
+
+[node name="Bloqueio1" type="Marker2D" parent="Bloqueios"]
+position = Vector2(992, 448)
+
+[node name="Bloqueio2" type="Marker2D" parent="Bloqueios"]
+position = Vector2(1248, 1024)
+
+[node name="Bloqueio3" type="Marker2D" parent="Bloqueios"]
+position = Vector2(480, 1216)
+
 [node name="PortaSaida" parent="." instance=ExtResource("door")]
 position = Vector2(736, 320)
 Size = Vector2(192, 64)
 StartsLocked = true
-MessageWhenLocked = true
+WallStyle = true
 Color = Color(0.9, 0.75, 0.3, 1)
-LockedMessage = "Porta do 4º andar. Ainda não chegou lá: continue subindo."
+
+[node name="CoberturaSaida" type="ColorRect" parent="."]
+z_index = 20
+offset_left = 512.0
+offset_top = 0.0
+offset_right = 960.0
+offset_bottom = 256.0
+mouse_filter = 2
+color = Color(0.149, 0.161, 0.188, 1)
 
 [node name="Saida" parent="." instance=ExtResource("area_trigger")]
 position = Vector2(576, 64)
