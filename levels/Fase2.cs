@@ -34,7 +34,7 @@ public partial class Fase2 : LevelBase
 
 	private const string EscadaScene = "res://levels/escada.tscn";
 	private const int MinGhostsBeforeBook = 2;
-	private const int MaxBoxGhosts = 4;
+	private const int MaxBoxGhosts = 5;
 	private const float GhostChanceBeforeBook = 0.45f;
 	private const float GhostChanceAfter = 0.25f;
 	private static readonly Vector2 PointerOffset = new(0, -40);
@@ -277,19 +277,19 @@ public partial class Fase2 : LevelBase
 			return;
 		}
 
-		if (Bibliotecario.InStealth)
+		if (Bibliotecario.IsHunting)
 		{
-			Hud.HideBoss();
-			ShieldLamp lamp = Bibliotecario.NearestLamp(Player.GlobalPosition);
-			Hud.SetObjective($"Apague as luminárias das salas de estudo sem ser visto ({Bibliotecario.LampsLeft} restantes)");
-			if (lamp != null)
-				Hud.PointTo(lamp.GlobalPosition + PointerOffset, "LUMINÁRIA");
+			int seconds = Mathf.CeilToInt(Bibliotecario.HuntTimeLeft);
+			Hud.SetObjective($"ELA TE VIU! Fique longe da luz (lanterna e luminárias) por {seconds} s");
+			Hud.SetBoss(Bibliotecario.DisplayName, Bibliotecario.HealthRatio, false);
+			Hud.PointTo(Bibliotecario.GlobalPosition + BossPointerOffset, "BIBLIOTECÁRIA");
 			return;
 		}
 
-		if (Bibliotecario.InFight)
+		if (Bibliotecario.IsPatrolling)
 		{
-			Hud.SetObjective("Derrote a Bibliotecária");
+			string lamps = Bibliotecario.LampsLeft > 0 ? $"  |  Luminárias acesas: {Bibliotecario.LampsLeft}" : "";
+			Hud.SetObjective($"Derrote a Bibliotecária: fique no escuro e atire pelas costas (dano x2){lamps}");
 			Hud.SetBoss(Bibliotecario.DisplayName, Bibliotecario.HealthRatio, false);
 			Hud.PointTo(Bibliotecario.GlobalPosition + BossPointerOffset, "BIBLIOTECÁRIA");
 			return;

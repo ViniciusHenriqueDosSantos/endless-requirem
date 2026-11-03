@@ -1,9 +1,10 @@
 using Godot;
 
-// Luminária que alimenta o escudo da Bibliotecária (uma em cada sala de estudo).
-// Para desligar: o jogador fica perto dela por DisableTime segundos sem ser visto.
+// Luminária das salas de estudo. Acesa, ilumina em volta (LightRadius): quem está nessa luz
+// pode ser visto pela Bibliotecária de longe (ela é surda e se orienta pela luz).
+// Para apagar: o jogador fica perto dela por DisableTime segundos (só enquanto ela patrulha).
 // Se a Bibliotecária vir o jogador nesse meio tempo, a barrinha volta ao zero.
-// Desligada, não liga nunca mais.
+// Apagada, não acende nunca mais.
 [Tool]
 public partial class ShieldLamp : Area2D
 {
@@ -12,6 +13,7 @@ public partial class ShieldLamp : Area2D
 	[Export] public float DisableTime = 2f;
 
 	private const float Radius = 80f;
+	public const float LightRadius = 170f;
 	private const float BulbHeight = 70f;
 
 	private bool _playerInside;
@@ -19,10 +21,13 @@ public partial class ShieldLamp : Area2D
 	private bool _off;
 	private float _time;
 
-	// Quem liga e desliga a possibilidade de mexer na luminária (a Bibliotecária).
+	// Quem libera mexer na luminária (a Bibliotecária, durante a patrulha).
 	public bool Armed;
 	public bool IsOff => _off;
 	public float Progress => _progress;
+
+	// Esse ponto (pés do jogador) está dentro da luz desta luminária?
+	public bool Lights(Vector2 globalPoint) => !_off && GlobalPosition.DistanceTo(globalPoint) <= LightRadius;
 
 	public override void _Ready()
 	{
@@ -35,7 +40,7 @@ public partial class ShieldLamp : Area2D
 		BodyExited += body => { if (body is Player) _playerInside = false; };
 	}
 
-	// Chamado pela Bibliotecária quando ele vê o jogador.
+	// Chamado pela Bibliotecária quando ela vê o jogador.
 	public void Interrupt()
 	{
 		if (!_off)
@@ -82,6 +87,10 @@ public partial class ShieldLamp : Area2D
 			DrawCircle(bulb, 16, new Color(0.3f, 0.3f, 0.32f));
 			return;
 		}
+
+		// Luz no chão: a área onde ela enxerga você.
+		DrawCircle(Vector2.Zero, LightRadius, new Color(1f, 0.92f, 0.5f, 0.08f));
+		DrawArc(Vector2.Zero, LightRadius, 0, Mathf.Tau, 48, new Color(1f, 0.92f, 0.5f, 0.25f), 2f);
 
 		float glow = 1f + Mathf.Sin(_time * 6f) * 0.08f;
 		DrawCircle(bulb, 42 * glow, new Color(1f, 0.9f, 0.4f, 0.18f));
