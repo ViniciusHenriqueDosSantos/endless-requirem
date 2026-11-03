@@ -6,7 +6,7 @@ using System.Collections.Generic;
 // Ordem:
 //   chegada -> porta da biblioteca (fechada: falta um livro)
 //   -> Achados e Perdidos (trancado: a chave está com o motorista da van)
-//   -> Hall das Caronas (barreira de névoa, 3 ondas, o motorista solta a chave)
+//   -> Hall das Caronas (as cadeiras bloqueiam a saída, 3 ondas, o motorista solta a chave)
 //   -> Achados e Perdidos (caixas: uma tem o livro, algumas têm fantasma)
 //   -> devolução do livro -> biblioteca abre
 //   -> Bibliotecário (furtividade com as luminárias, depois luta) -> Canhão + chave da escada
@@ -29,6 +29,9 @@ public partial class Fase2 : LevelBase
 	[Export] public AreaTrigger Escada;
 	[Export] public Marker2D CentroHall;
 
+	// Cadeiras de espera perto da saída do Hall: somem quando se arrastam para bloquear a passagem.
+	[Export] public Node2D CadeirasDaSaida;
+
 	private const string EscadaScene = "res://levels/escada.tscn";
 	private const int GhostBoxes = 3;
 	private static readonly Vector2 PointerOffset = new(0, -40);
@@ -45,6 +48,10 @@ public partial class Fase2 : LevelBase
 		"Fone de ouvido com um lado só.",
 		"Apostila de Física, toda rabiscada.",
 	};
+
+	private const string AchadosShortMessage = "ACHADOS E PERDIDOS - trancado.";
+	private const string AchadosFullMessage =
+		"ACHADOS E PERDIDOS - trancado. \"Chave com o motorista da van (Hall das Caronas).\"";
 
 	private bool _libraryTold;
 	private bool _achadosTold;
@@ -67,12 +74,18 @@ public partial class Fase2 : LevelBase
 
 		TrackRooms(Hall, Biblioteca);
 
-		PortaBiblioteca.LockedTouched += () => _libraryTold = true;
-		PortaAchados.LockedTouched += () => _achadosTold = true;
+		// Sequência da história: biblioteca (falta o livro) -> Achados (trancado) -> só então o Hall tranca.
+		PortaAchados.LockedMessage = AchadosShortMessage;
+		PortaBiblioteca.LockedTouched += OnLibraryTold;
+		PortaAchados.LockedTouched += () =>
+		{
+			if (_libraryTold)
+				_achadosTold = true;
+		};
 		PortaAchados.Unlocked += () => Hud.ShowMessage("A porta rangeu e abriu. Que bagunça...", 3f);
 
-		Hall.Started += () =>
-			Hud.ShowMessage("Uma névoa verde fechou a saída... Fantasmas apressados à vista!", 4f);
+		Hall.Entered += OnHallEntered;
+		Hall.Started += OnHallStarted;
 		Hall.Cleared += OnHallCleared;
 
 		SetupBoxes();
@@ -138,8 +151,35 @@ public partial class Fase2 : LevelBase
 
 	// ---------- Hall das Caronas ----------
 
+	private void OnLibraryTold()
+	{
+		_libraryTold = true;
+		PortaAchados.LockedMessage = AchadosFullMessage;
+	}
+
+	// O Hall só tranca depois de o jogador ter passado pela biblioteca e pelos Achados.
+	private void OnHallEntered()
+	{
+		if (_achadosTold && !Hall.IsCleared && !Hall.IsFighting)
+			Hall.StartFight();
+	}
+
+	private void OnHallStarted()
+	{
+		SetExitChairsVisible(false);
+		Hud.ShowMessage("As cadeiras se arrastaram sozinhas e bloquearam a saída! Fantasmas apressados à vista!", 4f);
+	}
+
+	private void SetExitChairsVisible(bool visible)
+	{
+		foreach (Node child in CadeirasDaSaida.GetChildren())
+			if (child is CanvasItem chair)
+				chair.Visible = visible;
+	}
+
 	private void OnHallCleared()
 	{
+		SetExitChairsVisible(true);
 		_keyRevealed = true;
 		Vector2 drop = Hall.FinalEnemyPosition;
 		if (drop == Vector2.Zero || !GhostNav.TryNearestFreeFloor(this, drop, out drop))
@@ -185,6 +225,9 @@ public partial class Fase2 : LevelBase
 
 	protected override void OnRoomReset(Room room)
 	{
+		if (room == Hall)
+			SetExitChairsVisible(true);
+
 		if (room == Biblioteca)
 		{
 			Bibliotecario.ResetBoss();
