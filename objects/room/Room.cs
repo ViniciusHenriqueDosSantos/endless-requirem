@@ -45,6 +45,10 @@ public partial class Room : Node2D
 	[Export] public bool FinalWaveTank;
 	[Export] public string FinalWaveMessage = "";
 	[Export] public bool HasBoss;
+
+	// Ajuste dos fantasmas desta sala: vida e velocidade (1 = normal).
+	[Export] public float EnemyHealthScale = 1f;
+	[Export] public float EnemySpeedScale = 1f;
 	[Export] public bool StartOnEnter = true;
 	[Export] public bool Active = true;
 	[Export] public Marker2D RespawnPoint;
@@ -292,6 +296,8 @@ public partial class Room : Node2D
 	{
 		Enemy enemy = EnemyScene.Instantiate<Enemy>();
 		enemy.Type = kind;
+		enemy.HealthScale = EnemyHealthScale;
+		enemy.SpeedScale = EnemySpeedScale;
 		enemy.Position = localPosition;
 		enemy.TreeExiting += () => _enemies.Remove(enemy);
 		_enemies.Add(enemy);

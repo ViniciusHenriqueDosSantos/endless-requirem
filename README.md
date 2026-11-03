@@ -6,7 +6,7 @@ Jogo de ação e tiro top-down feito em **Godot 4.7.2 (.NET / C#)** para a disci
 
 > Estado atual: **Fases 1 e 2 completas em cinza**.
 > - Fase 1: Entrada → Portaria → RU → Corredor → Cantina (Tia da Cantina) → Elevador.
-> - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (chave) → caixas (livro) → devolução → Bibliotecária (furtividade + luta) → escada contra o relógio (voltas em torno do vão, fantasmas pesados parados nos degraus) até o 4º andar.
+> - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (chave) → caixas (livro) → devolução → Bibliotecária (surda, enxerga pela luz: furtividade e caçada) → escada contra o relógio (voltas em torno do vão, fantasmas pesados parados nos degraus) até o 4º andar.
 > - A Fase 3 e a arte vêm depois. Salas de teste (`levels/test_rooms*.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
 
 ---
@@ -75,7 +75,8 @@ objects/                uma pasta por objeto do jogo
   area_trigger/         área que avisa quando o jogador entra (elevador)
   message_screen/       tela cheia: REPROVADO, fim de fase
   boss/                 chefe (um código só; cada chefe é um .tres, ex.: tia_cantina.tres)
-  librarian/            Bibliotecária (lanterna, furtividade) e as luminárias do escudo
+  librarian/            Bibliotecária (lanterna, caçada) e as luminárias das salas de estudo
+  decor/                assinaturas dos alunos nas paredes (Fase 2)
   game_state/           o que passa de uma fase para a outra (armas, pontos, tempo)
 tools/levelgen/         geradores das plantas (Python). As cenas levels/*.tscn são geradas por eles;
                         mudanças de planta grandes ficam mais fáceis editando o gerador e rodando de novo

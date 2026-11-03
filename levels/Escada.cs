@@ -164,7 +164,7 @@ public partial class Escada : LevelBase
 	{
 		bool firstFloor = _floor == FirstFloor;
 		Subida.SurviveSpawnInterval = firstFloor ? 1.6f : 1.0f;
-		Subida.SurviveMaxAlive = _blockPoints.Count + (firstFloor ? 3 : 5);
+		Subida.SurviveMaxAlive = _blockPoints.Count + (firstFloor ? 4 : 6);
 		Subida.FastChance = firstFloor ? 50 : 80;
 	}
 
