@@ -1,63 +1,65 @@
-# Gera levels/escada.tscn: escada em espiral (vista de cima), do 2º ao 4º andar.
-# Cada volta da espiral é um andar. Uso: python3 tools/levelgen/gen_escada.py levels/escada.tscn
+# Gera levels/escada.tscn: escada circular vista de cima (fim da Fase 2).
+# É uma volta só: o jogador dá voltas no mesmo anel e cada volta completa é um andar
+# (o contador na tela mostra onde ele está). No 4º andar a porta de saída abre.
+# Uso: python3 tools/levelgen/gen_escada.py levels/escada.tscn
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 from lib import Level, T, v, col, px, root_node, CONCRETE
 
 L = Level()
-LAPS = 2            # voltas (2º -> 3º -> 4º)
-W = 3               # largura do corredor da escada (tiles)
-STEP = W + 1        # corredor + parede
-
-left, top, right, bottom = 2, 2, 22, 22
-L.add_floor(1, 23, 4, 26)              # patamar de chegada (começo); só encosta na subida da esquerda
-start_bottom = 23
-lap_starts = []                        # onde começa cada volta (para o contador de andar)
-for lap in range(LAPS):
-    L.add_floor(left, top, left + W - 1, start_bottom)        # sobe pela esquerda
-    L.add_floor(left, top, right, top + W - 1)                # vai para a direita em cima
-    L.add_floor(right - W + 1, top, right, bottom)            # desce pela direita
-    L.add_floor(left + STEP, bottom - W + 1, right, bottom)   # volta para a esquerda embaixo
-    lap_starts.append((left + STEP, bottom - W + 1))
-    start_bottom = bottom
-    left += STEP; top += STEP; right -= STEP; bottom -= STEP
-L.add_floor(left, top, left + W - 1, start_bottom)            # última subida até o topo
-L.add_floor(left, top, right, bottom)                         # sala do 4º andar (centro)
-center = ((left + right) / 2, (top + bottom) / 2)
+W = 3                                   # largura do anel (tiles)
+X0, Y0, X1, Y1 = 2, 5, 20, 19           # contorno de fora do anel
+for (a, b, c, d) in [(X0, Y0, X1, Y0 + W - 1), (X0, Y1 - W + 1, X1, Y1),
+                     (X0, Y0, X0 + W - 1, Y1), (X1 - W + 1, Y0, X1, Y1)]:
+    L.add_floor(a, b, c, d)
+L.add_floor(2, 20, 4, 22)               # patamar de entrada (embaixo, à esquerda)
+L.add_floor(10, 4, 12, 4)               # porta de saída (em cima)
+L.add_floor(9, 1, 13, 3)                # patamar do 4º andar
 L.build_walls()
 
 L.res('Script', 'res://levels/Escada.cs', 'escada')
 for name, path in [('player', 'player/player'), ('hud', 'hud/hud'), ('message_screen', 'message_screen/message_screen'),
-                   ('room', 'room/room'), ('area_trigger', 'area_trigger/area_trigger')]:
+                   ('room', 'room/room'), ('area_trigger', 'area_trigger/area_trigger'), ('door', 'door/door')]:
     L.res('PackedScene', f'res://objects/{path}.tscn', name)
 L.tile_layers()
 
+# vão da escada (centro): só decoração escura
+L.node("Vao", type="ColorRect", props={"z_index": "-5", "offset_left": f"{(X0 + W) * T}.0",
+       "offset_top": f"{(Y0 + W) * T}.0", "offset_right": f"{(X1 - W + 1) * T}.0",
+       "offset_bottom": f"{(Y1 - W + 1) * T}.0", "mouse_filter": "2", "color": col(0.05, 0.06, 0.07, 1)})
+L.prop("PlacaVao", ".", 11 * T + 32, 13 * T, 360, 40, col(0, 0, 0, 0), "vão da escada", font=18,
+       text_color=col(0.35, 0.4, 0.38), solid=False, z=1)
+
 # sala única: fantasmas surgem sem parar enquanto o jogador sobe
-L.node("Subida", inst="room", props={"position": v(2 * T, 2 * T), "Size": v(21 * T, 21 * T), "Waves": "0",
-       "SurviveTime": "9999.0", "SurviveSpawnInterval": "1.5", "SurviveMaxAlive": "5", "SpawnAnywhere": "true",
-       "RespawnPoint": 'NodePath("Respawn")'}, node_paths=["RespawnPoint"])
-L.node("Respawn", "Subida", type="Marker2D", props={"position": v(3 * T - 2 * T, 25 * T - 2 * T)})
+L.node("Subida", inst="room", props={"position": v(X0 * T, Y0 * T), "Size": v((X1 - X0 + 1) * T, (Y1 - Y0 + 1) * T),
+       "Waves": "0", "SurviveTime": "9999.0", "SurviveSpawnInterval": "1.5", "SurviveMaxAlive": "5",
+       "SpawnAnywhere": "true", "RespawnPoint": 'NodePath("Respawn")'}, node_paths=["RespawnPoint"])
+L.node("Respawn", "Subida", type="Marker2D", props={"position": v(3 * T + 32 - X0 * T, 21 * T + 32 - Y0 * T)})
 
-# marcas de andar: ao entrar na 2ª volta = 3º andar; na sala do centro = 4º andar
-lx, ly = 2 + STEP, 2 + STEP   # canto de cima da 2ª volta (subida da esquerda)
-L.node("Andar3", inst="area_trigger", props={"position": v(lx * T, 14 * T), "Size": v(W * T, 2 * T),
-       "Color": col(0.3, 1, 0.55, 0.12)})
-L.node("Topo", inst="area_trigger", props={"position": v((center[0] - 1) * T, (center[1] - 1) * T),
-       "Size": v(3 * T, 3 * T), "Text": '"4º ANDAR"'})
+# marcos da volta, na ordem em que se sobe: esquerda -> cima -> direita -> baixo
+L.node("Marcos", type="Node2D")
+for i, (x, y, w, h) in enumerate([(X0, 11, W, 2), (10, Y0, 3, W), (X1 - W + 1, 11, W, 2), (10, Y1 - W + 1, 3, W)]):
+    L.node(f"Marco{i}", "Marcos", inst="area_trigger", props={"position": v(x * T, y * T), "Size": v(w * T, h * T),
+           "Color": col(0.3, 1, 0.55, 0.06)})
 
-# placas e degraus pintados no chão (decoração)
-L.prop("PlacaEscada", ".", 3 * T, 23 * T + 8, 220, 30, col(0, 0, 0, 0), "ESCADA  -  2º ANDAR", font=16,
+# setas pintadas no chão indicando o sentido da subida
+for i, (x, y, t) in enumerate([(3, 15, "↑"), (3, 9, "↑"), (6, 6, "→"), (16, 6, "→"), (19, 9, "↓"), (19, 15, "↓"),
+                               (16, 18, "←"), (6, 18, "←")]):
+    L.prop(f"Seta{i}", ".", x * T + 32, y * T + 48, 64, 64, col(0, 0, 0, 0), t, font=40,
+           text_color=col(0.55, 0.5, 0.42, 0.8), solid=False, z=-4)
+
+L.node("PortaSaida", inst="door", props={"position": v(11 * T + 32, 5 * T), "Size": v(3 * T, 64), "StartsLocked": "true",
+       "MessageWhenLocked": "true", "Color": col(0.9, 0.75, 0.3, 1),
+       "LockedMessage": '"Porta do 4º andar. Ainda não chegou lá: continue subindo."'})
+L.node("Saida", inst="area_trigger", props={"position": v(9 * T, 1 * T), "Size": v(5 * T, 3 * T), "Text": '"4º ANDAR"'})
+L.prop("PlacaEntrada", ".", 3 * T + 32, 20 * T + 8, 220, 30, col(0, 0, 0, 0), "ESCADA", font=16,
        text_color=col(0.95, 0.9, 0.6), solid=False, z=1)
-for (x, y) in sorted(L.floor):
-    if (x + y) % 4 == 0 and y < 23:
-        L.node(f"Degrau_{x}_{y}", type="ColorRect", props={"z_index": "-5", "offset_left": f"{x*T}.0",
-               "offset_top": f"{y*T + 28}.0", "offset_right": f"{(x+1)*T}.0", "offset_bottom": f"{y*T + 36}.0",
-               "mouse_filter": "2", "color": col(0.75, 0.7, 0.6, 0.6)})
 
-L.node("Player", inst="player", props={"position": v(3 * T, 25 * T + 32), "StartWithAllWeapons": "false"})
+L.node("Player", inst="player", props={"position": v(3 * T + 32, 21 * T + 48), "StartWithAllWeapons": "false"})
 L.node("Hud", inst="hud", props={"Player": 'NodePath("../Player")'}, node_paths=["Player"])
 L.node("MessageScreen", inst="message_screen")
 
-paths = {"Player": "Player", "Hud": "Hud", "Screen": "MessageScreen", "Subida": "Subida", "Andar3": "Andar3", "Topo": "Topo"}
+paths = {"Player": "Player", "Hud": "Hud", "Screen": "MessageScreen", "Subida": "Subida", "Marcos": "Marcos",
+         "PortaSaida": "PortaSaida", "Saida": "Saida"}
 L.write(sys.argv[1], root_node("Escada", "escada", paths))
-print("chão", len(L.floor), "centro", center, "voltas", lap_starts)
+print("chão", len(L.floor))

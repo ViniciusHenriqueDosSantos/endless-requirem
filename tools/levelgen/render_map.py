@@ -94,7 +94,7 @@ LABELS["fase_1"] = [("ENTRADA", 18, 57.5), ("PORTARIA", 24, 45.2), ("CALÇADA", 
 LABELS["fase_2"] = [("BIBLIOTECA", 9, 11), ("HALL DAS CARONAS", 12, 36.5), ("CORREDOR", 26.5, 30), ("ACHADOS", 34.5, 16.6),
                     ("ENTRADA BIBL.", 21, 22.5), ("ELEVADOR (quebrado)", 21, 5.5), ("ESCADA", 26.5, 1.6),
                     ("CHEGADA", 21, 45.2), ("ESTUDO", 9, 3.4)]
-LABELS["escada"] = [("4º ANDAR", 12, 12), ("COMEÇO", 4, 26.5)]
+LABELS["escada"] = [("SAÍDA 4º ANDAR", 11.5, 0.6), ("COMEÇO", 3.5, 23.4)]
 import os as _os
 labels = LABELS.get(_os.path.splitext(_os.path.basename(src))[0], [])
 for t, tx, ty in labels:

@@ -129,6 +129,26 @@ public partial class Hud : CanvasLayer
 		_pointer.PointAt(clamped, (screen - view.GetCenter()).Angle());
 	}
 
+	// Atalhos de teste (só ao rodar pelo editor, nunca no jogo exportado):
+	// F1 = Fase 1, F2 = Fase 2, F3 = escada. Começam com o equipamento padrão daquela fase.
+	public override void _UnhandledInput(InputEvent @event)
+	{
+		if (!OS.IsDebugBuild() || @event is not InputEventKey { Pressed: true, Echo: false } key) return;
+
+		string scene = key.Keycode switch
+		{
+			Key.F1 => "res://levels/fase_1.tscn",
+			Key.F2 => "res://levels/fase_2.tscn",
+			Key.F3 => "res://levels/escada.tscn",
+			_ => "",
+		};
+		if (scene == "") return;
+
+		GameState.Clear();
+		GetTree().Paused = false;
+		GetTree().CallDeferred(SceneTree.MethodName.ChangeSceneToFile, scene);
+	}
+
 	public void SetCounter(string text)
 	{
 		_counter.Text = text;
