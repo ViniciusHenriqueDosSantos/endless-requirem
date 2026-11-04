@@ -4,7 +4,10 @@ Jogo de ação e tiro top-down feito em **Godot 4.7.2 (.NET / C#)** para a disci
 
 2061. A IA chamada MENTORA fechou as faculdades. Você volta ao campus abandonado, cheio de fantasmas de alunos que nunca se formaram, para buscar o seu diploma.
 
-> Estado atual: **Fase 1 completa em cinza** (Entrada → Portaria → RU → Corredor → Cantina com a Tia da Cantina → Elevador). A arte chega na MVP 3. A sala de teste (`levels/test_rooms.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
+> Estado atual: **Fases 1 e 2 completas em cinza**.
+> - Fase 1: Entrada → Portaria → RU → Corredor → Cantina (Tia da Cantina) → Elevador.
+> - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (chave) → caixas (livro) → devolução → Bibliotecária (surda, enxerga pela luz: furtividade e caçada) → escada contra o relógio (voltas em torno do vão, fantasmas pesados parados nos degraus) até o 4º andar.
+> - A Fase 3 e a arte vêm depois. Salas de teste (`levels/test_rooms*.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
 
 ---
 
@@ -37,6 +40,8 @@ Na primeira vez, o Godot compila o código C# e pode demorar alguns segundos.
 | Dash (esquiva rápida) | **Espaço** (andando) |
 | Trocar de arma | **1**, **2**, **3** ou **roda do mouse** |
 
+**Atalhos de teste** (só rodando pelo editor): **F1** = Fase 1, **F2** = Fase 2, **F3** = escada.
+
 Armas: 1 = Laser · 2 = Escopeta · 3 = Canhão Perfurante. Na Fase 1 você começa só com o Laser; as outras vêm dos chefes.
 
 Para pegar itens (crachá, marmita), é só encostar neles. Pilhas de papel se desfazem com tiros.
@@ -46,6 +51,11 @@ Para pegar itens (crachá, marmita), é só encostar neles. Pilhas de papel se d
 ```
 levels/fase_1.tscn      Fase 1 (é a que abre com F5)
 levels/Fase1.cs         roteiro da Fase 1: objetivos e o que destranca o quê
+levels/fase_2.tscn      Fase 2 (Biblioteca); para testar direto, abra a cena e aperte F6
+levels/Fase2.cs         roteiro da Fase 2
+levels/escada.tscn      escada (fim da Fase 2): uma volta em torno do vão; cada volta = 1 andar; tempo limite
+levels/Escada.cs        roteiro da escada
+levels/LevelBase.cs     o que toda fase faz igual (REPROVADO, fim de fase, levar armas)
 levels/test_rooms.tscn  sala de teste da MVP 1
 main.tscn / Main.cs     arena antiga de ondas infinitas
 objects/                uma pasta por objeto do jogo
@@ -65,6 +75,11 @@ objects/                uma pasta por objeto do jogo
   area_trigger/         área que avisa quando o jogador entra (elevador)
   message_screen/       tela cheia: REPROVADO, fim de fase
   boss/                 chefe (um código só; cada chefe é um .tres, ex.: tia_cantina.tres)
+  librarian/            Bibliotecária (lanterna, caçada) e as luminárias das salas de estudo
+  decor/                assinaturas dos alunos nas paredes (Fase 2)
+  game_state/           o que passa de uma fase para a outra (armas, pontos, tempo)
+tools/levelgen/         geradores das plantas (Python). As cenas levels/*.tscn são geradas por eles;
+                        mudanças de planta grandes ficam mais fáceis editando o gerador e rodando de novo
   arena_grid/           grade do chão
 tilesets/               peças de chão e parede (por enquanto, provisórias)
 sprites/                imagens

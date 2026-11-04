@@ -33,6 +33,9 @@ public partial class Player : CharacterBody2D
 	// Avisado quando a vida zera. Se ninguém estiver ouvindo, a cena recomeça.
 	public event Action Died;
 
+	// Avisado a cada tiro (nenhum inimigo usa por enquanto; a Bibliotecária é surda).
+	public event Action Fired;
+
 	public int Health { get; private set; }
 	public int Score { get; private set; }
 	public Weapon Weapon { get; private set; }
@@ -92,6 +95,24 @@ public partial class Player : CharacterBody2D
 		Health++;
 		StatsChanged?.Invoke();
 		return true;
+	}
+
+	// Volta armas e pontuação guardadas (troca de fase). weaponIndices = posições em Weapons.
+	public void RestoreState(System.Collections.Generic.IEnumerable<int> weaponIndices, int score)
+	{
+		_ownedWeapons.Clear();
+		foreach (int index in weaponIndices)
+			if (index >= 0 && index < Weapons.Count && !_ownedWeapons.Contains(Weapons[index]))
+				_ownedWeapons.Add(Weapons[index]);
+		if (_ownedWeapons.Count == 0)
+			_ownedWeapons.Add(Weapons[0]);
+
+		foreach (Weapon weapon in _ownedWeapons)
+			_ammo[weapon] = weapon.MagazineSize;
+		_reloadTimer = 0;
+		Weapon = _ownedWeapons[0];
+		Score = score;
+		StatsChanged?.Invoke();
 	}
 
 	public void HealFull()
@@ -304,6 +325,7 @@ public partial class Player : CharacterBody2D
 		StatsChanged?.Invoke();
 
 		TriggerShake(Weapon.Shake);
+		Fired?.Invoke();
 	}
 
 	private void UpdateMovement(float dt)

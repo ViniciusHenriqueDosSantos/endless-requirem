@@ -39,6 +39,7 @@ public partial class Fase1 : Node2D
 
 	public override void _Ready()
 	{
+		GameState.Clear();
 		_startPosition = Player.GlobalPosition;
 		Player.Died += OnPlayerDied;
 		Screen.Closed += OnScreenClosed;
@@ -157,7 +158,7 @@ public partial class Fase1 : Node2D
 			"FIM DA FASE 1",
 			"A Tia da Cantina caiu. O elevador ainda funciona.\nPróxima parada: Biblioteca.\n\n" +
 			$"Pontuação: {Player.Score}     Tempo: {minutes}:{seconds:00}",
-			"Aperte qualquer tecla para jogar de novo");
+			"Aperte qualquer tecla para subir até a Biblioteca");
 	}
 
 	private void OnPlayerDied()
@@ -168,7 +169,11 @@ public partial class Fase1 : Node2D
 	private void OnScreenClosed()
 	{
 		if (_finished)
-			GetTree().ReloadCurrentScene();
+		{
+			// Leva as armas, a pontuação e o tempo para a Fase 2.
+			GameState.Save(Player, _time);
+			GetTree().ChangeSceneToFile("res://levels/fase_2.tscn");
+		}
 		else
 			Respawn();
 	}
