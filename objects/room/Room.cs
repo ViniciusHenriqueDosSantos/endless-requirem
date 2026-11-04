@@ -40,7 +40,15 @@ public partial class Room : Node2D
 	[Export] public int SurviveMaxAlive = 6;
 
 	[Export] public bool SpawnAnywhere;
+
+	// Última onda traz um fantasma grande (Tank) a mais. Onde ele caiu fica em FinalEnemyPosition.
+	[Export] public bool FinalWaveTank;
+	[Export] public string FinalWaveMessage = "";
 	[Export] public bool HasBoss;
+
+	// Ajuste dos fantasmas desta sala: vida e velocidade (1 = normal).
+	[Export] public float EnemyHealthScale = 1f;
+	[Export] public float EnemySpeedScale = 1f;
 	[Export] public bool StartOnEnter = true;
 	[Export] public bool Active = true;
 	[Export] public Marker2D RespawnPoint;
@@ -66,11 +74,13 @@ public partial class Room : Node2D
 	private float _spawnTimer;
 	private float _pauseTimer;
 	private float _timeLeft;
+	private bool _spawnFinalEnemy;
 
 	private Label _banner;
 	private float _bannerTimer;
 
 	public int AliveEnemies => _enemies.Count;
+	public Vector2 FinalEnemyPosition { get; private set; }
 	public bool IsCleared => _state == State.Cleared;
 	public bool IsFighting => _state == State.Fighting;
 	public float TimeLeft => _timeLeft;
@@ -171,6 +181,7 @@ public partial class Room : Node2D
 	public void ResetRoom()
 	{
 		FreeEnemies();
+		_spawnFinalEnemy = false;
 		_state = State.Waiting;
 		_toSpawn = 0;
 		_timeLeft = 0;
@@ -253,17 +264,45 @@ public partial class Room : Node2D
 		_wave++;
 		_toSpawn = EnemiesPerWave + _wave - 1;
 		_spawnTimer = 0;
+
+		if (_wave == Waves && FinalWaveTank)
+		{
+			_spawnFinalEnemy = true;
+			ShowBanner(FinalWaveMessage != "" ? FinalWaveMessage : $"ONDA {_wave}/{Waves}");
+			return;
+		}
+
 		ShowBanner($"ONDA {_wave}/{Waves}");
 	}
 
 	private void SpawnEnemy()
 	{
+		if (_spawnFinalEnemy)
+		{
+			// Inimigo especial da última onda (ex.: o zelador). Guarda onde ele caiu.
+			_spawnFinalEnemy = false;
+			Enemy special = CreateEnemy(Enemy.Kind.Tank, PickSpawnPoint());
+			special.TreeExiting += () => FinalEnemyPosition = special.GlobalPosition;
+			return;
+		}
+
+		CreateEnemy(RollEnemyType(), PickSpawnPoint());
+	}
+
+	// Cria um fantasma num ponto do mundo (ex.: saindo de uma caixa). Some se a sala reiniciar.
+	public Enemy SpawnEnemyAt(Vector2 globalPosition, Enemy.Kind kind) => CreateEnemy(kind, ToLocal(globalPosition));
+
+	private Enemy CreateEnemy(Enemy.Kind kind, Vector2 localPosition)
+	{
 		Enemy enemy = EnemyScene.Instantiate<Enemy>();
-		enemy.Type = RollEnemyType();
-		enemy.Position = PickSpawnPoint();
+		enemy.Type = kind;
+		enemy.HealthScale = EnemyHealthScale;
+		enemy.SpeedScale = EnemySpeedScale;
+		enemy.Position = localPosition;
 		enemy.TreeExiting += () => _enemies.Remove(enemy);
 		_enemies.Add(enemy);
 		AddChild(enemy);
+		return enemy;
 	}
 
 	private void FreeEnemies()

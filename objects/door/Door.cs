@@ -11,6 +11,9 @@ public partial class Door : StaticBody2D
 {
 	[Signal] public delegate void UnlockedEventHandler();
 
+	// O jogador encostou com a porta trancada (e a mensagem apareceu).
+	[Signal] public delegate void LockedTouchedEventHandler();
+
 	private Vector2 _size = new(128, 64);
 	private bool _startsLocked;
 	private Color _color = new(0.1f, 0.85f, 0.45f);
@@ -18,9 +21,23 @@ public partial class Door : StaticBody2D
 	[Export] public Vector2 Size { get => _size; set { _size = value; QueueRedraw(); } }
 	[Export] public bool StartsLocked { get => _startsLocked; set { _startsLocked = value; QueueRedraw(); } }
 	[Export] public Color Color { get => _color; set { _color = value; QueueRedraw(); } }
+
+	// Em vez de grade, uma pilha de cadeiras bloqueando a passagem (Hall das Caronas).
+	// Destrancada, as cadeiras somem (voltam para o lugar).
+	private bool _chairStyle;
+	[Export] public bool ChairStyle { get => _chairStyle; set { _chairStyle = value; QueueRedraw(); } }
+
+	// Porta escondida: trancada, parece um pedaço de parede (ex.: saída do 4º andar na escada).
+	private bool _wallStyle;
+	[Export] public bool WallStyle { get => _wallStyle; set { _wallStyle = value; QueueRedraw(); } }
+
 	[Export] public string RequiredItem = "";
 	[Export] public string LockedMessage = "Trancado.";
 	[Export] public string UnlockMessage = "";
+
+	// Ligado: mostra LockedMessage quando o jogador encosta na porta trancada,
+	// mesmo sem RequiredItem (ex.: "Biblioteca fechada").
+	[Export] public bool MessageWhenLocked;
 
 	private const float BarWidth = 6f;
 	private const float BarSpacing = 16f;
@@ -46,7 +63,7 @@ public partial class Door : StaticBody2D
 		};
 		AddChild(_collision);
 
-		if (RequiredItem != "")
+		if (RequiredItem != "" || MessageWhenLocked)
 			CreateKeySensor();
 	}
 
@@ -69,15 +86,16 @@ public partial class Door : StaticBody2D
 
 		Hud hud = GetTree().GetFirstNodeInGroup("hud") as Hud;
 
-		if (player.HasItem(RequiredItem))
+		if (RequiredItem != "" && player.HasItem(RequiredItem))
 		{
 			Unlock();
 			if (UnlockMessage != "")
-				hud?.ShowMessage(UnlockMessage);
+				hud?.ShowMessage(UnlockMessage, 3.5f);
 		}
-		else
+		else if (LockedMessage != "")
 		{
-			hud?.ShowMessage(LockedMessage);
+			hud?.ShowMessage(LockedMessage, 4f);
+			EmitSignal(SignalName.LockedTouched);
 		}
 	}
 
@@ -103,6 +121,21 @@ public partial class Door : StaticBody2D
 		bool locked = Engine.IsEditorHint() ? StartsLocked : IsLocked;
 		Rect2 rect = new(-Size.X / 2, -Size.Y, Size.X, Size.Y);
 
+		if (ChairStyle)
+		{
+			if (locked || Engine.IsEditorHint())
+				DrawChairPile(rect, locked);
+			return;
+		}
+
+		if (WallStyle && locked)
+		{
+			// Mesmas cores da parede do tileset (frente da parede).
+			DrawRect(rect, new Color(0.588f, 0.596f, 0.612f));
+			DrawRect(rect, new Color(0.463f, 0.471f, 0.494f), false, 2f);
+			return;
+		}
+
 		if (!locked)
 		{
 			DrawRect(rect, new Color(Color, 0.18f));
@@ -122,5 +155,30 @@ public partial class Door : StaticBody2D
 				DrawRect(new Rect2(x - BarWidth / 2, rect.Position.Y, BarWidth, rect.Size.Y), Color);
 		}
 		DrawRect(rect, Color, false, 3f);
+	}
+
+	// Cadeiras empilhadas e tortas, preenchendo a passagem.
+	private void DrawChairPile(Rect2 rect, bool locked)
+	{
+		Color chair = locked ? new Color(0.18f, 0.18f, 0.2f) : new Color(0.18f, 0.18f, 0.2f, 0.3f);
+		Color edge = new(0.45f, 0.45f, 0.5f);
+		bool vertical = rect.Size.Y > rect.Size.X;
+		int count = Mathf.Max(2, Mathf.RoundToInt((vertical ? rect.Size.Y : rect.Size.X) / 44f));
+
+		for (int i = 0; i < count; i++)
+		{
+			float t = (i + 0.5f) / count;
+			Vector2 center = vertical
+				? new Vector2(rect.GetCenter().X + (i % 2 == 0 ? -8 : 8), rect.Position.Y + rect.Size.Y * t)
+				: new Vector2(rect.Position.X + rect.Size.X * t, rect.GetCenter().Y + (i % 2 == 0 ? -8 : 8));
+
+			DrawSetTransform(center, (i % 3 - 1) * 0.35f, Vector2.One);
+			DrawRect(new Rect2(-20, -6, 40, 12), chair);                 // assento
+			DrawRect(new Rect2(-20, -30, 8, 26), chair);                 // encosto
+			DrawLine(new Vector2(-16, 6), new Vector2(-18, 18), chair, 3f);
+			DrawLine(new Vector2(16, 6), new Vector2(18, 18), chair, 3f);
+			DrawRect(new Rect2(-20, -6, 40, 12), edge, false, 1.5f);
+		}
+		DrawSetTransform(Vector2.Zero, 0f, Vector2.One);
 	}
 }

@@ -3,6 +3,13 @@ using System.Collections.Generic;
 
 public partial class Enemy : CharacterBody2D
 {
+	// Ligado: o fantasma fica parado onde nasceu (bloqueio). Quem cria liga antes de pôr na cena.
+	public bool Stationary;
+
+	// Ajuste da fase (ex.: Fase 2: fantasmas com menos vida e mais rápidos). Quem cria define antes de pôr na cena.
+	public float HealthScale = 1f;
+	public float SpeedScale = 1f;
+
 	public enum Kind { Normal, Fast, Tank }
 
 	private readonly record struct Stats(float Speed, int Health, int ScoreValue, Color Color, float Scale);
@@ -87,7 +94,7 @@ public partial class Enemy : CharacterBody2D
 		_hitBox = GetNode<Area2D>("HitBox");
 
 		_stats = StatsByKind[Type];
-		_health = _stats.Health;
+		_health = Mathf.Max(1, Mathf.RoundToInt(_stats.Health * HealthScale));
 		_sprite.Modulate = _stats.Color;
 		// A origem fica nos pés: tudo que está acima dela encolhe/cresce junto com o tipo.
 		_sprite.Scale = Vector2.One * _stats.Scale;
@@ -151,6 +158,13 @@ public partial class Enemy : CharacterBody2D
 
 		_knockback = _knockback.MoveToward(Vector2.Zero, KnockbackDecay * dt);
 
+		// Parado de propósito (ex.: fantasma pesado bloqueando a escada): não persegue, só machuca quem encosta.
+		if (Stationary)
+		{
+			Velocity = Vector2.Zero;
+			return;
+		}
+
 		Vector2 toPlayer = _player.GlobalPosition - GlobalPosition;
 		float distance = toPlayer.Length();
 		Vector2 dir = toPlayer / Mathf.Max(distance, 1f);
@@ -181,7 +195,7 @@ public partial class Enemy : CharacterBody2D
 			move = dir.Rotated(_flankAngle * flankWeight) + Separation() * SeparationStrength;
 		}
 		move = move.Normalized();
-		Velocity = move * _stats.Speed * SpeedFactor() + _knockback;
+		Velocity = move * _stats.Speed * SpeedScale * SpeedFactor() + _knockback;
 		MoveAndSlide();
 	}
 
