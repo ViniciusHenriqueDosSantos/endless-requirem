@@ -1,0 +1,486 @@
+{
+ "tiles": {
+  "bloquete0": [
+   0,
+   1
+  ],
+  "bloquete1": [
+   1,
+   1
+  ],
+  "bloquete2": [
+   2,
+   1
+  ],
+  "bloquete3": [
+   3,
+   1
+  ],
+  "calcada0": [
+   0,
+   2
+  ],
+  "calcada1": [
+   1,
+   2
+  ],
+  "calcada2": [
+   2,
+   2
+  ],
+  "calcada3": [
+   3,
+   2
+  ],
+  "asfalto0": [
+   0,
+   3
+  ],
+  "asfalto1": [
+   1,
+   3
+  ],
+  "asfalto2": [
+   2,
+   3
+  ],
+  "asfalto3": [
+   3,
+   3
+  ],
+  "sextavado0": [
+   0,
+   4
+  ],
+  "sextavado1": [
+   1,
+   4
+  ],
+  "sextavado2": [
+   2,
+   4
+  ],
+  "sextavado3": [
+   3,
+   4
+  ],
+  "praca0": [
+   0,
+   5
+  ],
+  "praca1": [
+   1,
+   5
+  ],
+  "praca2": [
+   2,
+   5
+  ],
+  "praca3": [
+   3,
+   5
+  ],
+  "granito0": [
+   0,
+   6
+  ],
+  "granito1": [
+   1,
+   6
+  ],
+  "granito2": [
+   2,
+   6
+  ],
+  "granito3": [
+   3,
+   6
+  ],
+  "ceramica0": [
+   0,
+   7
+  ],
+  "ceramica1": [
+   1,
+   7
+  ],
+  "ceramica2": [
+   2,
+   7
+  ],
+  "ceramica3": [
+   3,
+   7
+  ],
+  "bloquete_tatil0": [
+   4,
+   1
+  ],
+  "bloquete_tatil1": [
+   5,
+   1
+  ],
+  "bloquete_meiofio0": [
+   6,
+   1
+  ],
+  "bloquete_meiofio1": [
+   7,
+   1
+  ],
+  "calcada_meiofio": [
+   4,
+   2
+  ],
+  "asfalto_faixa": [
+   4,
+   3
+  ],
+  "asfalto_meiofio": [
+   5,
+   3
+  ],
+  "aco0": [
+   0,
+   8
+  ],
+  "aco1": [
+   1,
+   8
+  ],
+  "grama0": [
+   2,
+   8
+  ],
+  "grama1": [
+   3,
+   8
+  ],
+  "laje0": [
+   4,
+   8
+  ],
+  "laje1": [
+   5,
+   8
+  ],
+  "laje2": [
+   6,
+   8
+  ],
+  "grama2": [
+   7,
+   8
+  ],
+  "topo_interno_0": [
+   0,
+   9
+  ],
+  "topo_interno_1": [
+   1,
+   9
+  ],
+  "topo_interno_2": [
+   2,
+   9
+  ],
+  "topo_interno_3": [
+   3,
+   9
+  ],
+  "topo_interno_4": [
+   4,
+   9
+  ],
+  "topo_interno_5": [
+   5,
+   9
+  ],
+  "topo_interno_6": [
+   6,
+   9
+  ],
+  "topo_interno_7": [
+   7,
+   9
+  ],
+  "topo_interno_8": [
+   8,
+   9
+  ],
+  "topo_interno_9": [
+   9,
+   9
+  ],
+  "topo_interno_10": [
+   10,
+   9
+  ],
+  "topo_interno_11": [
+   11,
+   9
+  ],
+  "topo_interno_12": [
+   12,
+   9
+  ],
+  "topo_interno_13": [
+   13,
+   9
+  ],
+  "topo_interno_14": [
+   14,
+   9
+  ],
+  "topo_interno_15": [
+   15,
+   9
+  ],
+  "frente_interno_0": [
+   0,
+   12
+  ],
+  "frente_interno_1": [
+   1,
+   12
+  ],
+  "frente_interno_2": [
+   2,
+   12
+  ],
+  "frente_interno_3": [
+   3,
+   12
+  ],
+  "topo_fachada_0": [
+   0,
+   10
+  ],
+  "topo_fachada_1": [
+   1,
+   10
+  ],
+  "topo_fachada_2": [
+   2,
+   10
+  ],
+  "topo_fachada_3": [
+   3,
+   10
+  ],
+  "topo_fachada_4": [
+   4,
+   10
+  ],
+  "topo_fachada_5": [
+   5,
+   10
+  ],
+  "topo_fachada_6": [
+   6,
+   10
+  ],
+  "topo_fachada_7": [
+   7,
+   10
+  ],
+  "topo_fachada_8": [
+   8,
+   10
+  ],
+  "topo_fachada_9": [
+   9,
+   10
+  ],
+  "topo_fachada_10": [
+   10,
+   10
+  ],
+  "topo_fachada_11": [
+   11,
+   10
+  ],
+  "topo_fachada_12": [
+   12,
+   10
+  ],
+  "topo_fachada_13": [
+   13,
+   10
+  ],
+  "topo_fachada_14": [
+   14,
+   10
+  ],
+  "topo_fachada_15": [
+   15,
+   10
+  ],
+  "frente_fachada_0": [
+   0,
+   13
+  ],
+  "frente_fachada_1": [
+   1,
+   13
+  ],
+  "frente_fachada_2": [
+   2,
+   13
+  ],
+  "frente_fachada_3": [
+   3,
+   13
+  ],
+  "topo_externo_0": [
+   0,
+   11
+  ],
+  "topo_externo_1": [
+   1,
+   11
+  ],
+  "topo_externo_2": [
+   2,
+   11
+  ],
+  "topo_externo_3": [
+   3,
+   11
+  ],
+  "topo_externo_4": [
+   4,
+   11
+  ],
+  "topo_externo_5": [
+   5,
+   11
+  ],
+  "topo_externo_6": [
+   6,
+   11
+  ],
+  "topo_externo_7": [
+   7,
+   11
+  ],
+  "topo_externo_8": [
+   8,
+   11
+  ],
+  "topo_externo_9": [
+   9,
+   11
+  ],
+  "topo_externo_10": [
+   10,
+   11
+  ],
+  "topo_externo_11": [
+   11,
+   11
+  ],
+  "topo_externo_12": [
+   12,
+   11
+  ],
+  "topo_externo_13": [
+   13,
+   11
+  ],
+  "topo_externo_14": [
+   14,
+   11
+  ],
+  "topo_externo_15": [
+   15,
+   11
+  ],
+  "frente_externo_0": [
+   0,
+   14
+  ],
+  "frente_externo_1": [
+   1,
+   14
+  ],
+  "frente_externo_2": [
+   2,
+   14
+  ],
+  "frente_externo_3": [
+   3,
+   14
+  ],
+  "frente_interno_janela": [
+   4,
+   12
+  ],
+  "frente_interno_extintor": [
+   5,
+   12
+  ],
+  "frente_interno_saida": [
+   6,
+   12
+  ],
+  "frente_interno_mural": [
+   7,
+   12
+  ],
+  "frente_fachada_janela": [
+   4,
+   13
+  ],
+  "frente_fachada_ar": [
+   5,
+   13
+  ],
+  "frente_fachada_lisa": [
+   6,
+   13
+  ],
+  "sombra_001": [
+   0,
+   15
+  ],
+  "sombra_010": [
+   1,
+   15
+  ],
+  "sombra_011": [
+   2,
+   15
+  ],
+  "sombra_100": [
+   3,
+   15
+  ],
+  "sombra_101": [
+   4,
+   15
+  ],
+  "sombra_110": [
+   5,
+   15
+  ],
+  "sombra_111": [
+   6,
+   15
+  ]
+ },
+ "decos": {
+  "interno": [
+   "janela",
+   "extintor",
+   "saida",
+   "mural"
+  ],
+  "fachada": [
+   "janela",
+   "ar",
+   "lisa"
+  ],
+  "externo": []
+ }
+}
