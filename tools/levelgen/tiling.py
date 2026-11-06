@@ -91,6 +91,11 @@ class Tiler:
             if (c in self.outer) != only_outer: continue
             x, y = c
             style = self.style_of(c)
+            if style.startswith("lateral"):  # fachada lateral de prédio (pátio): variação por posição
+                r = h("lat", x, y)
+                v = 1 if r < 0.18 else 2 if r < 0.28 else 3 if r < 0.36 else 0
+                out[c] = self.at(f"{style}{v}")
+                continue
             if (x, y + 1) in self.mat:  # frente: tem chão logo abaixo
                 ew = (1 if (x + 1, y) in self.walls else 0) | (2 if (x - 1, y) in self.walls else 0)
                 deco = self.deco_rules(c, style, self.mat[(x, y + 1)]) if ew == 3 else None

@@ -1,6 +1,6 @@
 # Itens, armas, projéteis, portas e objetos de jogo (pilha de papel, alvo do chefe, cura).
 # Saída: sprites/items/, sprites/weapons/, sprites/fx/, sprites/objects/
-from pix import Canvas, sheet, hexc, mix, shade
+from pix import Canvas, sheet, hexc, mix, shade, rng
 from palette import C
 
 INK = C["ink"]
@@ -192,6 +192,94 @@ def catraca(locked):
     return cv
 
 
+# ---------------------------------------------------------------- inspeção (arte grande, estilo Resident Evil)
+GREEN, GREEN_D, GREEN_L = hexc("1f5f36"), hexc("143f24"), hexc("2f8a50")
+
+
+def cracha_grande():
+    """O crachá da UNIFESP SJC visto de perto: cordão verde escrito UNIFESP, presilha preta, cartão branco com o logo,
+    GRADUAÇÃO / CIÊNCIA E TECNOLOGIA e a faixa verde SÃO JOSÉ DOS CAMPOS. A foto foi apagada pelo tempo e o plástico
+    está riscado (o dono nunca voltou para buscar)."""
+    from pix import text, text_center
+    W, H = 84, 168
+    cv = Canvas(W, H)
+    cx = W // 2
+    # cordão (laço que sobe e sai pelo topo), com UNIFESP escrito em branco, na vertical
+    for side, x0 in ((0, cx - 20), (1, cx + 14)):
+        for y in range(0, 44):
+            t = y / 44
+            x = int(x0 + ((cx - 5 if side == 0 else cx - 1) - x0) * t)
+            cv.rect(x, y, 6, 1, GREEN); cv.put(x, y, GREEN_D); cv.put(x + 5, y, GREEN_L)
+            # "UNIFESP" em branco ao longo do cordão (traços das letras, na vertical)
+            k = y % 16
+            if k in (1, 2, 4, 6, 7, 9, 11, 12): cv.put(x + 2, y, hexc("e9f2ea"))
+            if k in (1, 3, 4, 6, 8, 9, 11, 13): cv.put(x + 3, y, hexc("e9f2ea"))
+    # presilha preta (mosquetão) e argola
+    cv.rect(cx - 3, 42, 6, 10, hexc("18181b")); cv.frame(cx - 3, 42, 6, 10, hexc("2e2e33")); cv.put(cx - 1, 44, hexc("55555c"))
+    cv.ellipse(cx, 55, 3, 2.5, hexc("1e1e22")); cv.ellipse(cx, 55, 1.5, 1.2, (0, 0, 0, 0))
+    # porta-crachá de plástico transparente
+    y0 = 58
+    cv.rect(4, y0, W - 8, H - y0 - 2, hexc("cfd6db", 170)); cv.frame(4, y0, W - 8, H - y0 - 2, hexc("aab3ba"))
+    cv.rect(cx - 8, y0 + 1, 16, 3, hexc("8a939a"))  # fenda
+    # cartão
+    x0, y1, cw, ch = 8, y0 + 6, W - 16, H - y0 - 12
+    cv.rect(x0, y1, cw, ch, hexc("f4f4ef")); cv.frame(x0, y1, cw, ch, hexc("c9c9c2"))
+    text_center(cv, "UNIFESP", cx, y1 + 3, GREEN)
+    logo = ["     11     ", "   111111   ", " 1111111111 ", "111111111111", " 1 1 11 1 1 ", " 1 1 11 1 1 ", "111111111111"]
+    for j, row in enumerate(logo):
+        for k, b in enumerate(row):
+            if b == "1": cv.rect(cx - 12 + k * 2, y1 + 9 + j * 2, 2, 2, GREEN if j > 2 else GREEN_L)
+    cv.hline(x0 + 6, y1 + 23, cw - 12, hexc("9ab3a2"))
+    # foto apagada: só sobrou um vulto
+    px0, py0 = cx - 11, y1 + 27
+    cv.rect(px0, py0, 22, 26, hexc("a9adb0")); cv.noise(px0, py0, 22, 26, [hexc("b8bbbd"), hexc("979b9e")], 0.4, rng(9))
+    cv.ellipse(cx, py0 + 10, 5, 6, hexc("7f8488")); cv.rect(px0 + 4, py0 + 18, 14, 8, hexc("7f8488"))
+    cv.rect(cx - 4, py0 + 9, 8, 2, hexc("3a3d40"))  # tarja sobre os olhos (desgaste)
+    cv.frame(px0, py0, 22, 26, hexc("6b6f73"))
+    text_center(cv, "L. MENDES", cx, py0 + 29, hexc("1b1b1e"))
+    text_center(cv, "GRADUACAO", cx, py0 + 37, hexc("3a3a3e"))
+    text(cv, "CIENCIA E TECNOLOGIA", x0 + 3, py0 + 43, hexc("3a3a3e"), spacing=0)
+    cv.put(x0 + 3 + 3 * 6 + 1, py0 + 42, hexc("3a3a3e"))  # acento
+    cv.rect(x0, y1 + ch - 9, cw, 9, GREEN)
+    text(cv, "SAO JOSE DOS CAMPOS", x0 + 4, y1 + ch - 7, hexc("eef7f0"), spacing=0)
+    # tempo: arranhões no plástico, mancha de umidade, validade
+    r = rng(4)
+    for _ in range(9):
+        xx, yy = r.randrange(6, W - 8), r.randrange(y0 + 2, H - 6)
+        cv.line(xx, yy, xx + r.randrange(3, 9), yy + r.randrange(-2, 3), hexc("ffffff", 110))
+    cv.ellipse(x0 + cw - 12, y1 + 62, 7, 5, hexc("8a7a4a", 60))
+    text(cv, "12/2041", x0 + cw - 27, py0 + 3, hexc("9a3a3a"), spacing=0)
+    return cv
+
+
+def marmita_grande():
+    from pix import text
+    cv = Canvas(64, 44)
+    cv.ellipse(32, 40, 28, 3, hexc("000000", 60))
+    cv.rect(4, 12, 56, 26, hexc("c5ccd3")); cv.hline(4, 37, 56, hexc("8a939c")); cv.vline(59, 12, 26, hexc("9aa3ac"))
+    for x in range(8, 58, 6): cv.vline(x, 14, 22, hexc("b3bac2"))
+    cv.rect(2, 6, 60, 8, hexc("e3e8ec")); cv.hline(3, 6, 58, hexc("ffffff")); cv.hline(2, 13, 60, hexc("9aa3ac"))
+    cv.rect(18, 18, 28, 12, hexc("f3e7c4")); cv.frame(18, 18, 28, 12, hexc("c2b48a"))
+    text(cv, "RU", 21, 20, hexc("2f6b45")); text(cv, "QUI", 31, 20, hexc("7a2e2e")); text(cv, "FRIA", 21, 25, hexc("5a5f66"))
+    cv.outline(INK)
+    return cv
+
+
+def escopeta_grande():
+    cv = Canvas(112, 34)
+    cv.ellipse(56, 31, 50, 2.5, hexc("000000", 60))
+    cv.rect(30, 8, 78, 6, hexc("4a4d55")); cv.hline(30, 8, 78, hexc("7b808a")); cv.hline(30, 13, 78, hexc("33363c"))
+    cv.rect(46, 14, 40, 5, hexc("2d3036")); cv.hline(46, 14, 40, hexc("5d626b"))
+    cv.rect(2, 8, 30, 14, C["wood"]); cv.hline(2, 8, 30, C["wood_l"]); cv.line(2, 21, 24, 27, C["wood_d"])
+    cv.rect(4, 20, 20, 8, C["wood"]); cv.hline(4, 27, 20, C["wood_d"])
+    cv.rect(50, 18, 24, 8, C["wood_d"]); cv.hline(50, 18, 24, C["wood"])
+    cv.rect(32, 14, 6, 8, hexc("2a2b30")); cv.put(34, 20, hexc("8a8e95"))
+    for x in range(60, 104, 8): cv.put(x, 10, hexc("9aa0a8"))
+    cv.rect(104, 7, 4, 8, hexc("33363c"))
+    cv.outline(INK)
+    return cv
+
+
 if __name__ == "__main__":
     for name, fn in {"cracha": cracha, "marmita": marmita, "escopeta": escopeta_item, "cafezinho": cafezinho}.items():
         fn().save(f"sprites/items/{name}.png".replace("sprites", "sprites", 1))
@@ -204,4 +292,7 @@ if __name__ == "__main__":
     sheet([alvo(0), alvo(1)], 2).save("sprites/objects/alvo.png")
     grade(False).save("sprites/objects/grade_h.png"); grade(True).save("sprites/objects/grade_v.png")
     catraca(True).save("sprites/objects/catraca_trancada.png"); catraca(False).save("sprites/objects/catraca_aberta.png")
+    cracha_grande().save("sprites/items/inspecao/cracha.png")
+    marmita_grande().save("sprites/items/inspecao/marmita.png")
+    escopeta_grande().save("sprites/items/inspecao/escopeta.png")
     print("itens ok")

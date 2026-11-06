@@ -817,8 +817,112 @@ def jardim_lateral(tiles, lamps=(), seed=0):
     return cv
 
 
+# ======================================================================== v4: fachada da ponta (lisa) e portaria com vão
+def predio_ponta():
+    """O prédio visto da entrada: a face da ponta é LISA (placas de concreto claro), só com o logo, o letreiro e a faixa
+    vertical perfurada; à direita aparece, recuada, a face comprida com as faixas de janelas dos 3 andares.
+    Abandonado: manchas de chuva, trepadeira, vidros quebrados, letras caídas (N e S)."""
+    W, H = 320, 60
+    cv = Canvas(W, H)
+    r = rng(23)
+    EDGE = 204  # onde termina a face da ponta e começa a face comprida (recuada)
+    # laje
+    cv.rect(0, 0, W, 12, hexc("b9b7b0")); cv.noise(1, 1, W - 2, 10, [hexc("aaa8a1"), hexc("c6c4bd")], 0.3, r)
+    cv.rect(0, 0, EDGE, 2, hexc("e2e1db")); cv.hline(0, 11, W, hexc("8f8d86"))
+    for x0 in (40, 120): cv.rect(x0, 3, 12, 7, hexc("9a9c98")); cv.frame(x0, 3, 12, 7, hexc("6a6c68"))
+    cv.rect(236, 2, 16, 8, hexc("6f8ea6")); cv.frame(236, 2, 16, 8, hexc("4a6276"))  # caixas d'água azuis
+    # face da ponta: placas lisas
+    cv.rect(0, 12, EDGE, H - 12, WALL_W)
+    for y in range(12, H, 8): cv.hline(0, y, EDGE, WALL_J)
+    for y in range(12, H, 8):
+        for x in range(0 if (y // 8) % 2 else 12, EDGE, 24): cv.vline(x, y, 8, WALL_J)
+    cv.noise(0, 12, EDGE, H - 12, [WALL_W2], 0.12, r)
+    # faixa vertical perfurada (perto da quina)
+    for y in range(16, H - 2):
+        for x in range(EDGE - 18, EDGE - 12):
+            cv.put(x, y, hexc("eceae4") if (x + y) % 2 else hexc("a9a7a0"))
+    cv.vline(EDGE - 19, 16, H - 18, hexc("9d9b94"))
+    # quina e face comprida, recuada e mais escura, com as janelas por andar
+    cv.vline(EDGE, 12, H - 12, hexc("8f8b80"))
+    cv.rect(EDGE + 1, 12, W - EDGE - 1, H - 12, hexc("c4bcab"))
+    for (y0, hgt) in [(16, 5), (28, 5), (42, 3)]:
+        cv.rect(EDGE + 4, y0, W - EDGE - 8, hgt, hexc("1c2633"))
+        for x in range(EDGE + 4, W - 4, 5): cv.vline(x, y0, hgt, hexc("e8e8e4"))
+        cv.hline(EDGE + 4, y0, W - EDGE - 8, hexc("e8e8e4"))
+    for x in range(EDGE + 6, W - 6, 2): cv.put(x, 48, hexc("cfd6dc")); cv.put(x, 49, hexc("8fa1b0"))  # blocos de vidro
+    for x in r.sample(range(EDGE + 5, W - 5, 5), 4): cv.rect(x + 1, 17, 3, 3, hexc("05070a"))  # janelas quebradas
+    # letreiro (mesmo desenho das letras caídas)
+    ly = 15
+    for j, row in enumerate(LOGO):
+        for k, b in enumerate(row):
+            if b == "1": cv.rect(8 + k * 2, ly + j * 2, 2, 2, LOGO_GL if j < 3 else LOGO_G)
+    x = LETTERS_X0
+    for ch in "UNIFESP":
+        if ch in "NS": glyph_mark(cv, ch, x, ly, r)
+        else: glyph(cv, ch, x, ly)
+        x += (len(SERIF[ch][0]) + 1) * LS
+    text(cv, "UNIVERSIDADE FEDERAL DE SAO PAULO", 8, ly + 17, hexc("38383c"))
+    text(cv, "CAMPUS SAO JOSE DOS CAMPOS", 8, ly + 24, hexc("38383c"))
+    cv.put(102, ly + 16, hexc("38383c")); cv.put(103, ly + 16, hexc("38383c"))
+    # abandono
+    for _ in range(36):
+        x0 = r.randrange(W); cv.vline(x0, 12, r.randrange(4, 24), hexc("8f8a7c", 80))
+    for (x, y) in [(150, 14), (60, 40)]:
+        for _ in range(16):
+            cv.put(x, y, hexc("6a675f")); x += r.choice((-1, 0, 1)); y += 1
+    for x in range(W):
+        hgt = int(max(0, 12 * abs(((x * 13) % 31) / 31 - 0.5) * 2 - 3 + r.random() * 7))
+        for y in range(H - hgt, H):
+            if r.random() < 0.7: cv.put(x, y, r.choice([C["leaf_d"], C["leaf"], hexc("2f4f2a")]))
+    text(cv, "FORMATURA CANCELADA", 120, 46, hexc("9e2a2a"))
+    return cv
+
+
+def portaria():
+    """Portaria da foto da entrada: volume branco baixo com a laje grossa (borda escura em cima) e um grande vão.
+    No vão passa a catraca e começa a rampa; ao lado, a cabine de vidro escuro do porteiro. 176x80 (11 x 5 tiles).
+    O vão (colunas 32..63) fica vazado: o jogador e a catraca aparecem por ele."""
+    W, H = 176, 80
+    cv = Canvas(W, H)
+    r = rng(62)
+    V0, V1 = 32, 64  # vão
+    # laje (vista de cima)
+    cv.rect(0, 0, W, 50, hexc("dedcd5")); cv.noise(1, 1, W - 2, 48, [hexc("cfcdc6"), hexc("e8e6e0"), hexc("9a9a8e")], 0.16, r)
+    cv.rect(0, 0, W, 2, hexc("2c2d31")); cv.vline(0, 0, 50, hexc("2c2d31")); cv.vline(W - 1, 0, 50, hexc("2c2d31"))
+    cv.rect(100, 14, 12, 8, hexc("9a9c98")); cv.ellipse(106, 18, 3, 2.5, hexc("5a5c60"))
+    for _ in range(14):
+        cv.ellipse(r.randrange(4, W - 4), r.randrange(4, 46), r.uniform(1.5, 4), r.uniform(1, 2.5), hexc("6f6c5e", 70))
+    cv.rect(0, 46, W, 4, hexc("c9c7c0")); cv.hline(0, 49, W, hexc("2c2d31"))  # beiral grosso
+    # frente
+    cv.rect(0, 50, W, 30, hexc("e7e5df")); cv.noise(0, 50, W, 30, [hexc("d6d4cd")], 0.15, r)
+    # vão: vazado embaixo da viga (dá para ver a catraca e a rampa)
+    for yy in range(54, H):
+        for xx in range(V0, V1): cv.px[xx, yy] = (0, 0, 0, 0)
+    cv.rect(V0, 50, V1 - V0, 4, hexc("d3d1ca")); cv.hline(V0, 53, V1 - V0, hexc("8f8d86"))
+    cv.vline(V0 - 1, 54, 26, hexc("b9b7b0")); cv.vline(V1, 54, 26, hexc("9f9d96"))
+    # cabine de vidro escuro do porteiro
+    bx0, bx1 = 70, 150
+    cv.rect(bx0 - 2, 53, bx1 - bx0 + 4, 27, hexc("2f3136"))
+    cv.rect(bx0, 54, bx1 - bx0, 26, hexc("0f151c"))
+    for x in range(bx0, bx1, 16): cv.vline(x, 54, 26, hexc("9aa1a8"))
+    cv.hline(bx0, 54, bx1 - bx0, hexc("9aa1a8"))
+    for (x0, y0, x1, y1) in [(74, 56, 80, 66), (120, 57, 112, 72)]: cv.line(x0, y0, x1, y1, hexc("5c7690"))
+    cv.rect(132, 60, 14, 20, hexc("050709"))  # vidro arrebentado
+    for (x, y) in [(133, 61), (138, 63), (144, 66), (135, 72), (145, 77)]: cv.put(x, y, hexc("9fb6cc"))
+    cv.rect(92, 64, 10, 10, hexc("3e4d5f")); cv.ellipse(97, 62, 3, 3, hexc("4b5b6e"))  # cadeira vazia do porteiro
+    # parede da esquerda: quadro elétrico e lixeira
+    cv.rect(8, 58, 10, 14, hexc("bfc2c4")); cv.frame(8, 58, 10, 14, hexc("8a8e92")); cv.put(16, 65, hexc("5a5f66"))
+    cv.rect(22, 70, 6, 10, hexc("9aa0a6")); cv.hline(22, 70, 6, hexc("c9ced3"))
+    text(cv, "PORTARIA", 154, 56, hexc("4a4a50")) if False else None
+    cv.rect(152, 56, 20, 6, hexc("2e7a4c")); text(cv, "ICT", 156, 56, hexc("eaffef"))
+    for x in list(range(0, V0 - 1)) + list(range(V1 + 1, W)):  # mato na base
+        for y in range(H - (r.randrange(0, 4) if r.random() < 0.6 else 0), H):
+            cv.put(x, y, r.choice([C["leaf_d"], C["grass_d"]]))
+    return cv
+
+
 SPRITES = {
-    "predio": predio, "letra_n": lambda: letra_caida("N"), "letra_s": lambda: letra_caida("S"),
+    "predio": predio_ponta, "letra_n": lambda: letra_caida("N"), "letra_s": lambda: letra_caida("S"),
     "gradil": gradil, "poste_portao": poste_portao, "placa_portao": placa_portao, "ponto_onibus": ponto_onibus,
     "jardim": jardim, "caixa_dagua": caixa_dagua,
     "lixeiras": lixeiras, "balcao_devolucao": balcao_devolucao, "microondas": microondas,
@@ -831,9 +935,11 @@ SPRITES = {
     "carro0": lambda: carro(0), "carro1": lambda: carro(1), "carro2": lambda: carro(2),
     "mesa_ru_longa": mesa_ru_longa, "mesa_ru_cadeiras": mesa_ru_cadeiras, "lixeiras_pedal": lixeiras_pedal,
     "catraca_ru": catraca_ru, "cadeira_caida": cadeira_caida, "entulho": entulho,
-    "pavilhao": pavilhao, "mastros": mastros, "corrimao": corrimao,
+    "portaria": portaria, "mastros": mastros, "corrimao": corrimao,
     "jardim_lateral_a": lambda: jardim_lateral(15, lamps=((40, True), (200, False)), seed=1),
     "jardim_lateral_b": lambda: jardim_lateral(4, lamps=((50, True),), seed=2),
+    "jardim_lateral_c": lambda: jardim_lateral(15, lamps=((120, False), (220, True)), seed=3),
+    "jardim_lateral_d": lambda: jardim_lateral(6, lamps=((30, True),), seed=4),
 }
 
 if __name__ == "__main__":
