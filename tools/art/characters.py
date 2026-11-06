@@ -84,8 +84,29 @@ def student(direction, frame):
     return cv
 
 
+def student_roll(frame):
+    """Cambalhota: o estudante encolhido (moletom, mochila, cabelo, tênis) girando 90° por quadro."""
+    from PIL import Image
+    ball = Canvas(16, 16)
+    ball.ellipse(8, 8, 6.5, 6.5, C["hood"])
+    ball.ellipse(7, 7, 4.5, 4.5, C["hood_l"])
+    ball.rect(3, 4, 6, 6, C["pack"]); ball.hline(3, 4, 6, shade(C["pack"], 0.2)); ball.rect(4, 7, 4, 2, C["pack_d"])
+    ball.ellipse(11, 5, 3, 2.6, C["hair"]); ball.put(10, 4, C["hair_l"])
+    ball.rect(10, 11, 3, 2, C["shoe"]); ball.rect(12, 9, 2, 3, C["shoe"]); ball.put(12, 12, C["shoe_d"])
+    ball.put(12, 7, C["skin"]); ball.put(9, 12, C["jeans"]); ball.put(10, 10, C["jeans"])
+    ball.outline(INK)
+    ball.img = ball.img.rotate(-90 * frame, resample=Image.NEAREST)
+    ball.px = ball.img.load()
+    cv = Canvas(16, 24)
+    for xx in range(3, 13):  # sombra
+        cv.put(xx, 22, hexc("000000", 60))
+    cv.blit(ball, 0, 7 - (1 if frame in (1, 2) else 0))
+    return cv
+
+
 def player_sheet():
-    frames = [student(d, f) for d in ("down", "up", "side") for f in range(4)]
+    # linhas: 0 frente, 1 costas, 2 lado, 3 cambalhota
+    frames = [student(d, f) for d in ("down", "up", "side") for f in range(4)] + [student_roll(f) for f in range(4)]
     return sheet(frames, 4)
 
 

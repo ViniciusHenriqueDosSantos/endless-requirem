@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dcw73nyhwe6rq"
-path="res://.godot/imported/mesa_ru.png-25a6e5674c7ee51922575e507ceae354.ctex"
+uid="uid://c6hd3m7pigyel"
+path="res://.godot/imported/poste_rua.png-be6311a4a782bdd32e17a71f9ccbc4ad.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://sprites/props/fase1/mesa_ru.png"
-dest_files=["res://.godot/imported/mesa_ru.png-25a6e5674c7ee51922575e507ceae354.ctex"]
+source_file="res://sprites/props/fase1/poste_rua.png"
+dest_files=["res://.godot/imported/poste_rua.png-be6311a4a782bdd32e17a71f9ccbc4ad.ctex"]
 
 [params]
 

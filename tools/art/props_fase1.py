@@ -376,8 +376,8 @@ def mesa_cantina():
         if back_up: cv.rect(x, y - 4, 6, 4, hexc("1f2024")); cv.hline(x + 1, y - 3, 4, C["black_l"])
         cv.vline(x, y + 4, 2, C["black"]); cv.vline(x + 5, y + 4, 2, C["black"])
     chair(0, 7, True); chair(18, 7, True)
-    cv.ellipse(12, 7, 8, 4, C["table_d"]); cv.ellipse(12, 6, 8, 3.6, C["table"])
-    cv.hline(7, 4, 6, hexc("ffffff"))
+    cv.ellipse(12, 7, 9, 4.6, hexc("3a3c42")); cv.ellipse(12, 7, 8, 4, C["table_d"]); cv.ellipse(12, 6, 8, 3.6, C["table"])
+    cv.hline(7, 4, 6, hexc("ffffff")); cv.ellipse(15, 7, 2, 1, hexc("b8b2a0"))  # mancha de café no tampo
     cv.vline(12, 10, 5, C["black"]); cv.hline(9, 15, 7, C["black"])
     chair(9, 12, False)
     return cv
@@ -430,15 +430,326 @@ def porta_elevador():
     return cv
 
 
+# ======================================================================== v2: fachada real, abandono, RU das fotos
+SERIF = {  # letras do letreiro (fonte serifada, como na fachada de verdade), 7 px de altura
+    "U": ["11   11", " 1   1 ", " 1   1 ", " 1   1 ", " 1   1 ", " 1   1 ", "  111  "],
+    "N": ["11   11", " 11   1", " 1 1  1", " 1  1 1", " 1   11", " 1    1", "111   1"],
+    "I": ["111", " 1 ", " 1 ", " 1 ", " 1 ", " 1 ", "111"],
+    "F": ["111111", " 1   1", " 1    ", " 1111 ", " 1    ", " 1    ", "111   "],
+    "E": ["111111", " 1   1", " 1    ", " 1111 ", " 1    ", " 1   1", "111111"],
+    "S": [" 1111 ", "1    1", "1     ", " 1111 ", "     1", "1    1", " 1111 "],
+    "P": ["11111 ", " 1   1", " 1   1", " 1111 ", " 1    ", " 1    ", "111   "],
+}
+LETTER = hexc("2b2a2c")        # letras de metal escuro
+LETTER_HI = hexc("56545a")
+LOGO = ["    11    ", "  111111  ", " 11111111 ", "1111111111", " 1 1 1 1 1", " 1 1 1 1 1", "1111111111"]
+LOGO_G, LOGO_GL = hexc("1f6a3c"), hexc("3a8c58")
+WALL_W, WALL_W2, WALL_J = hexc("d9d8d2"), hexc("cfcec7"), hexc("bdbbb3")  # concreto claro da fachada
+BRISE, BRISE_D = hexc("a9adb2"), hexc("7f848b")
+LETTERS_X0 = 30  # onde começa "UNIFESP" na fachada (pixel da arte)
+
+
+LS = 2  # cada "pixel" do desenho da letra vira 2x2 (o letreiro é grande na fachada)
+
+
+def glyph(cv, ch, x, y, c=LETTER, hi=LETTER_HI):
+    for j, row in enumerate(SERIF[ch]):
+        for k, b in enumerate(row):
+            if b == "1":
+                cv.rect(x + k * LS, y + j * LS, LS, LS, c)
+                if j == 0 or SERIF[ch][j - 1][k] != "1": cv.hline(x + k * LS, y + j * LS, LS, hi)
+                if j == len(SERIF[ch]) - 1 or SERIF[ch][j + 1][k] != "1": cv.hline(x + k * LS, y + j * LS + LS - 1, LS, hexc("161518"))
+
+
+def glyph_mark(cv, ch, x, y, r):
+    """Onde a letra caiu: o concreto ficou mais limpo no formato dela, com os furos dos parafusos e ferrugem escorrendo."""
+    rows = SERIF[ch]
+    for j, row in enumerate(rows):
+        for k, b in enumerate(row):
+            if b == "1": cv.rect(x + k * LS, y + j * LS, LS, LS, hexc("ebeae5"))
+    for (k, j) in [(1, 0), (len(rows[0]) - 2, 0), (1, 6), (len(rows[0]) - 2, 6)]:
+        px_, py_ = x + k * LS, y + j * LS
+        cv.put(px_, py_, hexc("2a2420"))
+        for d in range(1, 6 + (k % 3)):
+            cv.put(px_, py_ + d, hexc("8a5a36", 150 - d * 20))
+
+
+def predio():
+    """Prédio do ICT visto da entrada: concreto claro em placas, brises de alumínio, janelas de bloco de vidro,
+    o logo verde e as letras escuras (sem o N e o S, que caíram), marquise da entrada. Abandonado: manchas, rachaduras,
+    trepadeira, vidros quebrados."""
+    W, H = 320, 60
+    cv = Canvas(W, H)
+    r = rng(21)
+    # laje
+    cv.rect(0, 0, W, 12, hexc("b9b7b0")); cv.noise(1, 1, W - 2, 10, [hexc("aaa8a1"), hexc("c6c4bd")], 0.3, r)
+    cv.rect(0, 0, W, 2, hexc("e2e1db")); cv.hline(0, 11, W, hexc("8f8d86"))
+    for x0 in (60, 132, 250):
+        cv.rect(x0, 3, 12, 7, hexc("9a9c98")); cv.frame(x0, 3, 12, 7, hexc("6a6c68")); cv.ellipse(x0 + 6, 6.5, 3, 2.5, hexc("55575a"))
+    cv.rect(200, 2, 16, 8, hexc("6f8ea6")); cv.frame(200, 2, 16, 8, hexc("4a6276"))  # caixas d'água azuis
+    cv.rect(218, 2, 16, 8, hexc("6f8ea6")); cv.frame(218, 2, 16, 8, hexc("4a6276"))
+    # parede em placas
+    cv.rect(0, 12, W, H - 12, WALL_W)
+    for y in range(12, H, 6): cv.hline(0, y, W, WALL_J)
+    for y in range(12, H, 6):
+        off = 0 if (y // 6) % 2 else 10
+        for x in range(off, W, 20): cv.vline(x, y, 6, WALL_J)
+    cv.noise(0, 12, W, H - 12, [WALL_W2], 0.12, r)
+    # bloco com brises (lâminas verticais de alumínio) no meio da fachada
+    bx0, bx1 = 140, 236
+    cv.rect(bx0, 14, bx1 - bx0, 30, BRISE)
+    for x in range(bx0, bx1, 2): cv.vline(x, 14, 30, BRISE_D)
+    for x in (bx0 + 30, bx0 + 62): cv.rect(x, 22, 12, 10, hexc("23262b"))  # vãos escuros atrás das lâminas
+    cv.hline(bx0, 14, bx1 - bx0, hexc("cdd0d4"))
+    # janelas de bloco de vidro em faixas
+    for (x0, y0, w) in [(8, 50, 84), (246, 20, 66), (246, 30, 66), (246, 40, 66)]:
+        cv.rect(x0, y0, w, 4, hexc("e9ecee"))
+        for x in range(x0 + 1, x0 + w - 1, 2):
+            cv.put(x, y0 + 1, hexc("8aa0b2")); cv.put(x, y0 + 2, hexc("5d7487"))
+    for x in r.sample(range(10, 90, 2), 7):  # blocos quebrados
+        cv.put(x, 51, hexc("0b0d10")); cv.put(x, 52, hexc("0b0d10"))
+    # letreiro: logo + UNIFESP (o N e o S caíram) + duas linhas de texto
+    ly = 15
+    for j, row in enumerate(LOGO):  # logo verde (o prédio com colunas), também em 2x2
+        for k, b in enumerate(row):
+            if b == "1": cv.rect(8 + k * 2, ly + j * 2, 2, 2, LOGO_GL if j < 3 else LOGO_G)
+    x = LETTERS_X0
+    for ch in "UNIFESP":
+        if ch in "NS": glyph_mark(cv, ch, x, ly, r)
+        else: glyph(cv, ch, x, ly)
+        x += (len(SERIF[ch][0]) + 1) * LS
+    text(cv, "UNIVERSIDADE FEDERAL DE SAO PAULO", 8, ly + 17, hexc("38383c"))
+    text(cv, "CAMPUS SAO JOSE DOS CAMPOS", 8, ly + 24, hexc("38383c"))
+    cv.put(102, ly + 16, hexc("38383c")); cv.put(103, ly + 16, hexc("38383c"))  # til do SÃO
+    # marquise da entrada: volume baixo branco com vidro escuro
+    mx = 96
+    cv.rect(mx, 44, 120, 16, hexc("e4e3de")); cv.hline(mx, 44, 120, hexc("f2f1ec")); cv.hline(mx, 47, 120, hexc("b3b1aa"))
+    cv.rect(mx + 30, 48, 60, 12, hexc("12171d")); cv.frame(mx + 30, 48, 60, 12, hexc("8e959d"))
+    for x in range(mx + 40, mx + 90, 12): cv.vline(x, 48, 12, hexc("8e959d"))
+    cv.line(mx + 33, 50, mx + 38, 55, hexc("6f8aa3")); cv.line(mx + 70, 49, mx + 66, 57, hexc("9fb6cc"))  # vidro trincado
+    cv.rect(mx + 52, 52, 8, 8, hexc("050608"))  # porta arrombada
+    # abandono: escorridos, rachaduras, trepadeira, pichação
+    for _ in range(40):
+        x0 = r.randrange(W); cv.vline(x0, 12, r.randrange(4, 22), hexc("8f8a7c", 80))
+    for (x, y) in [(118, 14), (236, 30), (40, 44)]:
+        for _ in range(14):
+            cv.put(x, y, hexc("6a675f")); x += r.choice((-1, 0, 1)); y += 1
+    for x in range(0, W):
+        hgt = int(max(0, 10 * abs(((x * 13) % 29) / 29 - 0.5) * 2 - 2 + r.random() * 6)) if (x < 90 or x > 230) else 0
+        for y in range(H - hgt, H):
+            if r.random() < 0.7: cv.put(x, y, r.choice([C["leaf_d"], C["leaf"], hexc("2f4f2a")]))
+    text(cv, "FORMATURA CANCELADA", 244, 50, hexc("9e2a2a"))
+    return cv
+
+
+def letra_caida(ch):
+    """A letra que caiu do letreiro: o mesmo desenho e a mesma cor das que ficaram, deitada torta no chão,
+    com cacos de concreto em volta."""
+    from PIL import Image
+    g = Canvas(16, 16)
+    glyph(g, ch, 1, 1)
+    g.img = g.img.rotate(-14 if ch == "N" else 7, resample=Image.NEAREST, expand=True)
+    g.px = g.img.load()
+    # deitada no chão: achata na vertical (vista de cima em 3/4)
+    g.img = g.img.resize((g.img.width, int(g.img.height * 0.85)), Image.NEAREST); g.px = g.img.load()
+    g.w, g.h = g.img.size
+    cv = Canvas(30, 24)
+    shadow_ellipse(cv, 15, 15, 13, 6, 60)
+    for y in range(g.h):  # espessura (a letra é de metal com alguns centímetros)
+        for x in range(g.w):
+            if g.get(x, y)[3]: cv.put(4 + x, 2 + y + 2, hexc("121114")); cv.put(4 + x, 2 + y + 1, hexc("121114"))
+    cv.blit(g, 4, 2)
+    r = rng(ord(ch))
+    for _ in range(10):  # cacos de concreto que vieram junto
+        x, y = r.randrange(1, 29), r.randrange(10, 23)
+        cv.rect(x, y, 2, 1, WALL_W); cv.put(x, y + 1, WALL_J)
+    cv.put(3, 20, hexc("6b6f75")); cv.put(26, 8, hexc("6b6f75"))  # parafusos
+    return cv
+
+
+def poste_globo(cv, x, base_y, lit=True):
+    cv.rect(x, base_y - 34, 2, 34, hexc("2b2d32")); cv.vline(x, base_y - 34, 34, hexc("4a4d54"))
+    cv.ellipse(x + 1, base_y - 37, 3.5, 4, hexc("e8e6dd") if lit else hexc("6e6c66"))
+    if lit: cv.ellipse(x, base_y - 38, 1.5, 1.5, hexc("ffffff"))
+    else: cv.put(x + 2, base_y - 36, hexc("2b2d32")); cv.put(x, base_y - 39, hexc("2b2d32"))  # globo quebrado
+    cv.rect(x - 1, base_y - 1, 4, 2, hexc("2a2c31"))
+
+
+def jardim(w=32, h=96, lamps=((0, 6, True), (1, 86, False))):
+    """Canteiro da praça: borda de concreto (suja), grama alta, agaves, palmeiras e os postes de globo dentro dele,
+    como nas fotos. lamps: (lado 0=esquerda/1=direita, altura do pé, aceso)."""
+    extra = 30
+    cv = Canvas(w + 12, h + extra)
+    r = rng(7)
+    ox, y0 = 6, extra
+    cv.rect(ox, y0, w, h, hexc("cfccc2")); cv.frame(ox, y0, w, h, hexc("9d988a"))
+    cv.rect(ox, y0 + h - 4, w, 4, hexc("b9b5a8")); cv.hline(ox, y0 + h - 4, w, hexc("dedad0"))
+    cv.noise(ox, y0, w, h, [hexc("8f8a7c"), hexc("7a8a62")], 0.06, r)  # musgo e sujeira na borda
+    cv.rect(ox + 3, y0 + 3, w - 6, h - 9, C["grass_d"])
+    cv.noise(ox + 3, y0 + 3, w - 6, h - 9, [C["grass"], C["grass_k"], hexc("6d7a3a")], 0.45, r)
+    for _ in range(30):  # mato alto passando da borda
+        x, y = r.randrange(ox + 1, ox + w - 1), r.randrange(y0 + 1, y0 + h - 4)
+        for k in range(r.randrange(2, 5)): cv.put(x, y - k, r.choice([C["grass"], C["grass_l"], hexc("7f8f45")]))
+    for (ax, ay) in [(8, 22), (23, 36), (9, 60), (23, 78), (12, 46)]:
+        agave(cv, ox + ax, y0 + ay)
+    palmeira(cv, ox + 16, y0 + 22, 30, r)
+    palmeira(cv, ox + 15, y0 + 70, 26, r)
+    for side, ly, lit in lamps:
+        poste_globo(cv, ox + (4 if side == 0 else w - 6), y0 + ly, lit)
+    return cv
+
+
+def poste_rua(lit=True):
+    """Poste de rua com braço e luminária de vapor de sódio (avenida em frente ao campus)."""
+    cv = Canvas(20, 60)
+    shadow_ellipse(cv, 4, 58, 4, 1.5, 70)
+    cv.rect(3, 6, 3, 52, hexc("8f9296")); cv.vline(3, 6, 52, hexc("b3b6ba")); cv.vline(5, 6, 52, hexc("6a6d72"))
+    cv.line(5, 7, 15, 3, hexc("8f9296")); cv.line(5, 8, 15, 4, hexc("6a6d72"))
+    cv.rect(12, 2, 7, 3, hexc("4a4d52")); cv.hline(13, 5, 5, hexc("ffcf7a") if lit else hexc("3a3b3e"))
+    for y in (20, 34, 47): cv.hline(3, y, 3, hexc("7a6a52"))  # ferrugem
+    return cv
+
+
+def carro(variant):
+    """Carro abandonado no estacionamento (visto de cima, de frente para cima): pneu murcho, para-brisa quebrado,
+    poeira e folhas em cima."""
+    body, dark = [(hexc("8a3a2e"), hexc("5e261e")), (hexc("6d7a80"), hexc("47525a")), (hexc("c9c4b3"), hexc("8f8a7b"))][variant]
+    cv = Canvas(26, 34)
+    shadow_ellipse(cv, 13, 31, 12, 3, 80)
+    cv.rect(3, 3, 20, 28, body); cv.frame(3, 3, 20, 28, dark)
+    cv.rect(4, 2, 18, 2, dark)
+    cv.rect(5, 7, 16, 6, hexc("1a1f26")); cv.line(6, 8, 12, 12, hexc("8fa9bf")); cv.line(14, 7, 10, 12, hexc("8fa9bf"))  # para-brisa trincado
+    cv.rect(5, 14, 16, 8, shade(body, 0.12)); cv.hline(5, 14, 16, shade(body, 0.3))  # teto
+    cv.rect(5, 23, 16, 4, hexc("1a1f26"))
+    for (x, y) in [(1, 6), (22, 6), (1, 23), (22, 23)]:
+        cv.rect(x, y, 3, 6, hexc("1b1b1e"))
+    cv.rect(22, 23, 3, 6, hexc("101012")); cv.put(23, 29, hexc("101012"))  # pneu murcho
+    r = rng(30 + variant)
+    cv.noise(4, 4, 18, 26, [hexc("9a8f72", 120), hexc("6a5a34", 140)], 0.12, r)  # poeira e folhas
+    for x in range(4, 22, 3):  # ferrugem nas bordas
+        if r.random() < 0.6: cv.put(x, 30, hexc("7a4422"))
+    return cv
+
+
+# ---------------------------------------------------------------- RU (fotos do tour)
+STOOL, STOOL_D = hexc("d8d6cd"), hexc("9b998f")
+FRAME = hexc("1c1d21")
+
+
+def mesa_ru_longa(w=80):
+    """Mesa comprida branca do RU com os banquinhos redondos presos em braços de ferro preto, dos dois lados."""
+    cv = Canvas(w, 20)
+    r = rng(40 + w)
+    for x in range(5, w - 4, 9):  # banquinhos de trás
+        cv.line(x + 2, 4, x + 2, 6, FRAME)
+        cv.ellipse(x + 2, 3, 3, 1.8, STOOL); cv.hline(x, 4, 5, STOOL_D)
+    cv.rect(0, 5, w, 7, C["table"]); cv.hline(0, 5, w, hexc("f8f8f4")); cv.hline(0, 11, w, hexc("b9c4b8"))
+    cv.frame(0, 5, w, 7, hexc("6d746c"))
+    cv.rect(0, 12, w, 1, hexc("9ea79c"))
+    cv.hline(2, 13, w - 4, FRAME); cv.vline(2, 12, 6, FRAME); cv.vline(w - 3, 12, 6, FRAME)
+    for x in range(5, w - 4, 9):  # banquinhos da frente
+        cv.line(x + 2, 13, x + 1, 15, FRAME)
+        cv.ellipse(x + 1, 16, 3, 1.8, STOOL); cv.hline(x - 1, 17, 5, STOOL_D); cv.put(x, 15, hexc("f0eee6"))
+    # abandono: um banquinho arrancado, poeira, bandeja esquecida
+    cv.rect(w // 2 - 2, 15, 6, 4, (0, 0, 0, 0)); cv.put(w // 2, 17, FRAME)
+    cv.noise(0, 5, w, 7, [hexc("c8c2b0")], 0.08, r)
+    cv.rect(w // 3, 7, 6, 3, hexc("b48d55")); cv.hline(w // 3, 7, 6, hexc("c9a46a"))
+    return cv
+
+
+def mesa_ru():
+    return mesa_ru_longa(48)
+
+
+def mesa_ru_cadeiras():
+    """Mesa branca do fundo do RU com as cadeiras pretas escritas R.U. (uma caída)."""
+    W = 48
+    cv = Canvas(W, 22)
+    for x in (4, 18, 32):  # cadeiras de trás (encosto aparece por cima da mesa)
+        cv.rect(x, 0, 8, 6, C["black"]); cv.hline(x + 1, 1, 6, C["black_l"]); cv.put(x + 3, 3, hexc("d8d8d8")); cv.put(x + 4, 3, hexc("d8d8d8"))
+    cv.rect(0, 6, W, 7, C["table"]); cv.hline(0, 6, W, hexc("f8f8f4")); cv.hline(0, 12, W, C["table_d"])
+    cv.frame(0, 6, W, 7, hexc("6d746c"))
+    for x in (1, W - 2): cv.vline(x, 13, 6, hexc("8a8e92"))
+    for x in (6, 30):  # cadeiras da frente
+        cv.rect(x, 14, 8, 4, C["black"]); cv.hline(x + 1, 14, 6, C["black_l"]); cv.vline(x, 18, 3, C["black"]); cv.vline(x + 7, 18, 3, C["black"])
+    # cadeira caída de lado
+    cv.rect(18, 17, 9, 3, C["black"]); cv.rect(25, 13, 3, 6, C["black"]); cv.hline(18, 20, 9, hexc("101012"))
+    return cv
+
+
+def balcao_comida():
+    """Bufê do RU: tampo de inox, vidro protetor, frente de madeira escura; as cubas vazias e sujas."""
+    W, H = 64, 24
+    cv = Canvas(W, H)
+    cv.rect(0, 4, W, 8, C["inox_l"]); cv.frame(0, 4, W, 8, C["inox_d"])
+    for i in range(6):
+        x = 2 + i * 10
+        cv.rect(x, 6, 9, 5, C["inox_d"]); cv.rect(x + 1, 7, 7, 3, hexc("3d3a34") if i % 2 else hexc("5a4a32"))
+    cv.rect(1, 0, W - 2, 3, hexc("cfe6f2", 110)); cv.hline(1, 0, W - 2, hexc("ffffff", 160))
+    cv.line(20, 0, 26, 2, hexc("ffffff", 200))  # vidro trincado
+    for x in (1, W - 2): cv.vline(x, 0, 6, C["inox_d"])
+    cv.rect(0, 12, W, 12, hexc("5b3b22")); cv.frame(0, 12, W, 12, hexc("3b2414"))
+    for x in range(0, W, 16): cv.vline(x, 12, 12, hexc("3b2414")); cv.hline(x + 2, 14, 12, hexc("7a5434"))
+    cv.hline(0, H - 1, W, hexc("2a1a0f"))
+    return cv
+
+
+def lixeiras_pedal():
+    """As duas lixeiras brancas de pedal do RU."""
+    cv = Canvas(16, 12)
+    shadow_ellipse(cv, 8, 11, 8, 1.5, 60)
+    for x, lid in ((1, hexc("4f86cf")), (9, hexc("9aa0a6"))):
+        cv.rect(x, 3, 6, 8, hexc("eceeee")); cv.vline(x + 5, 3, 8, hexc("b9bdc0")); cv.rect(x, 1, 6, 2, lid)
+        cv.put(x + 2, 10, hexc("5a5f66"))
+    return cv
+
+
+def catraca_ru():
+    """Catraca na entrada do RU, ao lado da divisória de vidro (quebrada, braço caído)."""
+    cv = Canvas(16, 20)
+    shadow_ellipse(cv, 8, 18, 7, 1.5, 60)
+    cv.rect(3, 4, 7, 14, hexc("b9c0c7")); cv.hline(3, 4, 7, hexc("e1e6ea")); cv.vline(9, 4, 14, hexc("7e868f"))
+    cv.rect(4, 6, 5, 3, hexc("2a2d33")); cv.put(5, 7, hexc("ff3b30"))
+    cv.line(10, 11, 15, 13, hexc("d9dee3")); cv.line(10, 12, 15, 14, hexc("8a929b"))
+    cv.line(10, 15, 12, 18, hexc("d9dee3"))  # braço caído
+    cv.rect(0, 2, 2, 16, hexc("aeb5bc"))
+    return cv
+
+
+def cadeira_caida():
+    cv = Canvas(12, 8)
+    shadow_ellipse(cv, 6, 6, 6, 1.5, 50)
+    cv.rect(1, 3, 9, 3, C["black"]); cv.rect(8, 0, 3, 5, C["black"]); cv.hline(1, 3, 9, C["black_l"])
+    cv.put(2, 6, C["black"]); cv.put(6, 6, C["black"])
+    return cv
+
+
+def entulho():
+    """Entulho: pedaços do forro, fios e cacos (canto da cantina e do RU)."""
+    cv = Canvas(20, 12)
+    r = rng(55)
+    shadow_ellipse(cv, 10, 9, 9, 2.5, 50)
+    for _ in range(8):
+        x, y = r.randrange(1, 16), r.randrange(2, 9)
+        cv.rect(x, y, r.randrange(2, 5), 2, r.choice([hexc("e9e8e2"), hexc("cfcdc4"), hexc("b8b6ad")]))
+    cv.line(3, 3, 12, 8, hexc("2a2b30")); cv.line(12, 8, 17, 6, hexc("c0392b"))
+    return cv
+
+
 SPRITES = {
     "predio": predio, "letra_n": lambda: letra_caida("N"), "letra_s": lambda: letra_caida("S"),
     "gradil": gradil, "poste_portao": poste_portao, "placa_portao": placa_portao, "ponto_onibus": ponto_onibus,
-    "guarita": guarita, "jardim": jardim, "poste_luz": poste_luz, "caixa_dagua": caixa_dagua,
+    "guarita": guarita, "jardim": jardim, "caixa_dagua": caixa_dagua,
     "lixeiras": lixeiras, "balcao_devolucao": balcao_devolucao, "microondas": microondas,
-    "balcao_comida": balcao_comida, "mesa_ru": mesa_ru, "cadeira_ru": cadeira_ru,
+    "balcao_comida": balcao_comida,
     "balcao_cantina": balcao_cantina, "balcao_lateral": balcao_lateral, "letreiro_cantina": letreiro_cantina,
     "mesa_cantina": mesa_cantina, "sinuca": sinuca, "bebedouro": bebedouro, "sofa": sofa,
     "porta_elevador": porta_elevador,
+    "jardim_b": lambda: jardim(lamps=((1, 8, False), (0, 84, True))),
+    "poste_rua": poste_rua, "poste_rua_apagado": lambda: poste_rua(False),
+    "carro0": lambda: carro(0), "carro1": lambda: carro(1), "carro2": lambda: carro(2),
+    "mesa_ru_longa": mesa_ru_longa, "mesa_ru_cadeiras": mesa_ru_cadeiras, "lixeiras_pedal": lixeiras_pedal,
+    "catraca_ru": catraca_ru, "cadeira_caida": cadeira_caida, "entulho": entulho,
 }
 
 if __name__ == "__main__":

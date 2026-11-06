@@ -25,6 +25,8 @@ func _initialize():
 		var parts: PackedStringArray = p.split(",")
 		var extra_wait := 20
 		if hud: hud.visible = false
+		for e in get_nodes_in_group("enemies"):
+			if not ("ghosts" in parts): e.queue_free()
 		player.global_position = Vector2(float(parts[0]), float(parts[1]))
 		cam.reset_smoothing()
 		var center := Vector2(root.get_viewport().get_visible_rect().size / 2)
@@ -48,6 +50,7 @@ func _initialize():
 			elif a == "hud" and hud:
 				hud.visible = true
 		for i in extra_wait:
+			player.call("HealFull")  # nas fotos o jogador não morre
 			await process_frame
 		await RenderingServer.frame_post_draw
 		var img := root.get_viewport().get_texture().get_image()

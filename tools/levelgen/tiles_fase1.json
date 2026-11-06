@@ -428,6 +428,38 @@
    7,
    12
   ],
+  "frente_interno_vidro": [
+   8,
+   12
+  ],
+  "frente_interno_vidro_quebrado": [
+   9,
+   12
+  ],
+  "frente_interno_janela_quebrada": [
+   10,
+   12
+  ],
+  "frente_interno_rachada": [
+   11,
+   12
+  ],
+  "frente_interno_mofo": [
+   12,
+   12
+  ],
+  "frente_interno_pichacao0": [
+   13,
+   12
+  ],
+  "frente_interno_pichacao1": [
+   14,
+   12
+  ],
+  "frente_interno_pichacao2": [
+   15,
+   12
+  ],
   "frente_fachada_janela": [
    4,
    13
@@ -439,6 +471,102 @@
   "frente_fachada_lisa": [
    6,
    13
+  ],
+  "frente_fachada_quebrada": [
+   7,
+   13
+  ],
+  "frente_fachada_trepadeira": [
+   8,
+   13
+  ],
+  "frente_fachada_pichacao": [
+   9,
+   13
+  ],
+  "frente_interno_tv": [
+   0,
+   16
+  ],
+  "frente_interno_cartaz": [
+   1,
+   16
+  ],
+  "frente_interno_porta_dupla": [
+   2,
+   16
+  ],
+  "frente_interno_cozinha": [
+   3,
+   16
+  ],
+  "decal_rachadura0": [
+   0,
+   17
+  ],
+  "decal_rachadura1": [
+   1,
+   17
+  ],
+  "decal_rachadura2": [
+   2,
+   17
+  ],
+  "decal_poca0": [
+   3,
+   17
+  ],
+  "decal_poca1": [
+   4,
+   17
+  ],
+  "decal_folhas0": [
+   5,
+   17
+  ],
+  "decal_folhas1": [
+   6,
+   17
+  ],
+  "decal_mato0": [
+   7,
+   17
+  ],
+  "decal_mato1": [
+   8,
+   17
+  ],
+  "decal_papel0": [
+   9,
+   17
+  ],
+  "decal_papel1": [
+   10,
+   17
+  ],
+  "decal_vidro0": [
+   11,
+   17
+  ],
+  "decal_forro0": [
+   12,
+   17
+  ],
+  "decal_mancha0": [
+   13,
+   17
+  ],
+  "decal_mancha1": [
+   14,
+   17
+  ],
+  "sextavado_vaga0": [
+   4,
+   4
+  ],
+  "sextavado_vaga1": [
+   5,
+   4
   ],
   "sombra_001": [
    0,
@@ -474,12 +602,27 @@
    "janela",
    "extintor",
    "saida",
-   "mural"
+   "mural",
+   "vidro",
+   "vidro_quebrado",
+   "janela_quebrada",
+   "rachada",
+   "mofo",
+   "pichacao0",
+   "pichacao1",
+   "pichacao2",
+   "tv",
+   "cartaz",
+   "porta_dupla",
+   "cozinha"
   ],
   "fachada": [
    "janela",
    "ar",
-   "lisa"
+   "lisa",
+   "quebrada",
+   "trepadeira",
+   "pichacao"
   ],
   "externo": []
  }

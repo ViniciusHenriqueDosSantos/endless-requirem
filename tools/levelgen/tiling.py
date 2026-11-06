@@ -43,6 +43,8 @@ class Tiler:
     # ---------- piso
     def floor_tile(self, c, mat):
         x, y = c
+        if mat in self.names:  # nome exato de um tile (ex.: sextavado_vaga0)
+            return self.at(mat)
         if mat == "bloquete":
             return self.at(f"bloquete{(x % 2) + 2 * (y % 2)}")  # bloco 2x2 da espinha de peixe
         if mat in ("bloquete_tatil", "bloquete_meiofio"):

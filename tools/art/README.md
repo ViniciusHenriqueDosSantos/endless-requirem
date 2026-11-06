@@ -38,6 +38,7 @@ As cores e os objetos vieram das fotos do tour 360° da UNIFESP São José dos C
 | `tiles_fase1.py` | `sprites/tiles/fase1_tiles.png`, `tilesets/fase1_tileset*.tres` e `tools/levelgen/tiles_fase1.json` |
 | `props_fase1.py` | `sprites/props/fase1/` (prédio, guarita, jardins, balcões, mesas, sinuca...) |
 | `characters.py` | `sprites/characters/` (estudante, 3 fantasmas, Tia da Cantina) |
+| `lights.py` | `sprites/lights/` (texturas das luzes) |
 | `items.py` | `sprites/items/`, `weapons/`, `fx/`, `objects/` (crachá, marmita, armas, tiros, salgados, portas, catraca, pilhas de papel, alvos) |
 | `preview.py`, `sheet_preview.py` | pranchas ampliadas para revisar a arte fora do jogo |
 
@@ -54,12 +55,27 @@ praça, granito, cerâmica, asfalto...). `tools/levelgen/tiling.py` escolhe o ti
 
 ## Personagens no código
 
-- `Player`: a folha `estudante.png` tem 4 colunas (parado + passos) e 3 linhas (frente, costas, lado). O corpo vira para onde
+- `Player`: a folha `estudante.png` tem 4 colunas (parado + passos) e 4 linhas (frente, costas, lado, cambalhota). O corpo vira para onde
   o mouse mira, e a arma (`Weapon.Sprite`) aparece na mão.
 - `Enemy`: um sprite por tipo (`NormalSprite`, `FastSprite`, `TankSprite` em `enemy.tscn`), 4 quadros flutuando.
 - `Boss`: `BossConfig.Sprite` com 4 quadros (parada, parada, arremessando, tonta) e `ProjectileSprite` (salgados sorteados).
 - Tudo que ganhou sprite continua funcionando sem ele: se o campo estiver vazio, aparece o desenho provisório antigo.
   Por isso a Fase 2 segue igual até ganhar a arte dela.
+
+## Noite e abandono (Fase 1)
+
+O jogo se passa em 2061, à noite, com o campus abandonado há décadas.
+
+- **Escuridão**: um `CanvasModulate` azul-escuro na fase, no grupo `night`. Quando ele existe, o jogador acende a
+  lanterna (cone que segue a mira e falha com pouca vida) e um halo fraco em volta (`Player.FlashlightTexture/AuraTexture`).
+- **Luzes**: `objects/night/flicker_light.tscn` (`FlickerLight`): estável, piscando, queimada (só estalos) ou pulsando
+  (emergência). O gerador põe os postes de sódio da avenida, os globos dos canteiros, as fluorescentes do RU e da cantina,
+  a geladeira, a TV da guarita, a luz vermelha do elevador e as placas verdes de SAÍDA.
+- **Tela**: `objects/night/night_overlay.tscn` (vinheta, granulado e neblina; a borda pulsa em vermelho com pouca vida).
+- **Brilham no escuro**: fantasmas, tiros, salgados, itens e o café (material *unshaded*: ignoram a escuridão).
+- **Abandono**: pisos com sujeira e mato; uma camada `Abandono` com rachaduras, folhas, mato, poças, papéis, cacos e forro
+  caído; paredes com vidro quebrado, mofo, rachaduras, pichações e trepadeira; carros abandonados, cadeiras caídas, entulho.
+- Texturas de luz: `lights.py` gera `sprites/lights/` (radial, cone da lanterna, tubo fluorescente).
 
 ## Fonte
 

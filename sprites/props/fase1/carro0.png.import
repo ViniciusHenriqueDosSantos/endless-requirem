@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dh1k5t83bb07i"
-path="res://.godot/imported/poste_luz.png-db00610b981da71d4406cd1ceb48b95f.ctex"
+uid="uid://b1qx35f2v2npr"
+path="res://.godot/imported/carro0.png-aada7f0611d9f91d2fa305dae09b716a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://sprites/props/fase1/poste_luz.png"
-dest_files=["res://.godot/imported/poste_luz.png-db00610b981da71d4406cd1ceb48b95f.ctex"]
+source_file="res://sprites/props/fase1/carro0.png"
+dest_files=["res://.godot/imported/carro0.png-aada7f0611d9f91d2fa305dae09b716a.ctex"]
 
 [params]
 

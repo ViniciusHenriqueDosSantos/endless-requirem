@@ -8,7 +8,7 @@ ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 os.chdir(HERE)
 sys.path.insert(0, HERE)
 
-for script in ["tiles_fase1.py", "props_fase1.py", "characters.py", "items.py"]:
+for script in ["tiles_fase1.py", "props_fase1.py", "characters.py", "items.py", "lights.py"]:
     print("->", script)
     cwd = os.getcwd()
     os.chdir(ROOT if script == "items.py" else HERE)

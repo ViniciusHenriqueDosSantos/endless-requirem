@@ -7,7 +7,7 @@ Jogo de ação e tiro top-down feito em **Godot 4.7.2 (.NET / C#)** para a disci
 > Estado atual: **Fases 1 e 2 completas em cinza**.
 > - Fase 1: Entrada → Portaria → RU → Corredor → Cantina (Tia da Cantina) → Elevador.
 > - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (chave) → caixas (livro) → devolução → Bibliotecária (surda, enxerga pela luz: furtividade e caçada) → escada contra o relógio (voltas em torno do vão, fantasmas pesados parados nos degraus) até o 4º andar.
-> - Arte: a **Fase 1 já tem pixel art** baseada no campus de verdade (tour 360° da UNIFESP SJC). Veja `tools/art/README.md`.
+> - Arte: a **Fase 1 já tem pixel art** baseada no campus de verdade (tour 360° da UNIFESP SJC), à noite e abandonada, com lanterna e luzes piscando. Veja `tools/art/README.md`.
 > - A Fase 3 e a arte da Fase 2 vêm depois. Salas de teste (`levels/test_rooms*.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
 
 ---
@@ -38,7 +38,7 @@ Na primeira vez, o Godot compila o código C# e pode demorar alguns segundos.
 | Andar | **W A S D** ou **setas** |
 | Mirar | Mouse |
 | Atirar | **Botão esquerdo** do mouse (segure) |
-| Dash (esquiva rápida) | **Espaço** (andando) |
+| Cambalhota (rola e fica invencível) | **Espaço** (rola para onde está andando; parado, para onde mira) |
 | Trocar de arma | **1**, **2**, **3** ou **roda do mouse** |
 
 **Atalhos de teste** (só rodando pelo editor): **F1** = Fase 1, **F2** = Fase 2, **F3** = escada.
@@ -60,7 +60,7 @@ levels/LevelBase.cs     o que toda fase faz igual (REPROVADO, fim de fase, levar
 levels/test_rooms.tscn  sala de teste da MVP 1
 main.tscn / Main.cs     arena antiga de ondas infinitas
 objects/                uma pasta por objeto do jogo
-  player/               jogador: movimento, dash, vida, tiro
+  player/               jogador: movimento, cambalhota, vida, tiro
   enemy/                inimigos (Normal, Fast, Tank)
   bullet/               projétil
   weapon/               armas (cada .tres é uma arma)
@@ -79,6 +79,7 @@ objects/                uma pasta por objeto do jogo
   librarian/            Bibliotecária (lanterna, caçada) e as luminárias das salas de estudo
   decor/                assinaturas dos alunos nas paredes (Fase 2)
   game_state/           o que passa de uma fase para a outra (armas, pontos, tempo)
+  night/                noite: luzes que piscam e a camada de tela (vinheta, granulado, neblina)
 tools/levelgen/         geradores das plantas (Python). As cenas levels/*.tscn são geradas por eles;
                         mudanças de planta grandes ficam mais fáceis editando o gerador e rodando de novo
   arena_grid/           grade do chão

@@ -15,7 +15,7 @@ from palette import C
 
 T = 16
 COLS = 16
-atlas = Canvas(T * COLS, T * 16)
+atlas = Canvas(T * COLS, T * 20)
 names = {}
 
 
@@ -173,15 +173,22 @@ def floor_granite(variant):
 
 
 def floor_ceramic(variant):
+    """Cerâmica bege do RU assentada na diagonal (losangos), como nas fotos."""
     cv = Canvas(T, T)
     r = rng(700 + variant)
-    for ty in range(2):
-        for tx in range(2):
-            c = r.choice([C["cer"], C["cer"], C["cer"], mix(C["cer"], C["cer_l"], 0.4), mix(C["cer"], C["cer_d"], 0.3)])
-            cv.rect(tx * 8, ty * 8, 8, 8, c)
-            cv.hline(tx * 8, ty * 8, 8, mix(c, C["cer_grout"], 0.6)); cv.vline(tx * 8, ty * 8, 8, mix(c, C["cer_grout"], 0.6))
-            cv.put(tx * 8 + 2, ty * 8 + 2, C["cer_l"]); cv.put(tx * 8 + 3, ty * 8 + 2, C["cer_l"])
-    cv.noise(0, 0, T, T, [C["cer_d"]], 0.02, r)
+    tones = {}
+    for y in range(T):
+        for x in range(T):
+            u, v = (x + y) % 16, (x - y) % 16
+            k = ((x + y) // 8, (x - y) // 8)
+            if k not in tones:
+                tones[k] = r.choice([C["cer"], C["cer"], mix(C["cer"], C["cer_l"], 0.35), mix(C["cer"], C["cer_d"], 0.3)])
+            c = tones[k]
+            if u % 8 == 0 or v % 8 == 0:
+                c = mix(c, C["cer_grout"], 0.55)
+            elif u % 8 == 1:
+                c = mix(c, C["cer_l"], 0.4)
+            cv.put(x, y, c)
     return cv
 
 
@@ -211,6 +218,27 @@ def floor_grass(variant):
     for _ in range(5):
         x, y = r.randrange(T), r.randrange(1, T)
         cv.put(x, y, C["grass_l"]); cv.put(x, y - 1, C["grass_l"])
+    return cv
+
+
+# ---------------------------------------------------------------- abandono
+EXTERIOR = {"bloquete", "calcada", "asfalto", "sextavado", "praca", "grama", "laje"}
+
+
+def age(cv, mat, seed):
+    """Décadas sem manutenção: manchas escuras, uma rachadinha e (do lado de fora) mato nas juntas."""
+    r = rng(5000 + seed)
+    for _ in range(2):
+        x, y = r.randrange(T), r.randrange(T)
+        cv.ellipse(x, y, r.uniform(1.5, 3.5), r.uniform(1, 2.5), hexc("1e1a14", 22))
+    if r.random() < 0.5:
+        x, y = r.randrange(2, 14), r.randrange(2, 14)
+        for _ in range(r.randrange(3, 6)):
+            cv.put(x, y, hexc("2a2620", 90)); x += r.choice((-1, 0, 1)); y += 1
+    if mat in EXTERIOR:
+        for _ in range(r.randrange(1, 4)):
+            x, y = r.randrange(T), r.randrange(1, T)
+            cv.put(x, y, C["grass_d"]); cv.put(x, y - 1, C["grass"])
     return cv
 
 
@@ -251,7 +279,10 @@ def wall_front(style, ew, deco=None, seed=0):
         cv.rect(0, 0, T, 3, C["cap"]); cv.hline(0, 0, T, C["cap_d"]); cv.hline(0, 2, T, C["cap_d"])
         cv.hline(0, 3, T, C["wall_d"])
         cv.rect(0, 13, T, 3, C["base"]); cv.hline(0, 13, T, C["wall_d"])
-        cv.noise(0, 4, T, 9, [C["wall_m"]], 0.06, r)
+        cv.noise(0, 4, T, 9, [C["wall_m"]], 0.10, r)
+        for x in range(T):  # mofo subindo do rodapé
+            for y in range(9, 13):
+                if r.random() < (y - 8) * 0.12: cv.put(x, y, hexc("6f7a63", 70))
         if deco == "janela":  # janelão de vidro do RU e da cantina
             cv.rect(1, 4, 14, 8, C["frame"])
             cv.rect(2, 5, 12, 6, C["glass_l"]); cv.rect(2, 8, 12, 3, mix(C["glass_l"], C["leaf"], 0.5))
@@ -265,11 +296,49 @@ def wall_front(style, ew, deco=None, seed=0):
             cv.rect(2, 5, 12, 7, hexc("2f6b45")); cv.frame(2, 5, 12, 7, C["wood_d"])
             for (x, y, c) in [(3, 6, "ffffff"), (6, 7, "f2d24b"), (9, 6, "f08ca0"), (11, 8, "ffffff"), (4, 9, "8fd0ff")]:
                 cv.rect(x, y, 2, 2, hexc(c))
-        elif deco == "lixeiras":
-            pass
+        elif deco in ("vidro", "vidro_quebrado"):  # divisória de vidro com caixilho de alumínio (entrada do RU)
+            cv.rect(0, 3, T, 11, hexc("aeb5bc"))
+            cv.rect(1, 4, 14, 9, hexc("1f2b38")); cv.vline(8, 4, 9, hexc("aeb5bc")); cv.hline(1, 9, 14, hexc("aeb5bc"))
+            cv.line(2, 4, 5, 8, hexc("5c7690")); cv.line(10, 4, 12, 7, hexc("5c7690"))
+            if deco == "vidro_quebrado":
+                cv.rect(9, 4, 6, 5, hexc("0c1016"))
+                for (x, y) in [(9, 4), (10, 5), (12, 4), (13, 6), (11, 7), (14, 5)]: cv.put(x, y, hexc("9fb6cc"))
+        elif deco == "janela_quebrada":
+            cv.rect(1, 4, 14, 8, C["frame"]); cv.rect(2, 5, 12, 6, hexc("0c1016"))
+            for (x0, y0, x1, y1) in [(2, 5, 5, 8), (13, 5, 10, 9), (6, 10, 8, 7)]: cv.line(x0, y0, x1, y1, hexc("8fa9bf"))
+            cv.vline(8, 5, 6, C["frame"])
+        elif deco == "rachada":
+            x, y = 9, 3
+            while y < 13:
+                cv.put(x, y, hexc("8d8f8f")); cv.put(x + 1, y, hexc("bfc2c4")); x += r.choice((-1, 0, 1)); y += 1
+        elif deco == "mofo":
+            for _ in range(40):
+                x, y = r.randrange(T), r.randrange(5, 13)
+                cv.put(x, y, hexc("4e5a44", 120))
+        elif deco and deco.startswith("pichacao"):
+            word = {"pichacao0": "2061", "pichacao1": "SOS", "pichacao2": "FUJA"}[deco]
+            col = {"pichacao0": hexc("b3262e"), "pichacao1": hexc("2a2a2e"), "pichacao2": hexc("b3262e")}[deco]
+            from pix import text
+            text(cv, word, 1 if len(word) == 4 else 3, 6, col, spacing=0 if len(word) == 4 else 1)
+            for x in r.sample(range(2, 14), 3): cv.vline(x, 11, 2, col)  # tinta escorrendo
+        elif deco == "tv":  # TV de parede do RU, apagada e trincada
+            cv.rect(3, 4, 10, 7, hexc("141519")); cv.rect(4, 5, 8, 5, hexc("1e232b")); cv.line(5, 5, 9, 9, hexc("5d6b7a"))
+            cv.vline(8, 11, 2, hexc("33353b"))
+        elif deco == "cartaz":  # cartaz amarelo do cardápio, rasgado
+            cv.rect(4, 4, 7, 9, hexc("e3c23a")); cv.rect(5, 6, 5, 2, hexc("b03a2e")); cv.hline(5, 9, 5, hexc("8a6d1c"))
+            cv.put(10, 12, C["wall"]); cv.put(9, 12, C["wall"]); cv.put(10, 11, C["wall"])
+        elif deco == "porta_dupla":  # porta dupla bege da cozinha
+            cv.rect(1, 3, 14, 10, hexc("ddd3bd")); cv.frame(1, 3, 14, 10, hexc("9e957f")); cv.vline(8, 3, 10, hexc("9e957f"))
+            cv.put(6, 8, hexc("6d6553")); cv.put(10, 8, hexc("6d6553"))
+        elif deco == "cozinha":  # janela de passar prato, cozinha escura atrás
+            cv.rect(1, 4, 14, 6, hexc("0f1013")); cv.rect(1, 10, 14, 2, C["inox"]); cv.hline(1, 10, 14, C["inox_l"])
+            cv.rect(3, 4, 9, 2, hexc("5a5f66"))  # coifa
+            cv.put(5, 8, hexc("6a6f76")); cv.put(9, 7, hexc("6a6f76"))
     elif style == "fachada":
         cv = Canvas(T, T, C["conc"])
         cv.noise(0, 0, T, T, [C["conc_stain"], C["conc_l"]], 0.14, r)
+        for x in r.sample(range(T), 4):  # escorridos escuros de décadas de chuva
+            cv.vline(x, 2, r.randrange(3, 12), hexc("7d7462", 90))
         cv.rect(0, 0, T, 2, C["conc_d"]); cv.hline(0, 0, T, C["conc_k"])
         cv.rect(0, 14, T, 2, C["conc_d"]); cv.hline(0, 15, T, C["conc_k"])
         if deco in (None, "janela", "ar"):
@@ -283,6 +352,23 @@ def wall_front(style, ew, deco=None, seed=0):
                 cv.rect(10, 11, 5, 3, hexc("dadcd8")); cv.hline(10, 13, 5, hexc("9a9c98")); cv.put(12, 12, hexc("9a9c98"))
         elif deco == "lisa":
             for x in r.sample(range(T), 2): cv.vline(x, 3, r.randrange(3, 8), C["conc_stain"])
+        elif deco == "quebrada":  # faixa de janelas com vidros quebrados
+            cv.rect(0, 5, T, 5, C["frame"])
+            for x0 in (1, 9):
+                cv.rect(x0, 6, 6, 3, hexc("0b0e12")); cv.put(x0 + 1, 6, hexc("8fa9bf")); cv.put(x0 + 4, 8, hexc("8fa9bf"))
+            cv.hline(0, 10, T, C["conc_k"])
+        elif deco == "trepadeira":  # trepadeira subindo pela fachada
+            cv.rect(0, 5, T, 5, C["frame"])
+            for x0 in (1, 9): cv.rect(x0, 6, 6, 3, C["glass"])
+            for x in range(T):
+                h_ = int(6 + 5 * abs(((x * 7) % 11) / 11 - 0.5) * 2 + r.random() * 3)
+                for y in range(T - h_, T):
+                    if r.random() < 0.75: cv.put(x, y, r.choice([C["leaf"], C["leaf_d"], C["leaf_l"]]))
+        elif deco == "pichacao":
+            from pix import text
+            cv.rect(0, 5, T, 5, C["frame"])
+            for x0 in (1, 9): cv.rect(x0, 6, 6, 3, C["glass"])
+            text(cv, "SOS", 2, 10, hexc("b3262e"))
     else:  # externo: cerca viva com o gradil verde na frente
         cv = Canvas(T, T, C["leaf"])
         cv.noise(0, 0, T, T, [C["leaf_l"], C["leaf_d"]], 0.45, r)
@@ -325,7 +411,7 @@ FLOORS = {
 }
 for name, (row, fn) in FLOORS.items():
     for v in range(4):
-        cv = tile(f"{name}{v}", v, row); place(fn(v), f"{name}{v}")
+        cv = tile(f"{name}{v}", v, row); place(age(fn(v), name, row * 10 + v), f"{name}{v}")
 extra = [("bloquete_tatil0", 4, 1, floor_bricks(0, tactile=True)), ("bloquete_tatil1", 5, 1, floor_bricks(1, tactile=True)),
          ("bloquete_meiofio0", 6, 1, floor_bricks(2, curb=True)), ("bloquete_meiofio1", 7, 1, floor_bricks(3, curb=True)),
          ("calcada_meiofio", 4, 2, floor_walk(0, curb=True)), ("asfalto_faixa", 4, 3, floor_asphalt(0, line=True)),
@@ -341,10 +427,70 @@ for i, style in enumerate(["interno", "fachada", "externo"]):
         tile(f"topo_{style}_{mask}", mask, 9 + i); place(wall_top(style, mask), f"topo_{style}_{mask}")
     for ew in range(4):
         tile(f"frente_{style}_{ew}", ew, 12 + i); place(wall_front(style, ew, seed=ew), f"frente_{style}_{ew}")
-DECOS = {"interno": ["janela", "extintor", "saida", "mural"], "fachada": ["janela", "ar", "lisa"], "externo": []}
+DECOS = {"interno": ["janela", "extintor", "saida", "mural", "vidro", "vidro_quebrado", "janela_quebrada", "rachada",
+                    "mofo", "pichacao0", "pichacao1", "pichacao2"],
+         "fachada": ["janela", "ar", "lisa", "quebrada", "trepadeira", "pichacao"], "externo": []}
 for i, style in enumerate(["interno", "fachada", "externo"]):
     for j, d in enumerate(DECOS[style]):
         tile(f"frente_{style}_{d}", 4 + j, 12 + i); place(wall_front(style, 3, d, seed=50 + j), f"frente_{style}_{d}")
+EXTRA_INTERNO = ["tv", "cartaz", "porta_dupla", "cozinha"]
+for j, d in enumerate(EXTRA_INTERNO):
+    tile(f"frente_interno_{d}", j, 16); place(wall_front("interno", 3, d, seed=80 + j), f"frente_interno_{d}")
+DECOS["interno"] += EXTRA_INTERNO
+
+
+# ---------------------------------------------------------------- detalhes de abandono (camada por cima do piso)
+def decal(kind, v):
+    cv = Canvas(T, T)
+    r = rng(7000 + v + sum(map(ord, kind)))
+    if kind == "rachadura":
+        x, y = r.randrange(1, 6), r.randrange(1, 6)
+        for _ in range(14):
+            cv.put(x, y, hexc("17140f", 150)); cv.put(x + 1, y, hexc("ffffff", 25))
+            x += r.choice((0, 1, 1)); y += r.choice((0, 1, 1))
+            if r.random() < 0.2:
+                bx, by = x, y
+                for _ in range(4): bx += 1; by -= r.choice((0, 1)); cv.put(bx, by, hexc("17140f", 110))
+    elif kind == "poca":  # poça d'água: reflete um pouco da luz
+        cv.ellipse(8, 9, 6.5 - v, 3.5, hexc("2a3a4c", 120)); cv.ellipse(7, 8, 3, 1.2, hexc("8fb0cc", 70))
+    elif kind == "folhas":
+        for _ in range(7):
+            x, y = r.randrange(1, 15), r.randrange(1, 15)
+            c = r.choice([hexc("8a6a32"), hexc("6e5426"), hexc("a07a3c"), hexc("5c6b2e")])
+            cv.put(x, y, c); cv.put(x + 1, y, c)
+    elif kind == "mato":
+        for _ in range(3 + v * 2):
+            x, y = r.randrange(2, 14), r.randrange(4, 15)
+            for k in range(r.randrange(2, 5)):
+                cv.put(x + r.choice((-1, 0, 1)), y - k, r.choice([C["grass"], C["grass_l"], C["leaf_d"]]))
+    elif kind == "papel":
+        for _ in range(2 + v):
+            x, y = r.randrange(0, 11), r.randrange(0, 12)
+            cv.rect(x, y, 4, 3, hexc("d9d4c3")); cv.hline(x, y + 2, 4, hexc("a39d88")); cv.put(x + 1, y + 1, hexc("8f99ad"))
+    elif kind == "vidro":
+        for _ in range(9):
+            cv.put(r.randrange(T), r.randrange(T), r.choice([hexc("c8dcec", 200), hexc("8fb0cc", 180)]))
+    elif kind == "forro":  # placa do forro que caiu do teto
+        cv.rect(2, 3, 11, 9, hexc("e9e8e2")); cv.frame(2, 3, 11, 9, hexc("b8b6ad")); cv.noise(3, 4, 9, 7, [hexc("cfcdc4")], 0.3, r)
+        cv.line(4, 6, 9, 10, hexc("a8a69d"))
+    elif kind == "mancha":
+        cv.ellipse(8, 8, 6, 4, hexc("2b1f14", 60)); cv.ellipse(9, 9, 3, 2, hexc("2b1f14", 50))
+    return cv
+
+
+DECALS = [("rachadura", 3), ("poca", 2), ("folhas", 2), ("mato", 2), ("papel", 2), ("vidro", 1), ("forro", 1), ("mancha", 2)]
+k = 0
+for kind, n in DECALS:
+    for v in range(n):
+        tile(f"decal_{kind}{v}", k % 16, 17 + k // 16); place(decal(kind, v), f"decal_{kind}{v}")
+        k += 1
+
+# estacionamento: sextavado com as faixas brancas das vagas
+for v, (vert, hor) in enumerate([(True, False), (False, True)]):
+    cv = age(floor_hex(1), "sextavado", 99 + v)
+    if vert: cv.rect(0, 0, 2, T, hexc("d8d6cc", 200))
+    if hor: cv.rect(0, 0, T, 2, hexc("d8d6cc", 200))
+    tile(f"sextavado_vaga{v}", 4 + v, 4); place(cv, f"sextavado_vaga{v}")
 
 k = 0
 for top in (0, 1):
