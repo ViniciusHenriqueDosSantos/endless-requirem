@@ -14,6 +14,12 @@ public partial class PaperPile : StaticBody2D
 	private bool _box;
 	[Export] public bool Box { get => _box; set { _box = value; QueueRedraw(); } }
 
+	// Pixel art da pilha de papel: inteira, baleada e espalhada no chão. Vazios = desenho provisório.
+	// (A caixa de papelão da Fase 2 continua com o desenho provisório.)
+	[Export] public Texture2D FullSprite;
+	[Export] public Texture2D DamagedSprite;
+	[Export] public Texture2D ScatteredSprite;
+
 	// Ligados pelo roteiro da fase.
 	public bool HidesItem;
 	public bool HidesGhost;
@@ -84,8 +90,22 @@ public partial class PaperPile : StaticBody2D
 		EmitSignal(SignalName.Destroyed, this);
 	}
 
+	private void DrawSprite(Texture2D texture)
+	{
+		Vector2 size = texture.GetSize() * 4f;
+		Color color = _flash > 0 ? new Color(2f, 2f, 2f) : Colors.White;
+		DrawTextureRect(texture, new Rect2(-size.X / 2, -size.Y + 4, size.X, size.Y), false, color);
+	}
+
 	public override void _Draw()
 	{
+		if (!Box && FullSprite != null)
+		{
+			bool hurt = !Engine.IsEditorHint() && Health <= _maxHealth / 2;
+			DrawSprite(_destroyed && ScatteredSprite != null ? ScatteredSprite : hurt && DamagedSprite != null ? DamagedSprite : FullSprite);
+			return;
+		}
+
 		if (_destroyed)
 		{
 			DrawScatteredPapers();

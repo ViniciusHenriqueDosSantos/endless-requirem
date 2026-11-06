@@ -207,6 +207,6 @@ public partial class Hud : CanvasLayer
 		string items = Player.ItemNames.Count > 0 ? "  |  Itens: " + string.Join(", ", Player.ItemNames) : "";
 
 		_label.Text = $"Vida: {Player.Health}/{Player.MaxHealth}  |  Armas: {weapons}  ({ammo}){items}\n" +
-					  "[WASD] Mover  |  [Mouse] Mirar e atirar  |  [Espaço] Dash";
+					  "[WASD] Mover  |  [Mouse] Mirar e atirar  |  [Espaço] Cambalhota";
 	}
 }

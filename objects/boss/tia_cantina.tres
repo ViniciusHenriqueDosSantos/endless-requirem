@@ -1,6 +1,8 @@
 [gd_resource type="Resource" script_class="BossConfig" format=3]
 
 [ext_resource type="Script" path="res://objects/boss/BossConfig.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://sprites/characters/tia_cantina.png" id="2_sprite"]
+[ext_resource type="Texture2D" path="res://sprites/fx/salgados.png" id="3_salgados"]
 
 [resource]
 script = ExtResource("1_script")
@@ -22,3 +24,7 @@ SummonOnLastCycle = false
 SummonCount = 0
 MoveSpeed = 120.0
 ScoreValue = 500
+Sprite = ExtResource("2_sprite")
+SpriteFrames = 4
+ProjectileSprite = ExtResource("3_salgados")
+ProjectileFrames = 4

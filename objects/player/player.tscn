@@ -1,12 +1,14 @@
 [gd_scene format=3 uid="uid://dl3eu4cvwecou"]
 
 [ext_resource type="Script" uid="uid://bjhw34mjekh7c" path="res://objects/player/Player.cs" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://73b6ghvi565n" path="res://sprites/icon.svg" id="2_icon"]
+[ext_resource type="Texture2D" path="res://sprites/characters/estudante.png" id="2_icon"]
 [ext_resource type="Script" uid="uid://cxe4i4uesb4hh" path="res://objects/weapon/Weapon.cs" id="3_1jxqw"]
 [ext_resource type="PackedScene" path="res://objects/bullet/bullet.tscn" id="3_bullet"]
 [ext_resource type="Resource" path="res://objects/weapon/machine_gun.tres" id="4_mg"]
 [ext_resource type="Resource" path="res://objects/weapon/shotgun.tres" id="5_sg"]
 [ext_resource type="Resource" path="res://objects/weapon/cannon.tres" id="6_cn"]
+[ext_resource type="Texture2D" path="res://sprites/lights/cone.png" id="7_cone"]
+[ext_resource type="Texture2D" path="res://sprites/lights/radial.png" id="8_radial"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(40, 16)
@@ -19,11 +21,15 @@ motion_mode = 1
 script = ExtResource("1_script")
 BulletScene = ExtResource("3_bullet")
 Weapons = Array[ExtResource("3_1jxqw")]([ExtResource("4_mg"), ExtResource("5_sg"), ExtResource("6_cn")])
+FlashlightTexture = ExtResource("7_cone")
+AuraTexture = ExtResource("8_radial")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=525284412]
-position = Vector2(0, -32)
-scale = Vector2(0.5, 0.5)
+position = Vector2(0, -44)
+scale = Vector2(4, 4)
 texture = ExtResource("2_icon")
+hframes = 4
+vframes = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1546240037]
 position = Vector2(0, -8)

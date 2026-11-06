@@ -49,6 +49,9 @@ public partial class Boss : StaticBody2D, IHittable
 	private float _flash;
 	private float _shieldFlash;
 	private float _time;
+	private float _throwTimer;
+
+	private const float ThrowPoseTime = 0.35f;
 
 	private readonly List<BossTarget> _targets = new();
 	private readonly List<BossProjectile> _projectiles = new();
@@ -207,6 +210,7 @@ public partial class Boss : StaticBody2D, IHittable
 		_time += dt;
 		if (_flash > 0) _flash -= dt;
 		if (_shieldFlash > 0) _shieldFlash -= dt;
+		if (_throwTimer > 0) _throwTimer -= dt;
 		QueueRedraw();
 	}
 
@@ -263,6 +267,7 @@ public partial class Boss : StaticBody2D, IHittable
 	private void FireFan()
 	{
 		if (!IsInstanceValid(_player)) return;
+		_throwTimer = ThrowPoseTime;
 
 		Vector2 origin = GlobalPosition + Muzzle;
 		Vector2 aim = (_player.GlobalPosition + new Vector2(0, -32) - origin).Normalized();
@@ -274,6 +279,8 @@ public partial class Boss : StaticBody2D, IHittable
 			projectile.Direction = aim.Rotated(Mathf.DegToRad(spread));
 			projectile.Speed = Config.ProjectileSpeed;
 			projectile.Color = Config.ProjectileColor;
+			projectile.Texture = Config.ProjectileSprite;
+			projectile.Frames = Config.ProjectileFrames;
 			projectile.TreeExiting += () => _projectiles.Remove(projectile);
 			_projectiles.Add(projectile);
 			GetParent().AddChild(projectile);
@@ -315,14 +322,31 @@ public partial class Boss : StaticBody2D, IHittable
 
 		Rect2 body = new(-BodySize.X / 2, -BodySize.Y, BodySize.X, BodySize.Y);
 		Color color = _flash > 0 ? Colors.White : Config.BodyColor;
+		float nameY = -BodySize.Y - 56;
 
-		DrawCircle(new Vector2(0, -4), BodySize.X * 0.55f, new Color(0, 0, 0, 0.3f));
-		DrawRect(body, color);
-		DrawRect(body, Config.BodyColor.Darkened(0.5f), false, 3f);
-		DrawCircle(new Vector2(0, -BodySize.Y - 18), 26, color);
+		if (Config.Sprite != null)
+		{
+			// Pixel art: quadro 0/1 parado (respira), 2 arremessando, 3 tonto sem escudo.
+			int frames = Mathf.Max(1, Config.SpriteFrames);
+			Vector2 frameSize = new(Config.Sprite.GetWidth() / (float)frames, Config.Sprite.GetHeight());
+			int frame = _phase == Phase.Vulnerable ? 3 : _throwTimer > 0 ? 2 : ((int)(_time * 2f) % 2);
+			frame = Mathf.Min(frame, frames - 1);
+			Vector2 size = frameSize * 4f;
+			Rect2 dest = new(-size.X / 2, -size.Y + 8, size.X, size.Y);
+			DrawTextureRectRegion(Config.Sprite, dest, new Rect2(frame * frameSize.X, 0, frameSize.X, frameSize.Y),
+				_flash > 0 ? new Color(2.5f, 2.5f, 2.5f) : Colors.White);
+			nameY = dest.Position.Y - 12;
+		}
+		else
+		{
+			DrawCircle(new Vector2(0, -4), BodySize.X * 0.55f, new Color(0, 0, 0, 0.3f));
+			DrawRect(body, color);
+			DrawRect(body, Config.BodyColor.Darkened(0.5f), false, 3f);
+			DrawCircle(new Vector2(0, -BodySize.Y - 18), 26, color);
+		}
 
 		Font font = ThemeDB.FallbackFont;
-		DrawString(font, new Vector2(-120, -BodySize.Y - 56), Config.Name, HorizontalAlignment.Center, 240, 16,
+		DrawString(font, new Vector2(-120, nameY), Config.Name, HorizontalAlignment.Center, 240, 16,
 			Colors.White);
 
 		bool shielded = Engine.IsEditorHint() || _phase == Phase.Shielded;
