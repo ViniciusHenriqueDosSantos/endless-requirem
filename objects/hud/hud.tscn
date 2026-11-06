@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://objects/hud/Hud.cs" id="1_script"]
 
 [node name="Hud" type="CanvasLayer"]
+layer = 3
 script = ExtResource("1_script")
 
 [node name="Label" type="Label" parent="."]
