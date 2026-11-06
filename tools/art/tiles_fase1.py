@@ -1,0 +1,386 @@
+# Tileset da Fase 1 (UNIFESP SJC): pisos, paredes e sombras.
+# Saída: sprites/tiles/fase1_tiles.png + tilesets/fase1_tileset.tres + tilesets/fase1_tileset_outer.tres
+#        + tools/levelgen/tiles_fase1.json (onde cada peça está no atlas, lido pelo gerador da fase).
+#
+# Atlas com 16 colunas de tiles de 16 px. Linhas:
+#   0  compatibilidade (granito A/B, topo e frente de parede genéricos)
+#   1  bloquete vermelho em espinha de peixe   2 calçada cimentada   3 asfalto
+#   4  piso sextavado   5 granito da praça   6 granito branco polido   7 cerâmica do RU   8 aço / grama
+#   9..11  topo de parede (16 combinações de vizinhos) nos estilos interno, fachada e externo
+#   12..14 frente de parede nos mesmos estilos (4 combinações + variações decoradas)
+#   15 sombras de contato no chão (camada por cima do piso)
+import json, os
+from pix import Canvas, ROOT, rng, mix, shade, hexc
+from palette import C
+
+T = 16
+COLS = 16
+atlas = Canvas(T * COLS, T * 16)
+names = {}
+
+
+def tile(name, col, row):
+    cv = Canvas(T, T)
+    names[name] = [col, row]
+    return cv
+
+
+def place(cv, name):
+    col, row = names[name]
+    atlas.blit(cv, col * T, row * T)
+
+
+# ---------------------------------------------------------------- pisos
+def herringbone_owner(x, y):
+    """Espinha de peixe 90° com tijolos de 8x4 px. O desenho volta ao começo a cada 32 px:
+    os 4 tiles bloquete0..3 formam um bloco 2x2 (o gerador escolhe pela posição do tile)."""
+    u = 4
+    ux, uy = (x // u) % 8, (y // u) % 8
+    for a in range(-4, 5):
+        for b in range(-4, 5):
+            ox, oy = a + 2 * b, a - 2 * b
+            for k, cells in enumerate(([(0, 0), (1, 0)], [(0, 1), (0, 2)])):
+                for cx, cy in cells:
+                    if (ox + cx) % 8 == ux and (oy + cy) % 8 == uy:
+                        return (ox % 8, oy % 8, k)
+    return None
+
+
+_HB = {}
+
+
+def floor_bricks(variant, tactile=False, curb=False):
+    cv = Canvas(T, T)
+    ox, oy = (variant % 2) * T, (variant // 2) * T
+    r = rng(100 + variant)
+    for y in range(T):
+        for x in range(T):
+            gx, gy = ox + x, oy + y
+            key = (gx % 32, gy % 32)
+            if key not in _HB:
+                _HB[key] = herringbone_owner(*key)
+            b = _HB[key]
+            tr = rng(hash(b) & 0xffff).random()
+            c = C["brick"] if tr < 0.55 else (C["brick_l"] if tr < 0.8 else C["brick_d"])
+            right = _HB.setdefault(((gx + 1) % 32, gy % 32), herringbone_owner((gx + 1) % 32, gy % 32))
+            down = _HB.setdefault((gx % 32, (gy + 1) % 32), herringbone_owner(gx % 32, (gy + 1) % 32))
+            left = _HB.setdefault(((gx - 1) % 32, gy % 32), herringbone_owner((gx - 1) % 32, gy % 32))
+            up = _HB.setdefault((gx % 32, (gy - 1) % 32), herringbone_owner(gx % 32, (gy - 1) % 32))
+            if right != b or down != b:
+                c = C["brick_grout"]
+            elif left != b or up != b:
+                c = mix(c, C["brick_hi"], 0.45)
+            cv.put(x, y, c)
+    for _ in range(3):
+        cv.put(r.randrange(T), r.randrange(T), C["brick_d"])
+    if tactile:  # faixa de piso tátil amarelo
+        cv.rect(0, 5, T, 6, hexc("d9b23a"))
+        for x in range(1, T, 3):
+            for yy in (6, 8):
+                cv.put(x, yy, hexc("f0d062")); cv.put(x, yy + 1, hexc("b8932a"))
+        cv.hline(0, 5, T, hexc("f0d062")); cv.hline(0, 10, T, hexc("8f7024"))
+    if curb:  # meio-fio pintado de branco na beirada de baixo
+        cv.rect(0, 10, T, 4, C["curb"]); cv.hline(0, 10, T, hexc("f4f3ee"))
+        cv.rect(0, 14, T, 2, C["curb_d"]); cv.hline(0, 9, T, C["brick_grout"])
+        for x in r.sample(range(T), 3): cv.put(x, 12, hexc("b7b5ae"))
+    return cv
+
+
+def floor_walk(variant, curb=False):
+    cv = Canvas(T, T, C["walk"])
+    r = rng(200 + variant)
+    cv.noise(0, 0, T, T, [C["walk_l"], C["walk_d"]], 0.18, r)
+    cv.hline(0, 0, T, C["walk_joint"])
+    if variant % 2: cv.vline(0, 0, T, C["walk_joint"])
+    if variant == 3:
+        cv.line(4, 6, 9, 8, C["walk_d"])
+    if curb:
+        cv.rect(0, 11, T, 3, C["curb"]); cv.hline(0, 11, T, hexc("f4f3ee")); cv.rect(0, 14, T, 2, C["curb_d"])
+    return cv
+
+
+def floor_asphalt(variant, line=False, under_curb=False):
+    cv = Canvas(T, T, C["asph"])
+    r = rng(300 + variant)
+    cv.noise(0, 0, T, T, [C["asph_l"], C["asph_d"], C["asph_d"]], 0.35, r)
+    if variant == 2:
+        for p in [(3, 9), (4, 9), (4, 10), (5, 10), (11, 4)]: cv.put(*p, hexc("45474b"))
+    if variant == 3:  # remendo
+        cv.rect(8, 9, 6, 4, hexc("535559")); cv.noise(8, 9, 6, 4, [C["asph_l"]], 0.2, r)
+    if line:  # faixa tracejada branca
+        cv.rect(2, 7, 10, 2, C["paint"]); cv.noise(2, 7, 10, 2, [hexc("c9c7bf")], 0.2, r)
+    if under_curb:
+        cv.rect(0, 0, T, 2, hexc("000000", 60))
+    return cv
+
+
+def floor_hex(variant):
+    cv = Canvas(T, T)
+    r = rng(400 + variant)
+    centers = [(0, 0), (8, 0), (4, 8), (12, 8), (16, 0), (0, 16), (16, 16), (8, 16), (4, -8), (12, -8),
+               (-4, 8), (20, 8), (4, 24), (12, 24)]
+
+    def cell(x, y):
+        best, bi = 1e9, 0
+        for i, (cx, cy) in enumerate(centers):
+            d = (x - cx) ** 2 + ((y - cy) * 1.15) ** 2
+            if d < best: best, bi = d, i
+        cx, cy = centers[bi]
+        return (cx % 16, cy % 16)
+
+    tones = {}
+    for y in range(T):
+        for x in range(T):
+            k = cell(x + 0.5, y + 0.5)
+            tones.setdefault(k, r.choice([C["hex"], C["hex"], C["hex_l"], mix(C["hex"], C["hex_d"], 0.3)]))
+            edge = cell(x + 1.5, y + 0.5) != k or cell(x + 0.5, y + 1.5) != k
+            if edge:
+                c = C["grass_d"] if r.random() < (0.22 if variant != 0 else 0.05) else C["hex_d"]
+            else:
+                c = tones[k]
+            cv.put(x, y, c)
+    cv.noise(0, 0, T, T, [C["hex_l"]], 0.04, r)
+    return cv
+
+
+def floor_plaza(variant):
+    base = [C["plaza"], mix(C["plaza"], C["plaza_l"], 0.4), mix(C["plaza"], C["plaza_d"], 0.25), C["plaza"]][variant]
+    cv = Canvas(T, T, base)
+    r = rng(500 + variant)
+    cv.noise(0, 0, T, T, [C["plaza_l"], C["plaza_d"]], 0.12, r)
+    cv.hline(0, 0, T, mix(base, C["plaza_joint"], 0.6)); cv.vline(0, 0, T, mix(base, C["plaza_joint"], 0.6))
+    cv.hline(1, 1, T - 1, mix(base, C["plaza_l"], 0.5))
+    if variant == 3:  # mancha de água / folha seca
+        cv.put(10, 11, C["plaza_d"]); cv.put(11, 11, C["plaza_d"]); cv.put(11, 12, C["plaza_d"])
+    return cv
+
+
+def floor_granite(variant):
+    cv = Canvas(T, T, C["gran"])
+    r = rng(600 + variant)
+    # manchas suaves (o granito branco tem veios cinza claros) e poucos grãos escuros
+    for _ in range(3):
+        x, y = r.randrange(T), r.randrange(T)
+        for k in range(r.randrange(3, 6)):
+            cv.put((x + k) % T, (y + r.choice((0, 0, 1))) % T, C["gran_m"])
+    cv.noise(0, 0, T, T, [C["gran_l"]], 0.10, r)
+    cv.noise(0, 0, T, T, [C["gran_m"]], 0.06, r)
+    cv.noise(0, 0, T, T, [C["gran_d"]], 0.015, r)
+    cv.hline(0, 0, T, C["gran_joint"]); cv.vline(0, 0, T, C["gran_joint"])
+    if variant == 2:  # veio cinza mais comprido atravessando a placa
+        cv.line(2, 11, 13, 7, C["gran_m"]); cv.line(3, 11, 9, 9, C["gran_d"])
+    return cv
+
+
+def floor_ceramic(variant):
+    cv = Canvas(T, T)
+    r = rng(700 + variant)
+    for ty in range(2):
+        for tx in range(2):
+            c = r.choice([C["cer"], C["cer"], C["cer"], mix(C["cer"], C["cer_l"], 0.4), mix(C["cer"], C["cer_d"], 0.3)])
+            cv.rect(tx * 8, ty * 8, 8, 8, c)
+            cv.hline(tx * 8, ty * 8, 8, mix(c, C["cer_grout"], 0.6)); cv.vline(tx * 8, ty * 8, 8, mix(c, C["cer_grout"], 0.6))
+            cv.put(tx * 8 + 2, ty * 8 + 2, C["cer_l"]); cv.put(tx * 8 + 3, ty * 8 + 2, C["cer_l"])
+    cv.noise(0, 0, T, T, [C["cer_d"]], 0.02, r)
+    return cv
+
+
+def floor_steel(variant):
+    cv = Canvas(T, T, C["steel"])
+    for y in range(0, T, 4):
+        for x in range((y // 4) % 2 * 2, T, 4):
+            cv.put(x, y + 1, C["steel_l"]); cv.put(x + 1, y + 2, C["steel_d"])
+    cv.hline(0, 0, T, C["steel_d"]); cv.vline(0, 0, T, C["steel_d"])
+    return cv
+
+
+def roof(variant):
+    """Laje de concreto dos prédios vista de cima (aparece no lugar do vazio entre as salas)."""
+    cv = Canvas(T, T, hexc("a9a69e"))
+    r = rng(850 + variant)
+    cv.noise(0, 0, T, T, [hexc("b3b0a8"), hexc("9f9c94")], 0.22, r)
+    cv.hline(0, 0, T, hexc("96938b")); cv.vline(0, 0, T, hexc("96938b"))
+    if variant == 2: cv.rect(5, 6, 4, 3, hexc("8f8c85"))  # ralo / mancha
+    return cv
+
+
+def floor_grass(variant):
+    cv = Canvas(T, T, C["grass"])
+    r = rng(800 + variant)
+    cv.noise(0, 0, T, T, [C["grass_l"], C["grass_d"]], 0.3, r)
+    for _ in range(5):
+        x, y = r.randrange(T), r.randrange(1, T)
+        cv.put(x, y, C["grass_l"]); cv.put(x, y - 1, C["grass_l"])
+    return cv
+
+
+# ---------------------------------------------------------------- paredes
+STYLES = {
+    "interno": dict(cap=C["cap"], cap_l=C["cap_l"], cap_d=C["cap_d"]),
+    "fachada": dict(cap=C["conc_d"], cap_l=C["conc"], cap_d=C["conc_k"]),
+    "externo": dict(cap=C["leaf"], cap_l=C["leaf_l"], cap_d=C["leaf_d"]),
+}
+
+
+def wall_top(style, mask):
+    s = STYLES[style]
+    cv = Canvas(T, T, s["cap"])
+    r = rng(900 + mask)
+    n, e, so, w = mask & 1, mask & 2, mask & 4, mask & 8
+    if style == "externo":
+        cv.noise(0, 0, T, T, [C["leaf_l"], C["leaf_d"], C["grass_k"]], 0.4, r)
+    elif style == "fachada":
+        cv.noise(0, 0, T, T, [C["conc_stain"], C["conc_k"]], 0.12, r)
+        # laje com brita e rufo: lembra o telhado plano visto de cima
+        cv.noise(2, 2, 12, 12, [C["conc_l"]], 0.1, r)
+    else:
+        cv.noise(0, 0, T, T, [C["cap_l"]], 0.08, r)
+    d, l = s["cap_d"], s["cap_l"]
+    if not n: cv.hline(0, 0, T, d); cv.hline(0, 1, T, l)
+    if not so: cv.hline(0, T - 1, T, d)
+    if not w: cv.vline(0, 0, T, d); cv.vline(1, 1 if not n else 0, T - 1, l)
+    if not e: cv.vline(T - 1, 0, T, d)
+    return cv
+
+
+def wall_front(style, ew, deco=None, seed=0):
+    """Frente da parede (o lado que aparece em 3/4). ew: bit1 = parede à direita, bit2 = à esquerda."""
+    r = rng(1000 + seed)
+    if style == "interno":
+        cv = Canvas(T, T, C["wall"])
+        cv.rect(0, 0, T, 3, C["cap"]); cv.hline(0, 0, T, C["cap_d"]); cv.hline(0, 2, T, C["cap_d"])
+        cv.hline(0, 3, T, C["wall_d"])
+        cv.rect(0, 13, T, 3, C["base"]); cv.hline(0, 13, T, C["wall_d"])
+        cv.noise(0, 4, T, 9, [C["wall_m"]], 0.06, r)
+        if deco == "janela":  # janelão de vidro do RU e da cantina
+            cv.rect(1, 4, 14, 8, C["frame"])
+            cv.rect(2, 5, 12, 6, C["glass_l"]); cv.rect(2, 8, 12, 3, mix(C["glass_l"], C["leaf"], 0.5))
+            cv.vline(8, 5, 6, C["frame"]); cv.line(3, 5, 5, 7, C["glass_hi"]); cv.line(10, 5, 11, 6, C["glass_hi"])
+        elif deco == "extintor":
+            cv.rect(10, 6, 3, 6, hexc("c62f26")); cv.put(11, 5, C["black"]); cv.put(11, 7, hexc("e6574a"))
+            cv.rect(9, 4, 5, 1, hexc("c62f26")); text_mini(cv, 9, 4)
+        elif deco == "saida":  # placa verde de SAÍDA
+            cv.rect(4, 5, 8, 4, hexc("1f9a52")); cv.rect(5, 6, 2, 2, hexc("e9fff0")); cv.line(8, 7, 10, 7, hexc("e9fff0"))
+        elif deco == "mural":  # quadro de avisos verde com papéis
+            cv.rect(2, 5, 12, 7, hexc("2f6b45")); cv.frame(2, 5, 12, 7, C["wood_d"])
+            for (x, y, c) in [(3, 6, "ffffff"), (6, 7, "f2d24b"), (9, 6, "f08ca0"), (11, 8, "ffffff"), (4, 9, "8fd0ff")]:
+                cv.rect(x, y, 2, 2, hexc(c))
+        elif deco == "lixeiras":
+            pass
+    elif style == "fachada":
+        cv = Canvas(T, T, C["conc"])
+        cv.noise(0, 0, T, T, [C["conc_stain"], C["conc_l"]], 0.14, r)
+        cv.rect(0, 0, T, 2, C["conc_d"]); cv.hline(0, 0, T, C["conc_k"])
+        cv.rect(0, 14, T, 2, C["conc_d"]); cv.hline(0, 15, T, C["conc_k"])
+        if deco in (None, "janela", "ar"):
+            # faixa de janelas escuras: a marca dos prédios do ICT
+            cv.rect(0, 5, T, 5, C["frame"])
+            for x0 in (1, 9):
+                cv.rect(x0, 6, 6, 3, C["glass"]); cv.put(x0, 6, C["glass_l"]); cv.put(x0 + 1, 6, C["glass_hi"])
+                cv.put(x0 + 4, 7, C["glass_l"])
+            cv.hline(0, 10, T, C["conc_k"])
+            if deco == "ar":
+                cv.rect(10, 11, 5, 3, hexc("dadcd8")); cv.hline(10, 13, 5, hexc("9a9c98")); cv.put(12, 12, hexc("9a9c98"))
+        elif deco == "lisa":
+            for x in r.sample(range(T), 2): cv.vline(x, 3, r.randrange(3, 8), C["conc_stain"])
+    else:  # externo: cerca viva com o gradil verde na frente
+        cv = Canvas(T, T, C["leaf"])
+        cv.noise(0, 0, T, T, [C["leaf_l"], C["leaf_d"]], 0.45, r)
+        for x in range(T):
+            cv.put(x, 0, C["leaf_d"] if x % 3 else C["leaf_l"])
+        cv.rect(0, 13, T, 3, C["grass_d"])
+        cv.hline(0, 4, T, C["fence_d"]); cv.hline(0, 12, T, C["fence_d"])
+        for x in range(1, T, 3): cv.vline(x, 4, 9, C["fence"]); cv.put(x, 4, C["fence_l"])
+    # quinas: parede acaba à esquerda ou à direita
+    if not (ew & 2): cv.vline(0, 0, T, shade(cv.get(0, 8), -0.25))
+    if not (ew & 1): cv.vline(T - 1, 0, T, shade(cv.get(T - 1, 8), -0.3))
+    return cv
+
+
+def text_mini(cv, x, y):
+    pass
+
+
+# ---------------------------------------------------------------- sombras de contato
+def shadow(top, left, right):
+    cv = Canvas(T, T)
+    if top:
+        cv.rect(0, 0, T, 2, hexc("000000", 70)); cv.hline(0, 2, T, hexc("000000", 35))
+    if left:
+        cv.rect(0, 0, 3, T, hexc("000000", 55)); cv.vline(3, 0, T, hexc("000000", 25))
+    if right:
+        cv.vline(T - 1, 0, T, hexc("000000", 40))
+    return cv
+
+
+# ---------------------------------------------------------------- monta o atlas
+FLOORS = {
+    "bloquete": (1, lambda v: floor_bricks(v)),
+    "calcada": (2, lambda v: floor_walk(v)),
+    "asfalto": (3, lambda v: floor_asphalt(v)),
+    "sextavado": (4, lambda v: floor_hex(v)),
+    "praca": (5, lambda v: floor_plaza(v)),
+    "granito": (6, lambda v: floor_granite(v)),
+    "ceramica": (7, lambda v: floor_ceramic(v)),
+}
+for name, (row, fn) in FLOORS.items():
+    for v in range(4):
+        cv = tile(f"{name}{v}", v, row); place(fn(v), f"{name}{v}")
+extra = [("bloquete_tatil0", 4, 1, floor_bricks(0, tactile=True)), ("bloquete_tatil1", 5, 1, floor_bricks(1, tactile=True)),
+         ("bloquete_meiofio0", 6, 1, floor_bricks(2, curb=True)), ("bloquete_meiofio1", 7, 1, floor_bricks(3, curb=True)),
+         ("calcada_meiofio", 4, 2, floor_walk(0, curb=True)), ("asfalto_faixa", 4, 3, floor_asphalt(0, line=True)),
+         ("asfalto_meiofio", 5, 3, floor_asphalt(1, under_curb=True)),
+         ("aco0", 0, 8, floor_steel(0)), ("aco1", 1, 8, floor_steel(1)), ("grama0", 2, 8, floor_grass(0)),
+         ("grama1", 3, 8, floor_grass(1)),
+         ("laje0", 4, 8, roof(0)), ("laje1", 5, 8, roof(1)), ("laje2", 6, 8, roof(2)), ("grama2", 7, 8, floor_grass(2))]
+for n, c, r_, cv in extra:
+    tile(n, c, r_); place(cv, n)
+
+for i, style in enumerate(["interno", "fachada", "externo"]):
+    for mask in range(16):
+        tile(f"topo_{style}_{mask}", mask, 9 + i); place(wall_top(style, mask), f"topo_{style}_{mask}")
+    for ew in range(4):
+        tile(f"frente_{style}_{ew}", ew, 12 + i); place(wall_front(style, ew, seed=ew), f"frente_{style}_{ew}")
+DECOS = {"interno": ["janela", "extintor", "saida", "mural"], "fachada": ["janela", "ar", "lisa"], "externo": []}
+for i, style in enumerate(["interno", "fachada", "externo"]):
+    for j, d in enumerate(DECOS[style]):
+        tile(f"frente_{style}_{d}", 4 + j, 12 + i); place(wall_front(style, 3, d, seed=50 + j), f"frente_{style}_{d}")
+
+k = 0
+for top in (0, 1):
+    for left in (0, 1):
+        for right in (0, 1):
+            if top or left or right:
+                tile(f"sombra_{top}{left}{right}", k, 15); place(shadow(top, left, right), f"sombra_{top}{left}{right}")
+                k += 1
+
+# linha 0: compatibilidade com o atlas provisório (0/1 piso, 2 topo, 3 frente)
+for n, c in [("granito0", 0), ("granito1", 1), ("topo_interno_15", 2), ("frente_interno_3", 3)]:
+    col, row = names[n]
+    atlas.img.paste(atlas.img.crop((col * T, row * T, col * T + T, row * T + T)), (c * T, 0))
+
+atlas.save("sprites/tiles/fase1_tiles.png")
+
+
+# ---------------------------------------------------------------- recursos da Godot
+def write_tileset(path, collision_layer):
+    walls = [v for k, v in names.items() if k.startswith(("topo_", "frente_"))] + [[2, 0], [3, 0]]
+    lines = ['[gd_resource type="TileSet" format=3]', "",
+             '[ext_resource type="Texture2D" path="res://sprites/tiles/fase1_tiles.png" id="1_tex"]', "",
+             '[sub_resource type="TileSetAtlasSource" id="atlas"]', 'texture = ExtResource("1_tex")']
+    used = sorted({tuple(v) for v in names.values()} | {(0, 0), (1, 0), (2, 0), (3, 0)}, key=lambda p: (p[1], p[0]))
+    wallset = {tuple(w) for w in walls}
+    for (x, y) in used:
+        lines.append(f"{x}:{y}/0 = 0")
+        if (x, y) in wallset:
+            lines.append(f"{x}:{y}/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)")
+    lines += ["", "[resource]", f"physics_layer_0/collision_layer = {collision_layer}", 'sources/0 = SubResource("atlas")', ""]
+    with open(os.path.join(ROOT, path), "w") as f:
+        f.write("\n".join(lines))
+
+
+write_tileset("tilesets/fase1_tileset.tres", 1)
+write_tileset("tilesets/fase1_tileset_outer.tres", 9)  # 1 + 8: também segura os fantasmas
+with open(os.path.join(ROOT, "tools/levelgen/tiles_fase1.json"), "w") as f:
+    json.dump({"tiles": names, "decos": DECOS}, f, indent=1, ensure_ascii=False)
+print("tiles:", len(names))
