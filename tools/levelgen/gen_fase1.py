@@ -49,14 +49,11 @@ def material(x, y):
     if y >= 64: return "asfalto_faixa" if y == 65 and x % 3 == 1 else ("asfalto_meiofio" if y == 64 else "asfalto")
     if y == 63: return "bloquete_meiofio"
     if y == 62: return "bloquete"
-    if y >= 51:  # Entrada: praça de bloquete vermelho; o estacionamento (sextavado com vagas) fica embaixo, à direita
-        if (y == 55 and x >= 22) or (x == 22 and y >= 55): return "calcada"          # guia de concreto do estacionamento
-        if x >= 23 and y >= 56:
-            stall = y in (56, 57, 60, 61)
-            return "sextavado_vaga0" if stall and x % 2 == 0 else "sextavado"
+    if y >= 51:  # Entrada (nível de baixo): praça de bloquete vermelho com gramados dos dois lados do caminho
+        if (x <= 9 and y >= 57) or (x >= 27 and y >= 57): return "grama"
         return "bloquete_tatil" if (y == 57 and 16 <= x <= 20) else "bloquete"
     if 23 <= x <= 30 and 8 <= y <= 45: return "praca"        # Corredor: praça aberta entre os prédios
-    if 46 <= y <= 50: return "granito"                       # Portaria
+    if 46 <= y <= 50: return "rampa"                         # depois da catraca: a rampa que sobe para o terraço
     if 24 <= y <= 39 and x <= 22: return "ceramica"          # RU
     if 7 <= x <= 10 and 2 <= y <= 5: return "aco"            # elevador
     return "granito"                                         # Cantina e corredor do elevador
@@ -107,8 +104,18 @@ def deco_rule(c, style, below):
         return "lisa" if r < 0.66 else None
     return None
 
+def style_rule(c):
+    """Bordas do terraço elevado e da rampa: mureta de concreto com guarda-corpo (dali se vê o estacionamento lá embaixo)."""
+    x, y = c
+    if x == 31 and 7 <= y <= 46: return "mureta"          # lado de fora do terraço
+    if y == 7 and 22 <= x <= 31: return "mureta"          # ponta do terraço
+    if y == 46 and 25 <= x <= 31: return "mureta"         # borda que dá para a praça da entrada
+    if x in (22, 25) and 46 <= y <= 50: return "mureta"   # os dois lados da rampa
+    return None
+
+
 outer_set = {c for c in walls if is_outer(c)}
-tiler = Tiler(load_atlas("fase1"), floor_mat, walls, outer_set, deco_rule)
+tiler = Tiler(load_atlas("fase1"), floor_mat, walls, outer_set, deco_rule, style_rule)
 floor_cells = tiler.floor_cells()
 wall_cells = tiler.wall_cells(only_outer=False)
 outer_cells = tiler.wall_cells(only_outer=True)
@@ -157,8 +164,9 @@ def tex(name, folder="props/fase1"):
 
 
 def prop(name, parent, x, y, w, h, color, text="", depth=None, font=16, text_color=None, solid=True, z=None, tall=False,
-         boss_counter=False, blocks_ghosts=False, inner=None, sprite=None):
+         boss_counter=False, blocks_ghosts=False, inner=None, sprite=None, modulate=None):
     p = {"position": v(x, y), "Size": v(w, h), "Color": color}
+    if modulate: p["modulate"] = modulate
     if sprite: p["Texture"] = tex(sprite)
     if inner: p["InnerColor"] = inner
     if blocks_ghosts: p["BlocksGhosts"] = "true"
@@ -200,7 +208,21 @@ for y in range(_by0, _by1 + 1):
         c = (x, y)
         if c in floor or c in walls: continue
         inside_buildings = 1 <= x <= 22 and 1 <= y <= 51   # bloco do RU, cantina e elevador
-        background[c] = tiler.at(f"laje{int(h('l', *c) * 3)}") if inside_buildings else tiler.at(f"grama{int(h('g', *c) * 3)}")
+        if inside_buildings:
+            background[c] = tiler.at(f"laje{int(h('l', *c) * 3)}")
+        elif 32 <= x <= 41 and 6 <= y <= 46:
+            # estacionamento no nível de baixo, ao lado do terraço: faixa de bloquete junto ao muro e o sextavado com vagas
+            if x == 32:
+                background[c] = tiler.at(f"baixo_bloquete{(x % 2) + 2 * (y % 2)}")
+            elif y % 6 in (1, 2) and x % 2 == 0 and x != 37:
+                background[c] = tiler.at("baixo_sextavado_vaga0")
+            else:
+                background[c] = tiler.at(f"baixo_sextavado{int(h('e', *c) * 2)}")
+        else:
+            background[c] = tiler.at(f"grama{int(h('g', *c) * 3)}")
+# sombra do muro do terraço caindo sobre o estacionamento
+for y in range(6, 47):
+    shadow_cells[(32, y)] = tiler.at("sombra_010")
 node("Fundo", type="TileMapLayer", props={"z_index": "-11", "texture_filter": "1", "scale": v(4, 4),
      "tile_map_data": f'PackedByteArray("{tile_data(background)}")', "tile_set": 'ExtResource("tiles")'})
 
@@ -254,8 +276,17 @@ for i, (tx, ty) in enumerate([(5, 56), (11, 59), (19, 56), (24, 60), (28, 57), (
     node(f"Pilha{i+1}", "Pilhas", inst="paper_pile", props={"position": v(tx * T + 32, ty * T + 48)})
 
 # estacionamento: carros que ficaram para trás (cobertura baixa)
-for i, (cx, bottom, variant) in enumerate([(27 * T, 61 * T + 56, 0), (31 * T + 32, 58 * T + 20, 1), (24 * T, 57 * T + 40, 2)]):
-    prop(f"Carro{i+1}", ".", cx, bottom, 96, 128, col(0, 0, 0, 0), depth=64, sprite=f"carro{variant}")
+# mastros à esquerda, na frente do prédio (as bandeiras sumiram)
+prop("Mastros", ".", 3 * T, 55 * T + 40, 112, 288, col(0, 0, 0, 0), depth=16, sprite="mastros")
+
+# estacionamento: fica lá embaixo, ao lado do terraço (só dá para ver por cima da mureta). Carros abandonados nas vagas.
+BAIXO = col(0.62, 0.64, 0.74)
+for i, (tx, ty, variant) in enumerate([(34, 10, 0), (40, 10, 1), (34, 16, 2), (38, 22, 0), (40, 28, 2), (34, 34, 1), (38, 40, 0)]):
+    prop(f"Carro{i+1}", ".", tx * T + 32, (ty + 1) * T + 40, 96, 128, col(0, 0, 0, 0), solid=False,
+         sprite=f"carro{variant}", modulate=BAIXO)
+for i, ty in enumerate([14, 32]):
+    prop(f"PosteEstac{i+1}", ".", 37 * T, ty * T + 40, 24, 240, col(0, 0, 0, 0), solid=False,
+         sprite="poste_rua" if i == 0 else "poste_rua_apagado", modulate=BAIXO)
 
 # ===== PORTÃO (separa a calçada da entrada) =====
 GRADE = col(0.5, 0.52, 0.56)
@@ -274,8 +305,9 @@ for i, tx in enumerate([4, 12, 24]):
 
 # ===== PORTARIA =====
 # guarita do porteiro: bloco grande à esquerda da passagem estreita
+# portaria: o pavilhão branco de vidro escuro na base do terraço (a catraca fica do lado, no começo da rampa)
 prop("Guarita", ".", 30 * T, 51 * T, 10 * T, 5 * T, BEGE, "PORTEIRO\n\n[ janela ]", depth=5 * T, font=18, tall=True,
-     blocks_ghosts=True, sprite="guarita")
+     blocks_ghosts=True, sprite="pavilhao")
 node("Catraca", inst="door", props={"position": v(24 * T, 49 * T), "Size": v(2 * T, 64), "StartsLocked": "true",
      "Color": col(0.95, 0.8, 0.3, 1), "RequiredItem": '"cracha"',
      "LockedMessage": '"Acesso negado: precisa de crachá."', "UnlockMessage": '"BIP! Acesso liberado."',
@@ -292,6 +324,11 @@ for i, (top, bottom) in enumerate([(14, 19), (30, 35)]):
     hh = (bottom - top + 1) * T
     prop(f"Jardim{i+1}", "Corredor", 27 * T - cor[0], (bottom + 1) * T - cor[1], 2 * T, hh, CONCRETE, depth=hh,
          inner=col(0.22, 0.42, 0.22), sprite=("jardim", "jardim_b")[i])
+# canteiros compridos junto ao prédio, com palmeiras e globos (deixam livres as portas da cantina e do RU)
+for i, (top, bottom, spr) in enumerate([(20, 34, "jardim_lateral_a"), (41, 44, "jardim_lateral_b")]):
+    hh = (bottom - top + 1) * T
+    prop(f"JardimLateral{i+1}", "Corredor", 23 * T + 32 - cor[0], (bottom + 1) * T - cor[1], T, hh, CONCRETE, depth=hh,
+         sprite=spr)
 for i, ty in enumerate([10, 15, 20, 26, 31, 41, 44]):
     x, y = px(24 + 5 * (i % 2), ty)
     node(f"Spawn{i+1}", "Corredor", type="Marker2D", props={"position": v(x - cor[0], y - cor[1])})
@@ -383,7 +420,7 @@ node("Elevador", inst="area_trigger", props={"position": v(7 * T, 2 * T), "Size"
      "Color": col(1, 0.85, 0.3, 0.08), "Text": '""'})
 prop("PortaElevador1", ".", 9 * T, 2 * T, 128, 64, col(0, 0, 0, 0), solid=False, z=1, sprite="porta_elevador")
 # caixa d'água verde no gramado ao lado da praça (aparece de quase todo o campus)
-prop("CaixaDagua", ".", 34 * T, 30 * T, 80, 288, col(0, 0, 0, 0), solid=False, sprite="caixa_dagua")
+prop("CaixaDagua", ".", 43 * T, 26 * T, 80, 288, col(0, 0, 0, 0), solid=False, sprite="caixa_dagua")
 
 # ===== NOITE =====
 # Escuro azulado (CanvasModulate no grupo "night": o jogador acende a lanterna quando acha este grupo).
@@ -409,13 +446,18 @@ for i, tx in enumerate([4, 12, 24]):
 # entrada
 light("Marquise", 11 * T, 54 * T + 30, QUENTE, 1.6, 0.7, FLICKER)
 light("GuaritaTV", 27 * T, 51 * T + 30, col(0.45, 0.6, 1), 1.2, 0.9, FLICKER)
-light("Estacionamento", 33 * T, 58 * T, SODIO, 2.2, 0.8, BROKEN)
+light("Estacionamento1", 37 * T + 56, 14 * T + 60, SODIO, 2.6, 0.75, STEADY)
+light("Estacionamento2", 37 * T + 56, 32 * T + 60, SODIO, 2.6, 0.75, BROKEN)
+light("Mastros", 3 * T, 55 * T, FRIA, 1.2, 0.5, FLICKER)
 light("Catraca", 23 * T + 64, 48 * T + 32, TUBO, 1.5, 0.8, FLICKER, tube=True)
 # praça: os globos dos canteiros (um aceso piscando, outro com o globo quebrado só dando estalos)
 light("Globo1", 27 * T - 48, 14 * T + 24, FRIA, 2.2, 1.0, FLICKER)
 light("Globo2", 27 * T + 40, 14 * T + 344, FRIA, 1.6, 0.8, BROKEN)
 light("Globo3", 27 * T + 40, 30 * T + 32, FRIA, 1.6, 0.8, BROKEN)
 light("Globo4", 27 * T - 48, 30 * T + 336, FRIA, 2.2, 1.0, STEADY)
+light("GloboLateral1", 23 * T + 28, 20 * T + 160, FRIA, 2.0, 0.9, FLICKER)
+light("GloboLateral2", 23 * T + 28, 20 * T + 800, FRIA, 1.4, 0.7, BROKEN)
+light("GloboLateral3", 23 * T + 28, 41 * T + 200, FRIA, 2.0, 0.9, STEADY)
 # RU: lâmpadas fluorescentes do teto
 for i, (tx, ty, mode) in enumerate([(5, 26.5, FLICKER), (12, 26, STEADY), (19, 26.5, BROKEN), (5, 32, STEADY),
                                     (5, 37, FLICKER), (12, 34, BROKEN), (18, 38, FLICKER)]):

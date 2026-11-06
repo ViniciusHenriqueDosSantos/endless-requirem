@@ -28,9 +28,11 @@ def tile_data(cells):
 
 
 class Tiler:
-    def __init__(self, atlas, floor_mat, walls, outer, deco_rules=None):
+    def __init__(self, atlas, floor_mat, walls, outer, deco_rules=None, style_rule=None):
         """floor_mat: {(x,y): material}; walls: conjunto das paredes; outer: subconjunto da borda do mapa.
-        deco_rules(cell, style, below_material) -> nome da decoração ou None."""
+        deco_rules(cell, style, below_material) -> nome da decoração ou None.
+        style_rule(cell) -> estilo forçado para aquela parede (ex.: "mureta") ou None (escolha automática)."""
+        self.style_rule = style_rule or (lambda c: None)
         self.names, self.decos = atlas
         self.mat = floor_mat
         self.walls = walls
@@ -51,6 +53,8 @@ class Tiler:
             return self.at(f"{mat}{x % 2}")
         if mat in ("asfalto_faixa", "asfalto_meiofio", "calcada_meiofio"):
             return self.at(mat)
+        if mat == "rampa":
+            return self.at(f"rampa{int(h(x, y) * 2)}")
         if mat == "aco":
             return self.at(f"aco{(x + y) % 2}")
         if mat == "grama":
@@ -67,6 +71,8 @@ class Tiler:
         return m.split("_")[0]
 
     def style_of(self, c):
+        forced = self.style_rule(c)
+        if forced: return forced
         x, y = c
         near = [self._base_mat(self.mat[(x + dx, y + dy)]) for dx in (-1, 0, 1) for dy in (-1, 0, 1)
                 if (x + dx, y + dy) in self.mat]

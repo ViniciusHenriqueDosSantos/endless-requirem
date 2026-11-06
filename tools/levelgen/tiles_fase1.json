@@ -595,6 +595,122 @@
   "sombra_111": [
    6,
    15
+  ],
+  "topo_mureta_0": [
+   0,
+   18
+  ],
+  "topo_mureta_1": [
+   1,
+   18
+  ],
+  "topo_mureta_2": [
+   2,
+   18
+  ],
+  "topo_mureta_3": [
+   3,
+   18
+  ],
+  "topo_mureta_4": [
+   4,
+   18
+  ],
+  "topo_mureta_5": [
+   5,
+   18
+  ],
+  "topo_mureta_6": [
+   6,
+   18
+  ],
+  "topo_mureta_7": [
+   7,
+   18
+  ],
+  "topo_mureta_8": [
+   8,
+   18
+  ],
+  "topo_mureta_9": [
+   9,
+   18
+  ],
+  "topo_mureta_10": [
+   10,
+   18
+  ],
+  "topo_mureta_11": [
+   11,
+   18
+  ],
+  "topo_mureta_12": [
+   12,
+   18
+  ],
+  "topo_mureta_13": [
+   13,
+   18
+  ],
+  "topo_mureta_14": [
+   14,
+   18
+  ],
+  "topo_mureta_15": [
+   15,
+   18
+  ],
+  "frente_mureta_0": [
+   0,
+   19
+  ],
+  "frente_mureta_1": [
+   1,
+   19
+  ],
+  "frente_mureta_2": [
+   2,
+   19
+  ],
+  "frente_mureta_3": [
+   3,
+   19
+  ],
+  "rampa0": [
+   4,
+   19
+  ],
+  "rampa1": [
+   5,
+   19
+  ],
+  "baixo_bloquete0": [
+   6,
+   19
+  ],
+  "baixo_bloquete1": [
+   7,
+   19
+  ],
+  "baixo_bloquete2": [
+   8,
+   19
+  ],
+  "baixo_bloquete3": [
+   9,
+   19
+  ],
+  "baixo_sextavado0": [
+   10,
+   19
+  ],
+  "baixo_sextavado1": [
+   11,
+   19
+  ],
+  "baixo_sextavado_vaga0": [
+   12,
+   19
   ]
  },
  "decos": {
@@ -624,6 +740,7 @@
    "trepadeira",
    "pichacao"
   ],
-  "externo": []
+  "externo": [],
+  "mureta": []
  }
 }
