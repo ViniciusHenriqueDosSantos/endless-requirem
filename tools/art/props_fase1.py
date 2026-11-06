@@ -825,7 +825,7 @@ def predio_ponta():
     W, H = 320, 60
     cv = Canvas(W, H)
     r = rng(23)
-    EDGE = 204  # onde termina a face da ponta e começa a face comprida (recuada)
+    EDGE = W  # a parte do prédio que se vê da entrada é toda a face lisa da ponta: sem janelas, só o letreiro
     # laje
     cv.rect(0, 0, W, 12, hexc("b9b7b0")); cv.noise(1, 1, W - 2, 10, [hexc("aaa8a1"), hexc("c6c4bd")], 0.3, r)
     cv.rect(0, 0, EDGE, 2, hexc("e2e1db")); cv.hline(0, 11, W, hexc("8f8d86"))
@@ -842,15 +842,10 @@ def predio_ponta():
         for x in range(EDGE - 18, EDGE - 12):
             cv.put(x, y, hexc("eceae4") if (x + y) % 2 else hexc("a9a7a0"))
     cv.vline(EDGE - 19, 16, H - 18, hexc("9d9b94"))
-    # quina e face comprida, recuada e mais escura, com as janelas por andar
-    cv.vline(EDGE, 12, H - 12, hexc("8f8b80"))
+    # (a face comprida, com as janelas, não aparece daqui)
+    if EDGE < W: cv.vline(EDGE, 12, H - 12, hexc("8f8b80"))
     cv.rect(EDGE + 1, 12, W - EDGE - 1, H - 12, hexc("c4bcab"))
-    for (y0, hgt) in [(16, 5), (28, 5), (42, 3)]:
-        cv.rect(EDGE + 4, y0, W - EDGE - 8, hgt, hexc("1c2633"))
-        for x in range(EDGE + 4, W - 4, 5): cv.vline(x, y0, hgt, hexc("e8e8e4"))
-        cv.hline(EDGE + 4, y0, W - EDGE - 8, hexc("e8e8e4"))
-    for x in range(EDGE + 6, W - 6, 2): cv.put(x, 48, hexc("cfd6dc")); cv.put(x, 49, hexc("8fa1b0"))  # blocos de vidro
-    for x in r.sample(range(EDGE + 5, W - 5, 5), 4): cv.rect(x + 1, 17, 3, 3, hexc("05070a"))  # janelas quebradas
+    cv.vline(W - 1, 12, H - 12, hexc("8f8b80"))  # quina
     # letreiro (mesmo desenho das letras caídas)
     ly = 15
     for j, row in enumerate(LOGO):
@@ -921,6 +916,15 @@ def portaria():
     return cv
 
 
+def portao_estac():
+    """Portão de correr dos carros (entrada do estacionamento, que é outra, pela avenida): fechado e com corrente."""
+    cv = gradil(w=48)
+    for x in range(0, 48, 4): cv.vline(x, 3, 9, C["fence_d"])
+    cv.rect(22, 7, 4, 4, hexc("6b6f75")); cv.line(18, 9, 30, 9, hexc("9aa0a6"))  # corrente e cadeado
+    cv.rect(0, 0, 2, 14, hexc("3a3d44")); cv.rect(46, 0, 2, 14, hexc("3a3d44"))
+    return cv
+
+
 SPRITES = {
     "predio": predio_ponta, "letra_n": lambda: letra_caida("N"), "letra_s": lambda: letra_caida("S"),
     "gradil": gradil, "poste_portao": poste_portao, "placa_portao": placa_portao, "ponto_onibus": ponto_onibus,
@@ -935,7 +939,7 @@ SPRITES = {
     "carro0": lambda: carro(0), "carro1": lambda: carro(1), "carro2": lambda: carro(2),
     "mesa_ru_longa": mesa_ru_longa, "mesa_ru_cadeiras": mesa_ru_cadeiras, "lixeiras_pedal": lixeiras_pedal,
     "catraca_ru": catraca_ru, "cadeira_caida": cadeira_caida, "entulho": entulho,
-    "portaria": portaria, "mastros": mastros, "corrimao": corrimao,
+    "portaria": portaria, "portao_estac": lambda: portao_estac(), "gradil_curto": lambda: gradil(w=80), "mastros": mastros, "corrimao": corrimao,
     "jardim_lateral_a": lambda: jardim_lateral(15, lamps=((40, True), (200, False)), seed=1),
     "jardim_lateral_b": lambda: jardim_lateral(4, lamps=((50, True),), seed=2),
     "jardim_lateral_c": lambda: jardim_lateral(15, lamps=((120, False), (220, True)), seed=3),

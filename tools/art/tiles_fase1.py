@@ -619,6 +619,13 @@ for v in range(4):
     tile(f"lateral_l{v}", v, 20); place(lateral(v, True), f"lateral_l{v}")
     tile(f"lateral_r{v}", 4 + v, 20); place(lateral(v, False), f"lateral_r{v}")
 
+# ---------------------------------------------------------------- borda do mapa no meio da avenida
+# Mesma cara do asfalto/calçada, mas com colisão (o jogador não sai do mapa e a rua não fica cortada por uma cerca viva).
+for j, (name, fn) in enumerate([("topo_via_meiofio0", lambda: floor_bricks(2, curb=True)), ("topo_via_meiofio1", lambda: floor_bricks(3, curb=True)),
+                                ("topo_via_asfalto_meiofio", lambda: floor_asphalt(1, under_curb=True)),
+                                ("topo_via_asfalto_faixa", lambda: floor_asphalt(0, line=True)), ("topo_via_asfalto", lambda: floor_asphalt(2))]):
+    tile(name, 8 + j, 20); place(age(fn(), "asfalto", 900 + j), name)
+
 # linha 0: compatibilidade com o atlas provisório (0/1 piso, 2 topo, 3 frente)
 for n, c in [("granito0", 0), ("granito1", 1), ("topo_interno_15", 2), ("frente_interno_3", 3)]:
     col, row = names[n]

@@ -91,6 +91,9 @@ class Tiler:
             if (c in self.outer) != only_outer: continue
             x, y = c
             style = self.style_of(c)
+            if style.startswith("via:"):  # borda do mapa disfarçada de rua/calçada
+                out[c] = self.at(style[4:])
+                continue
             if style.startswith("lateral"):  # fachada lateral de prédio (pátio): variação por posição
                 r = h("lat", x, y)
                 v = 1 if r < 0.18 else 2 if r < 0.28 else 3 if r < 0.36 else 0
