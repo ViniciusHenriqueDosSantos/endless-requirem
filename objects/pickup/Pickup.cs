@@ -16,6 +16,15 @@ public partial class Pickup : Area2D
 	[Export] public Color Color { get => _color; set { _color = value; QueueRedraw(); } }
 	[Export] public Weapon WeaponReward;
 
+	// Inspeção estilo Resident Evil ao pegar (opcional): arte grande, nome e descrição.
+	[Export] public Texture2D InspectTexture;
+	[Export] public string InspectTitle = "";
+	[Export(PropertyHint.MultilineText)] public string InspectText = "";
+
+	// Pixel art do item (opcional). Sem ela, aparece a bolinha colorida.
+	private Texture2D _texture;
+	[Export] public Texture2D Texture { get => _texture; set { _texture = value; QueueRedraw(); } }
+
 	// Ligado: começa escondido até alguém chamar Reveal() (ex.: crachá debaixo da pilha de papel).
 	[Export] public bool StartsHidden;
 
@@ -32,6 +41,7 @@ public partial class Pickup : Area2D
 		QueueRedraw();
 		if (Engine.IsEditorHint()) return;
 
+		Material = new CanvasItemMaterial { LightMode = CanvasItemMaterial.LightModeEnum.Unshaded };  // itens brilham um pouco no escuro para o jogador achar
 		AddChild(new CollisionShape2D
 		{
 			Shape = new CircleShape2D { Radius = Radius + 14f },
@@ -77,6 +87,9 @@ public partial class Pickup : Area2D
 		Hide();
 		SetDeferred(Area2D.PropertyName.Monitoring, false);
 		EmitSignal(SignalName.PickedUp, ItemId);
+
+		if (InspectTexture != null && GetTree().GetFirstNodeInGroup("inspect") is ItemInspect inspect)
+			inspect.Show(InspectTexture, InspectTitle != "" ? InspectTitle : DisplayName, InspectText);
 	}
 
 	// Põe o coletável de volta no lugar (usado quando o jogador é reprovado).
@@ -94,8 +107,16 @@ public partial class Pickup : Area2D
 
 		DrawCircle(Vector2.Zero, 12f, new Color(0, 0, 0, 0.3f));
 		DrawCircle(center, Radius + 8f, new Color(Color, 0.25f));
-		DrawCircle(center, Radius, Color);
-		DrawArc(center, Radius, 0f, Mathf.Tau, 24, Color.Darkened(0.5f), 2f);
+		if (Texture != null)
+		{
+			Vector2 size = Texture.GetSize() * 4f;
+			DrawTextureRect(Texture, new Rect2(center - size / 2, size), false);
+		}
+		else
+		{
+			DrawCircle(center, Radius, Color);
+			DrawArc(center, Radius, 0f, Mathf.Tau, 24, Color.Darkened(0.5f), 2f);
+		}
 
 		DrawString(ThemeDB.FallbackFont, new Vector2(-90, center.Y - Radius - 10), DisplayName,
 			HorizontalAlignment.Center, 180, 14, Colors.White);

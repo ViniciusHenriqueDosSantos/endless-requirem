@@ -5,12 +5,24 @@ using System.Collections.Generic;
 public partial class Player : CharacterBody2D
 {
 	[Export] public float Speed = 240f;
-	[Export] public float DashSpeed = 650f;
-	[Export] public float DashDuration = 0.15f;
-	[Export] public float DashCooldown = 0.8f;
+	// Cambalhota (Espaço): rola para onde está andando (parado: para onde mira).
+	// Invencível durante a rolagem toda e um pouquinho depois (RollGrace), para não levar o dano
+	// do fantasma em que acabou de encostar. A velocidade começa alta e vai diminuindo.
+	[Export] public float RollSpeed = 620f;
+	[Export] public float RollDuration = 0.42f;
+	[Export] public float RollCooldown = 0.55f;
+	[Export] public float RollGrace = 0.18f;
 	[Export] public int MaxHealth = 5;
 	[Export] public float KnockbackDecay = 1800f;
 	[Export] public PackedScene BulletScene;
+
+	// Fase noturna (tem um CanvasModulate no grupo "night"): lanterna em cone que segue a mira e um halo fraco em volta.
+	[Export] public Texture2D FlashlightTexture;
+	[Export] public Texture2D AuraTexture;
+	private PointLight2D _flashlight;
+	private PointLight2D _aura;
+	private float _flashFlickerTimer;
+	private const float FlashlightEnergy = 1.25f;
 
 	// Todas as armas do jogo, em ordem. A primeira é a inicial (Laser).
 	[Export] public Godot.Collections.Array<Weapon> Weapons = new();
@@ -23,7 +35,8 @@ public partial class Player : CharacterBody2D
 	private const float ReviveInvulnerabilityTime = 1.5f;
 	private const float DamageShake = 10f;
 	private static readonly Color HurtColor = new(1f, 0.3f, 0.3f, 0.6f);
-	private static readonly Color DashColor = new(0.4f, 1f, 1f);
+	private const float RollEndSpeedFactor = 0.35f; // velocidade no fim da rolagem, em relação ao começo
+	private const float RollInputBuffer = 0.15f;     // apertou um pouco antes de poder rolar: rola assim que der
 
 	// A origem do jogador fica nos pés (visão 3/4). O tiro sai da altura do corpo.
 	private static readonly Vector2 MuzzleOffset = new(0, -32);
@@ -50,8 +63,13 @@ public partial class Player : CharacterBody2D
 	public IReadOnlyCollection<string> ItemNames => _items.Values;
 
 	private float _invulnerableTimer = 0f;
-	private float _dashTimer = 0f;
-	private float _dashCooldownTimer = 0f;
+	private float _rollTimer = 0f;
+	private float _rollCooldownTimer = 0f;
+	private float _rollGraceTimer = 0f;
+	private float _rollBufferTimer = 0f;
+	private Vector2 _rollDirection = Vector2.Right;
+
+	public bool IsRolling => _rollTimer > 0;
 	private float _fireCooldown = 0f;
 	private float _reloadTimer = 0f;
 	private readonly Dictionary<Weapon, int> _ammo = new();
@@ -59,7 +77,16 @@ public partial class Player : CharacterBody2D
 	private Vector2 _knockback = Vector2.Zero;
 
 	private Sprite2D _sprite;
+	private Sprite2D _gun;
 	private Camera2D _camera;
+
+	// Animação da folha do estudante (4 colunas: parado + passos; linhas: frente, costas, lado).
+	private const float WalkFrameTime = 0.12f;
+	private const float GunDistance = 14f;
+	private static readonly Vector2 HandOffset = new(0, -34);
+	private float _walkTimer;
+	private int _walkFrame;
+	private bool _animated;
 	private Area2D _hurtBox;
 
 	public override void _Ready()
@@ -78,6 +105,13 @@ public partial class Player : CharacterBody2D
 
 		_sprite = GetNode<Sprite2D>("Sprite2D");
 		_hurtBox = GetNode<Area2D>("HurtBox");
+		_animated = _sprite.Hframes > 1;
+
+		// A arma na mão: só aparece se a arma tiver sprite.
+		_gun = new Sprite2D { Name = "Gun", Scale = Vector2.One * 4f, Position = HandOffset };
+		AddChild(_gun);
+		UpdateGunSprite();
+		CallDeferred(MethodName.SetupNightLights);
 
 		_camera = GetNodeOrNull<Camera2D>("Camera2D");
 	}
@@ -111,6 +145,7 @@ public partial class Player : CharacterBody2D
 			_ammo[weapon] = weapon.MagazineSize;
 		_reloadTimer = 0;
 		Weapon = _ownedWeapons[0];
+		UpdateGunSprite();
 		Score = score;
 		StatsChanged?.Invoke();
 	}
@@ -129,6 +164,7 @@ public partial class Player : CharacterBody2D
 		_ammo[weapon] = weapon.MagazineSize;
 		_reloadTimer = 0;
 		Weapon = weapon;
+		UpdateGunSprite();
 		StatsChanged?.Invoke();
 	}
 
@@ -153,7 +189,8 @@ public partial class Player : CharacterBody2D
 		GlobalPosition = position;
 		Velocity = Vector2.Zero;
 		_knockback = Vector2.Zero;
-		_dashTimer = 0f;
+		_rollTimer = 0f;
+		_rollGraceTimer = 0f;
 		_invulnerableTimer = ReviveInvulnerabilityTime;
 		_reloadTimer = 0;
 		foreach (Weapon weapon in _ownedWeapons)
@@ -187,7 +224,7 @@ public partial class Player : CharacterBody2D
 	// Dano vindo de qualquer coisa (inimigo, projétil do chefe...).
 	public void TakeHit(Vector2 fromPosition, float knockback)
 	{
-		if (Health <= 0 || _dashTimer > 0 || _invulnerableTimer > 0) return;
+		if (Health <= 0 || _rollTimer > 0 || _rollGraceTimer > 0 || _invulnerableTimer > 0) return;
 
 		_knockback = (GlobalPosition - fromPosition).Normalized() * knockback;
 		Health--;
@@ -234,6 +271,7 @@ public partial class Player : CharacterBody2D
 	private void SelectWeapon(int index)
 	{
 		Weapon = _ownedWeapons[Mathf.PosMod(index, _ownedWeapons.Count)];
+		UpdateGunSprite();
 		_reloadTimer = Ammo <= 0 ? Weapon.ReloadTime : 0;
 		StatsChanged?.Invoke();
 	}
@@ -247,6 +285,116 @@ public partial class Player : CharacterBody2D
 		CheckEnemyContact();
 		UpdateShooting(dt);
 		UpdateMovement(dt);
+		UpdateAnimation(dt);
+	}
+
+	// O corpo vira para onde o mouse está mirando; as pernas andam quando o jogador se move.
+	private void UpdateAnimation(float dt)
+	{
+		Vector2 aim = GetGlobalMousePosition() - (GlobalPosition + HandOffset);
+		UpdateFlashlight(dt, aim);
+
+		if (_gun.Texture != null)
+		{
+			float angle = aim.Angle();
+			_gun.Rotation = angle;
+			_gun.Position = HandOffset + Vector2.FromAngle(angle) * GunDistance;
+			_gun.FlipV = aim.X < 0;
+			// Mirando para cima, a arma fica atrás do corpo.
+			_gun.ZIndex = aim.Y < -Mathf.Abs(aim.X) * 0.5f ? -1 : 1;
+			_gun.Modulate = _sprite.Modulate;
+		}
+
+		_gun.Visible = _rollTimer <= 0;
+
+		if (!_animated) return;
+
+		if (_rollTimer > 0 && _sprite.Vframes > 3)
+		{
+			// Linha 3 da folha: 4 quadros da cambalhota (a bolinha girando).
+			float t = 1f - _rollTimer / RollDuration;
+			int f = Mathf.Min(3, (int)(t * 4f));
+			_sprite.FlipH = _rollDirection.X < 0;
+			_sprite.Frame = 3 * _sprite.Hframes + f;
+			return;
+		}
+
+		bool moving = Velocity.LengthSquared() > 100f;
+		if (moving)
+		{
+			_walkTimer -= dt;
+			if (_walkTimer <= 0)
+			{
+				_walkTimer = WalkFrameTime;
+				_walkFrame = (_walkFrame + 1) % 4;
+			}
+		}
+		else
+		{
+			_walkFrame = 0;
+			_walkTimer = 0;
+		}
+
+		int row;
+		if (Mathf.Abs(aim.X) > Mathf.Abs(aim.Y))
+		{
+			row = 2;
+			_sprite.FlipH = aim.X < 0;
+		}
+		else
+		{
+			row = aim.Y < 0 ? 1 : 0;
+			_sprite.FlipH = false;
+		}
+		_sprite.Frame = row * _sprite.Hframes + _walkFrame;
+	}
+
+	private void SetupNightLights()
+	{
+		if (GetTree().GetFirstNodeInGroup("night") == null) return;
+
+		if (FlashlightTexture != null)
+		{
+			_flashlight = new PointLight2D
+			{
+				Name = "Lanterna", Texture = FlashlightTexture, TextureScale = 1.7f, Energy = FlashlightEnergy,
+				Color = new Color(1f, 0.93f, 0.78f), Position = HandOffset,
+			};
+			AddChild(_flashlight);
+		}
+		if (AuraTexture != null)
+		{
+			_aura = new PointLight2D
+			{
+				Name = "Halo", Texture = AuraTexture, TextureScale = 2.3f, Energy = 0.5f,
+				Color = new Color(0.75f, 0.8f, 1f), Position = new Vector2(0, -24),
+			};
+			AddChild(_aura);
+		}
+	}
+
+	// A lanterna aponta para a mira. Com pouca vida ela começa a falhar.
+	private void UpdateFlashlight(float dt, Vector2 aim)
+	{
+		if (_flashlight == null) return;
+		_flashlight.Rotation = aim.Angle();
+		float energy = FlashlightEnergy;
+		if (Health <= 2)
+		{
+			_flashFlickerTimer -= dt;
+			if (_flashFlickerTimer <= 0)
+				_flashFlickerTimer = (float)GD.RandRange(0.05, Health <= 1 ? 0.6 : 1.4);
+			if (_flashFlickerTimer < 0.08f) energy *= 0.15f;
+		}
+		_flashlight.Energy = energy;
+	}
+
+	private void UpdateGunSprite()
+	{
+		if (_gun == null) return;
+		_gun.Texture = Weapon?.Sprite;
+		if (_gun.Texture != null)
+			_gun.Offset = new Vector2(_gun.Texture.GetWidth() / 2f - 3f, 0);
 	}
 
 	private void UpdateCameraShake(float dt)
@@ -274,7 +422,7 @@ public partial class Player : CharacterBody2D
 			_invulnerableTimer -= dt;
 			_sprite.Modulate = ((int)(_invulnerableTimer * 15) % 2 == 0) ? HurtColor : Colors.White;
 		}
-		else if (_dashTimer <= 0)
+		else
 		{
 			_sprite.Modulate = Colors.White;
 		}
@@ -296,7 +444,8 @@ public partial class Player : CharacterBody2D
 			return;
 		}
 
-		if (Input.IsActionPressed("shoot") && _fireCooldown <= 0)
+		// Rolando não dá para atirar.
+		if (Input.IsActionPressed("shoot") && _fireCooldown <= 0 && _rollTimer <= 0)
 			Shoot();
 	}
 
@@ -330,13 +479,20 @@ public partial class Player : CharacterBody2D
 
 	private void UpdateMovement(float dt)
 	{
-		if (_dashCooldownTimer > 0)
-			_dashCooldownTimer -= dt;
+		if (_rollCooldownTimer > 0) _rollCooldownTimer -= dt;
+		if (_rollGraceTimer > 0) _rollGraceTimer -= dt;
+		if (_rollBufferTimer > 0) _rollBufferTimer -= dt;
+		if (Input.IsActionJustPressed("dash")) _rollBufferTimer = RollInputBuffer;
 
-		if (_dashTimer > 0)
+		if (_rollTimer > 0)
 		{
-			_dashTimer -= dt;
+			_rollTimer -= dt;
+			float t = 1f - Mathf.Max(_rollTimer, 0f) / RollDuration;      // 0 -> 1 durante a rolagem
+			float speed = RollSpeed * Mathf.Lerp(1f, RollEndSpeedFactor, t * t);
+			Velocity = _rollDirection * speed;
 			MoveAndSlide();
+			if (_rollTimer <= 0)
+				_rollGraceTimer = RollGrace;
 			return;
 		}
 
@@ -344,18 +500,41 @@ public partial class Player : CharacterBody2D
 
 		Vector2 dir = Input.GetVector("move_left", "move_right", "move_up", "move_down");
 
-		if (Input.IsActionJustPressed("dash") && _dashCooldownTimer <= 0 && dir != Vector2.Zero)
+		if (_rollBufferTimer > 0 && _rollCooldownTimer <= 0)
 		{
-			_dashTimer = DashDuration;
-			_dashCooldownTimer = DashCooldown;
-			Velocity = dir * DashSpeed;
-			_sprite.Modulate = DashColor;
-		}
-		else
-		{
-			Velocity = dir * Speed + _knockback;
+			StartRoll(dir);
+			MoveAndSlide();
+			return;
 		}
 
+		Velocity = dir * Speed + _knockback;
 		MoveAndSlide();
+	}
+
+	private void StartRoll(Vector2 dir)
+	{
+		Vector2 aim = GetGlobalMousePosition() - GlobalPosition;
+		_rollDirection = dir != Vector2.Zero ? dir.Normalized() : (aim != Vector2.Zero ? aim.Normalized() : Vector2.Right);
+		_rollTimer = RollDuration;
+		_rollCooldownTimer = RollDuration + RollCooldown;
+		_rollBufferTimer = 0;
+		_knockback = Vector2.Zero;
+		Velocity = _rollDirection * RollSpeed;
+		SpawnDust();
+	}
+
+	// Poeirinha no chão quando começa a rolar.
+	private void SpawnDust()
+	{
+		CpuParticles2D dust = new()
+		{
+			Emitting = true, OneShot = true, Amount = 10, Lifetime = 0.45f, Explosiveness = 0.9f,
+			Direction = -_rollDirection, Spread = 70f, InitialVelocityMin = 40f, InitialVelocityMax = 110f,
+			Gravity = Vector2.Zero, DampingMin = 120f, DampingMax = 200f,
+			ScaleAmountMin = 4f, ScaleAmountMax = 8f, Color = new Color(0.75f, 0.72f, 0.66f, 0.55f),
+			Position = GlobalPosition + new Vector2(0, -4), ZIndex = -1,
+		};
+		GetParent().AddChild(dust);
+		GetTree().CreateTimer(1.0f).Timeout += dust.QueueFree;
 	}
 }

@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://objects/heal_drop/HealDrop.cs" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://73b6ghvi565n" path="res://sprites/icon.svg" id="2_icon"]
+[ext_resource type="Texture2D" path="res://sprites/items/cafezinho.png" id="2_icon"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_heal"]
 radius = 26.0
@@ -10,8 +10,8 @@ radius = 26.0
 script = ExtResource("1_script")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-modulate = Color(0.2, 1, 0.4, 1)
-scale = Vector2(0.22, 0.22)
+position = Vector2(0, -20)
+scale = Vector2(4, 4)
 texture = ExtResource("2_icon")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

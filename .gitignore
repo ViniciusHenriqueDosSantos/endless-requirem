@@ -4,3 +4,6 @@
 
 # geradores de planta (Python)
 __pycache__/
+
+# fotos de referência do tour 360° (não vão para o repositório)
+_ref_tour/

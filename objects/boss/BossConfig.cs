@@ -37,4 +37,13 @@ public partial class BossConfig : Resource
 	[Export] public float MoveSpeed = 0f;
 
 	[Export] public int ScoreValue = 500;
+
+	// Pixel art do chefe: folha com SpriteFrames quadros lado a lado
+	// (0 e 1 = parado, 2 = arremessando, 3 = tonto sem escudo). Vazio = desenho provisório.
+	[Export] public Texture2D Sprite;
+	[Export] public int SpriteFrames = 4;
+
+	// Projéteis: folha com ProjectileFrames quadros; cada projétil sorteia um (ex.: coxinha, pastel, pão de queijo).
+	[Export] public Texture2D ProjectileSprite;
+	[Export] public int ProjectileFrames = 1;
 }

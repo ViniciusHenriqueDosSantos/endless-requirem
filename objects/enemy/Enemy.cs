@@ -60,6 +60,17 @@ public partial class Enemy : CharacterBody2D
 	private const float SpawnTime = 0.6f;
 
 	[Export] public Kind Type = Kind.Normal;
+
+	// Pixel art de cada tipo: folha de 4 quadros lado a lado (flutuando). Vazio = desenho provisório colorido.
+	[Export] public Texture2D NormalSprite;
+	[Export] public Texture2D FastSprite;
+	[Export] public Texture2D TankSprite;
+	private const int SpriteFrames = 4;
+	private const float FloatFrameTime = 0.15f;
+	private static readonly Color HitFlash = new(2.5f, 2.5f, 2.5f);
+	private bool _pixelArt;
+	private Color _baseColor;
+	private float _animTimer;
 	[Export] public PackedScene HealDropScene;
 	[Export] public float HitKnockback = 600f;
 
@@ -95,16 +106,35 @@ public partial class Enemy : CharacterBody2D
 
 		_stats = StatsByKind[Type];
 		_health = Mathf.Max(1, Mathf.RoundToInt(_stats.Health * HealthScale));
-		_sprite.Modulate = _stats.Color;
-		// A origem fica nos pés: tudo que está acima dela encolhe/cresce junto com o tipo.
-		_sprite.Scale = Vector2.One * _stats.Scale;
-		_sprite.Position *= _stats.Scale;
+
+		Texture2D art = Type switch { Kind.Fast => FastSprite, Kind.Tank => TankSprite, _ => NormalSprite };
+		_pixelArt = art != null;
+		if (_pixelArt)
+		{
+			// Cada tipo tem o seu desenho no tamanho certo: escala fixa de 4 (pixel art), apoiado nos pés.
+			_baseColor = Colors.White;
+			_sprite.Texture = art;
+			_sprite.Hframes = SpriteFrames;
+			_sprite.Frame = (int)(GD.Randi() % SpriteFrames);
+			_sprite.Scale = Vector2.One * 4f;
+			_sprite.Position = new Vector2(0, -art.GetHeight() * 2f);
+		}
+		else
+		{
+			_baseColor = _stats.Color;
+			// A origem fica nos pés: tudo que está acima dela encolhe/cresce junto com o tipo.
+			_sprite.Scale = Vector2.One * _stats.Scale;
+			_sprite.Position *= _stats.Scale;
+		}
+		_sprite.Modulate = _baseColor;
+		// Fantasmas brilham no escuro: não dependem das luzes da fase (sem efeito em fase sem noite).
+		_sprite.Material = new CanvasItemMaterial { LightMode = CanvasItemMaterial.LightModeEnum.Unshaded };
 		_collision.Scale = Vector2.One * _stats.Scale;
 		_collision.Position *= _stats.Scale;
 		_hitBox.Scale = Vector2.One * _stats.Scale;
 
 		_hitBox.SetDeferred(Area2D.PropertyName.Monitorable, false);
-		_sprite.Modulate = new Color(_stats.Color, 0f);
+		_sprite.Modulate = new Color(_baseColor, 0f);
 	}
 
 	public void TakeDamage(int damage, Vector2 hitDirection)
@@ -114,11 +144,11 @@ public partial class Enemy : CharacterBody2D
 		_health -= damage;
 		_knockback = hitDirection * KnockbackForce;
 
-		_sprite.Modulate = Colors.White;
+		_sprite.Modulate = _pixelArt ? HitFlash : Colors.White;
 		GetTree().CreateTimer(HitFlashTime).Timeout += () =>
 		{
 			if (IsInstanceValid(_sprite))
-				_sprite.Modulate = _stats.Color;
+				_sprite.Modulate = _baseColor;
 		};
 
 		if (_health <= 0)
@@ -150,13 +180,14 @@ public partial class Enemy : CharacterBody2D
 		if (_spawnTimer > 0)
 		{
 			_spawnTimer -= dt;
-			_sprite.Modulate = new Color(_stats.Color, 1f - Mathf.Max(_spawnTimer, 0f) / SpawnTime);
+			_sprite.Modulate = new Color(_baseColor, 1f - Mathf.Max(_spawnTimer, 0f) / SpawnTime);
 			if (_spawnTimer <= 0)
 				_hitBox.SetDeferred(Area2D.PropertyName.Monitorable, true);
 			return;
 		}
 
 		_knockback = _knockback.MoveToward(Vector2.Zero, KnockbackDecay * dt);
+		Animate(dt);
 
 		// Parado de propósito (ex.: fantasma pesado bloqueando a escada): não persegue, só machuca quem encosta.
 		if (Stationary)
@@ -197,6 +228,19 @@ public partial class Enemy : CharacterBody2D
 		move = move.Normalized();
 		Velocity = move * _stats.Speed * SpeedScale * SpeedFactor() + _knockback;
 		MoveAndSlide();
+	}
+
+	// Flutua (troca de quadro) e olha para o lado do jogador.
+	private void Animate(float dt)
+	{
+		if (!_pixelArt) return;
+		_animTimer -= dt;
+		if (_animTimer <= 0)
+		{
+			_animTimer = FloatFrameTime;
+			_sprite.Frame = (_sprite.Frame + 1) % SpriteFrames;
+		}
+		_sprite.FlipH = _player.GlobalPosition.X < GlobalPosition.X;
 	}
 
 	// Quase parado por um tempo, longe do jogador = travado em algo. Segue o caminho por um tempo.

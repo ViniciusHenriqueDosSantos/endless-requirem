@@ -14,6 +14,15 @@ public partial class Bullet : Area2D
 		Rotation = Direction.Angle();
 		Scale = Vector2.One * Weapon.BulletScale;
 		Modulate = Weapon.Color;
+		Material = new CanvasItemMaterial { LightMode = CanvasItemMaterial.LightModeEnum.Unshaded };  // tiro brilha no escuro
+
+		// Pixel art: o desenho fica sempre a 4 pixels por pixel da arte, seja qual for o tamanho da colisão.
+		if (Weapon.BulletSprite != null)
+		{
+			Sprite2D sprite = GetNode<Sprite2D>("Sprite2D");
+			sprite.Texture = Weapon.BulletSprite;
+			sprite.Scale = Vector2.One * 4f / Scale;
+		}
 
 		SetCollisionMaskValue((int)Prop.FurnitureLayer, true);
 		AreaEntered += OnAreaEntered;
