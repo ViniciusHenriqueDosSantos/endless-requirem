@@ -7,7 +7,8 @@ Jogo de ação e tiro top-down feito em **Godot 4.7.2 (.NET / C#)** para a disci
 > Estado atual: **Fases 1 e 2 completas em cinza**.
 > - Fase 1: Entrada → Portaria → RU → Corredor → Cantina (Tia da Cantina) → Elevador.
 > - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (chave) → caixas (livro) → devolução → Bibliotecária (surda, enxerga pela luz: furtividade e caçada) → escada contra o relógio (voltas em torno do vão, fantasmas pesados parados nos degraus) até o 4º andar.
-> - A Fase 3 e a arte vêm depois. Salas de teste (`levels/test_rooms*.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
+> - Arte: a **Fase 1 já tem pixel art** baseada no campus de verdade (tour 360° da UNIFESP SJC). Veja `tools/art/README.md`.
+> - A Fase 3 e a arte da Fase 2 vêm depois. Salas de teste (`levels/test_rooms*.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
 
 ---
 
@@ -81,8 +82,12 @@ objects/                uma pasta por objeto do jogo
 tools/levelgen/         geradores das plantas (Python). As cenas levels/*.tscn são geradas por eles;
                         mudanças de planta grandes ficam mais fáceis editando o gerador e rodando de novo
   arena_grid/           grade do chão
-tilesets/               peças de chão e parede (por enquanto, provisórias)
-sprites/                imagens
+tools/art/              geradores da pixel art (Python). Rode build_all.py para regenerar tudo (ver tools/art/README.md)
+tools/capture/          fotos automáticas de uma fase rodando (para revisar a arte)
+tilesets/               peças de chão e parede (fase1_tileset = arte da Fase 1; placeholder = provisório)
+sprites/                imagens (geradas por tools/art; 1 pixel da arte = 4 pixels do jogo)
+  tiles/ props/ characters/ items/ weapons/ fx/ objects/
+fonts/                  fonte pixel do jogo (Pixelify Sans, licença OFL)
 ```
 
 ---
