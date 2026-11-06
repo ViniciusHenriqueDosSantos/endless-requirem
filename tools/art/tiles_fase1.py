@@ -619,6 +619,23 @@ for v in range(4):
     tile(f"lateral_l{v}", v, 20); place(lateral(v, True), f"lateral_l{v}")
     tile(f"lateral_r{v}", 4 + v, 20); place(lateral(v, False), f"lateral_r{v}")
 
+# ---------------------------------------------------------------- mata fechada atrás do campus (copas vistas de cima)
+def mata(v):
+    cv = Canvas(T, T, hexc("1f3d22"))
+    r = rng(1900 + v)
+    for _ in range(5):  # copas
+        cx, cy, rad = r.randrange(T), r.randrange(T), r.uniform(3, 6)
+        for dx in (-T, 0, T):
+            for dy in (-T, 0, T):
+                cv.ellipse(cx + dx, cy + dy, rad, rad * 0.9, r.choice([hexc("2d5a2c"), hexc("27502a"), hexc("356634")]))
+                cv.ellipse(cx + dx - 1, cy + dy - 1, rad * 0.5, rad * 0.45, hexc("4a7d3d"))
+    cv.noise(0, 0, T, T, [hexc("16301a"), hexc("3f7236")], 0.12, r)
+    return cv
+
+
+for v in range(3):
+    tile(f"mata{v}", v, 21); place(mata(v), f"mata{v}")
+
 # ---------------------------------------------------------------- borda do mapa no meio da avenida
 # Mesma cara do asfalto/calçada, mas com colisão (o jogador não sai do mapa e a rua não fica cortada por uma cerca viva).
 for j, (name, fn) in enumerate([("topo_via_meiofio0", lambda: floor_bricks(2, curb=True)), ("topo_via_meiofio1", lambda: floor_bricks(3, curb=True)),

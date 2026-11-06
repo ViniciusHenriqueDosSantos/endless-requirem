@@ -108,8 +108,7 @@ def style_rule(c):
     """Bordas do terraço elevado e da rampa: mureta de concreto com guarda-corpo (dali se vê o estacionamento lá embaixo)."""
     x, y = c
     if x == 22 and 8 <= y <= 45: return "lateral_l"       # pátio entre duas alas: fachada da ala esquerda
-    if x == 31 and 8 <= y <= 45: return "lateral_r"       # e da ala direita (janelas por andar, portas no térreo)
-    if x == 31 and y in (7, 46): return "mureta"
+    if x == 31 and 7 <= y <= 46: return "mureta"         # o outro lado do terraço é a borda: dali se vê o estacionamento
     if y == 7 and 22 <= x <= 31: return "mureta"          # fundo do pátio: aberto, com a mureta (vista para o gramado)
     if y == 46 and 25 <= x <= 31: return "mureta"         # borda que dá para a praça da entrada
     if x in (22, 25) and 46 <= y <= 50: return "mureta"   # os dois lados da rampa
@@ -219,14 +218,13 @@ for y in range(_by0, _by1 + 1):
         inside_buildings = 1 <= x <= 22 and 1 <= y <= 51   # bloco do RU, cantina e elevador
         if inside_buildings:
             background[c] = tiler.at(f"laje{int(h('l', *c) * 3)}")
-        elif 32 <= x <= 37 and 5 <= y <= 46:
-            background[c] = tiler.at(f"laje{int(h('l', *c) * 3)}")            # telhado da ala direita do pátio
-        elif 36 <= x <= 47 and 50 <= y <= 62:
-            # estacionamento: embaixo, do lado de fora (a leste da praça de entrada), no nível rebaixado.
-            # Dá para ver por cima da cerca; não dá para ir. Faixa de bloquete junto à cerca e o sextavado com vagas.
-            if x == 36:
+        elif (32 <= x <= 41 and 6 <= y <= 50) or (36 <= x <= 47 and 50 <= y <= 62):
+            # estacionamento (foto aérea): um "L" no nível de baixo. Sobe acompanhando o terraço pelo lado de fora
+            # (faixa de bloquete na base do muro) e desce até a avenida, onde fica a entrada dele.
+            # Dá para ver de cima e da entrada; não dá para ir.
+            if x == 32 or (x == 36 and y >= 51):
                 background[c] = tiler.at(f"baixo_bloquete{(x % 2) + 2 * (y % 2)}")
-            elif y in (51, 52, 55, 56, 59, 60) and x % 2 == 1:
+            elif (y <= 50 and x in (34, 35, 39, 40) and y % 3 != 0) or (y >= 51 and y in (52, 53, 56, 57, 60, 61) and x % 2 == 1):
                 background[c] = tiler.at("baixo_sextavado_vaga0")
             else:
                 background[c] = tiler.at(f"baixo_sextavado{int(h('e', *c) * 2)}")
@@ -237,8 +235,14 @@ for y in range(_by0, _by1 + 1):
             background[c] = tiler.at("asfalto_meiofio") if y == 64 else (tiler.at("asfalto_faixa") if x % 3 == 1 else tiler.at(f"asfalto{int(h('a', *c) * 3)}"))
         else:
             background[c] = tiler.at(f"grama{int(h('g', *c) * 3)}")
-# sombra da cerca/talude caindo sobre o estacionamento
-for y in range(50, 63):
+# mata fechada atrás e à esquerda do prédio (foto aérea)
+for (x, y) in list(background):
+    if (x <= 0 and y <= 61) or (y <= 0 and x <= 21):
+        background[(x, y)] = tiler.at(f"mata{int(h('m', x, y) * 3)}")
+# sombra do muro do terraço e da cerca da entrada caindo sobre o estacionamento
+for y in range(6, 51):
+    shadow_cells[(32, y)] = tiler.at("sombra_010")
+for y in range(51, 63):
     shadow_cells[(36, y)] = tiler.at("sombra_010")
 node("Fundo", type="TileMapLayer", props={"z_index": "-11", "texture_filter": "1", "scale": v(4, 4),
      "tile_map_data": f'PackedByteArray("{tile_data(background)}")', "tile_set": 'ExtResource("tiles")'})
@@ -299,16 +303,20 @@ prop("Mastros", ".", 3 * T, 55 * T + 40, 112, 288, col(0, 0, 0, 0), depth=16, sp
 
 # estacionamento: fica lá embaixo, ao lado do terraço (só dá para ver por cima da mureta). Carros abandonados nas vagas.
 BAIXO = col(0.62, 0.64, 0.74)
-for i, (tx, ty, variant) in enumerate([(37, 51, 0), (41, 51, 2), (45, 51, 1), (39, 55, 1), (43, 55, 0), (37, 59, 2), (45, 59, 0)]):
+for i, (tx, ty, variant) in enumerate([(34, 9, 0), (39, 12, 1), (34, 18, 2), (39, 24, 0), (34, 30, 1), (39, 33, 2), (34, 39, 0),
+                                       (39, 45, 1), (37, 52, 2), (41, 52, 0), (45, 56, 1), (39, 56, 2), (43, 60, 0)]):
     prop(f"Carro{i+1}", ".", tx * T + 32, (ty + 1) * T + 40, 96, 128, col(0, 0, 0, 0), solid=False,
          sprite=f"carro{variant}", modulate=BAIXO)
 # o portão dos carros e a cerca do estacionamento, na avenida
 prop("PortaoEstac", ".", 42 * T + 32, 63 * T + 8, 3 * T, 72, col(0, 0, 0, 0), solid=False, sprite="portao_estac")
 prop("GradeEstac1", ".", 38 * T + 32, 63 * T + 8, 5 * T, 72, col(0, 0, 0, 0), solid=False, sprite="gradil_curto")
 prop("GradeEstac2", ".", 46 * T, 63 * T + 8, 4 * T, 72, col(0, 0, 0, 0), solid=False, sprite="gradil_curto")
-for i, (tx, ty) in enumerate([(40, 57), (46, 53)]):
+for i, (tx, ty) in enumerate([(37, 15), (37, 33), (40, 57), (46, 53)]):
     prop(f"PosteEstac{i+1}", ".", tx * T, ty * T + 40, 24, 240, col(0, 0, 0, 0), solid=False,
-         sprite="poste_rua" if i == 0 else "poste_rua_apagado", modulate=BAIXO)
+         sprite="poste_rua_apagado" if i in (1, 3) else "poste_rua", modulate=BAIXO)
+# anexos brancos ao lado do prédio, engolidos pela mata
+prop("Anexo1", ".", -3 * T, 50 * T, 256, 144, col(0, 0, 0, 0), solid=False, sprite="anexo")
+prop("Anexo2", ".", -4 * T, 45 * T, 256, 144, col(0, 0, 0, 0), solid=False, sprite="anexo")
 
 # ===== PORTÃO (separa a calçada da entrada) =====
 GRADE = col(0.5, 0.52, 0.56)
@@ -480,6 +488,8 @@ for i, tx in enumerate([4, 12, 24]):
 light("Marquise", 11 * T, 54 * T + 30, QUENTE, 1.6, 0.7, FLICKER)
 light("GuaritaTV", 28 * T, 51 * T + 40, col(0.45, 0.6, 1), 1.2, 0.9, FLICKER)
 light("Estacionamento1", 40 * T + 56, 57 * T + 60, SODIO, 2.6, 0.75, FLICKER)
+light("Estacionamento3", 37 * T + 56, 15 * T + 60, SODIO, 2.6, 0.75, STEADY)
+light("Estacionamento4", 37 * T + 56, 33 * T + 60, SODIO, 2.4, 0.7, BROKEN)
 light("Estacionamento2", 46 * T + 56, 53 * T + 60, SODIO, 2.4, 0.7, BROKEN)
 light("RuaLeste", 44 * T + 56, 64 * T + 20, SODIO, 2.6, 0.9, STEADY)
 light("Mastros", 3 * T, 55 * T, FRIA, 1.2, 0.5, FLICKER)
