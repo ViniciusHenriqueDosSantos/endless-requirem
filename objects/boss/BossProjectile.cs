@@ -8,6 +8,11 @@ public partial class BossProjectile : Area2D
 	public float Speed = 260f;
 	public Color Color = new(1f, 0.75f, 0.3f);
 
+	// Pixel art (opcional): folha com Frames quadros; cada projétil sorteia um.
+	public Texture2D Texture;
+	public int Frames = 1;
+	private int _frame;
+
 	private const float Lifetime = 4f;
 	private const float Radius = 10f;
 	private const float Knockback = 320f;
@@ -22,6 +27,8 @@ public partial class BossProjectile : Area2D
 		AreaEntered += OnAreaEntered;
 		BodyEntered += OnBodyEntered;
 		Rotation = Direction.Angle();
+		if (Texture != null)
+			_frame = (int)(GD.Randi() % (uint)Mathf.Max(1, Frames));
 	}
 
 	// Acerta a HurtBox do jogador (o corpo inteiro).
@@ -73,6 +80,15 @@ public partial class BossProjectile : Area2D
 
 	public override void _Draw()
 	{
+		if (Texture != null)
+		{
+			int frames = Mathf.Max(1, Frames);
+			Vector2 frameSize = new(Texture.GetWidth() / (float)frames, Texture.GetHeight());
+			Vector2 size = frameSize * 4f;
+			DrawTextureRectRegion(Texture, new Rect2(-size / 2, size), new Rect2(_frame * frameSize.X, 0, frameSize.X, frameSize.Y));
+			return;
+		}
+
 		// Formato de gota (lembra uma coxinha); a ponta segue a direção do tiro.
 		Vector2[] shape =
 		{

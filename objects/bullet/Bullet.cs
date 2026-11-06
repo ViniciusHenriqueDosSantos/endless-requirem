@@ -15,6 +15,14 @@ public partial class Bullet : Area2D
 		Scale = Vector2.One * Weapon.BulletScale;
 		Modulate = Weapon.Color;
 
+		// Pixel art: o desenho fica sempre a 4 pixels por pixel da arte, seja qual for o tamanho da colisão.
+		if (Weapon.BulletSprite != null)
+		{
+			Sprite2D sprite = GetNode<Sprite2D>("Sprite2D");
+			sprite.Texture = Weapon.BulletSprite;
+			sprite.Scale = Vector2.One * 4f / Scale;
+		}
+
 		SetCollisionMaskValue((int)Prop.FurnitureLayer, true);
 		AreaEntered += OnAreaEntered;
 		BodyEntered += OnBodyEntered;

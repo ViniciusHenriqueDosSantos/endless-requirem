@@ -59,7 +59,16 @@ public partial class Player : CharacterBody2D
 	private Vector2 _knockback = Vector2.Zero;
 
 	private Sprite2D _sprite;
+	private Sprite2D _gun;
 	private Camera2D _camera;
+
+	// Animação da folha do estudante (4 colunas: parado + passos; linhas: frente, costas, lado).
+	private const float WalkFrameTime = 0.12f;
+	private const float GunDistance = 14f;
+	private static readonly Vector2 HandOffset = new(0, -34);
+	private float _walkTimer;
+	private int _walkFrame;
+	private bool _animated;
 	private Area2D _hurtBox;
 
 	public override void _Ready()
@@ -78,6 +87,12 @@ public partial class Player : CharacterBody2D
 
 		_sprite = GetNode<Sprite2D>("Sprite2D");
 		_hurtBox = GetNode<Area2D>("HurtBox");
+		_animated = _sprite.Hframes > 1;
+
+		// A arma na mão: só aparece se a arma tiver sprite.
+		_gun = new Sprite2D { Name = "Gun", Scale = Vector2.One * 4f, Position = HandOffset };
+		AddChild(_gun);
+		UpdateGunSprite();
 
 		_camera = GetNodeOrNull<Camera2D>("Camera2D");
 	}
@@ -111,6 +126,7 @@ public partial class Player : CharacterBody2D
 			_ammo[weapon] = weapon.MagazineSize;
 		_reloadTimer = 0;
 		Weapon = _ownedWeapons[0];
+		UpdateGunSprite();
 		Score = score;
 		StatsChanged?.Invoke();
 	}
@@ -129,6 +145,7 @@ public partial class Player : CharacterBody2D
 		_ammo[weapon] = weapon.MagazineSize;
 		_reloadTimer = 0;
 		Weapon = weapon;
+		UpdateGunSprite();
 		StatsChanged?.Invoke();
 	}
 
@@ -234,6 +251,7 @@ public partial class Player : CharacterBody2D
 	private void SelectWeapon(int index)
 	{
 		Weapon = _ownedWeapons[Mathf.PosMod(index, _ownedWeapons.Count)];
+		UpdateGunSprite();
 		_reloadTimer = Ammo <= 0 ? Weapon.ReloadTime : 0;
 		StatsChanged?.Invoke();
 	}
@@ -247,6 +265,63 @@ public partial class Player : CharacterBody2D
 		CheckEnemyContact();
 		UpdateShooting(dt);
 		UpdateMovement(dt);
+		UpdateAnimation(dt);
+	}
+
+	// O corpo vira para onde o mouse está mirando; as pernas andam quando o jogador se move.
+	private void UpdateAnimation(float dt)
+	{
+		Vector2 aim = GetGlobalMousePosition() - (GlobalPosition + HandOffset);
+
+		if (_gun.Texture != null)
+		{
+			float angle = aim.Angle();
+			_gun.Rotation = angle;
+			_gun.Position = HandOffset + Vector2.FromAngle(angle) * GunDistance;
+			_gun.FlipV = aim.X < 0;
+			// Mirando para cima, a arma fica atrás do corpo.
+			_gun.ZIndex = aim.Y < -Mathf.Abs(aim.X) * 0.5f ? -1 : 1;
+			_gun.Modulate = _sprite.Modulate;
+		}
+
+		if (!_animated) return;
+
+		bool moving = Velocity.LengthSquared() > 100f;
+		if (moving)
+		{
+			_walkTimer -= dt;
+			if (_walkTimer <= 0)
+			{
+				_walkTimer = WalkFrameTime;
+				_walkFrame = (_walkFrame + 1) % 4;
+			}
+		}
+		else
+		{
+			_walkFrame = 0;
+			_walkTimer = 0;
+		}
+
+		int row;
+		if (Mathf.Abs(aim.X) > Mathf.Abs(aim.Y))
+		{
+			row = 2;
+			_sprite.FlipH = aim.X < 0;
+		}
+		else
+		{
+			row = aim.Y < 0 ? 1 : 0;
+			_sprite.FlipH = false;
+		}
+		_sprite.Frame = row * _sprite.Hframes + _walkFrame;
+	}
+
+	private void UpdateGunSprite()
+	{
+		if (_gun == null) return;
+		_gun.Texture = Weapon?.Sprite;
+		if (_gun.Texture != null)
+			_gun.Offset = new Vector2(_gun.Texture.GetWidth() / 2f - 3f, 0);
 	}
 
 	private void UpdateCameraShake(float dt)

@@ -40,6 +40,13 @@ public partial class Prop : StaticBody2D
 	[Export] public Color InnerColor { get => _innerColor; set { _innerColor = value; QueueRedraw(); } }
 	private const float InnerBorder = 14f;
 
+	// Sprite em pixel art (1 pixel da arte = PixelScale pixels do jogo). Com sprite, o bloco colorido
+	// e o texto não aparecem: o desenho fica alinhado pela base, centralizado. Pode ser mais alto que Size
+	// (ex.: palmeira saindo do jardim); a colisão continua vindo de Size e Depth.
+	private Texture2D _texture;
+	[Export] public Texture2D Texture { get => _texture; set { _texture = value; QueueRedraw(); } }
+	public const float PixelScale = 4f;
+
 	// Desligado: o jogador e os tiros passam por cima/por trás.
 	[Export] public bool Solid = true;
 
@@ -83,6 +90,13 @@ public partial class Prop : StaticBody2D
 	public override void _Draw()
 	{
 		Rect2 body = new(-Size.X / 2, -Size.Y, Size.X, Size.Y);
+
+		if (Texture != null)
+		{
+			Vector2 size = Texture.GetSize() * PixelScale;
+			DrawTextureRect(Texture, new Rect2(-size.X / 2, -size.Y, size.X, size.Y), false);
+			return;
+		}
 
 		if (Color.A > 0)
 		{

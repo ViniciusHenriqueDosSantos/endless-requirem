@@ -24,6 +24,12 @@ window/stretch/aspect="expand"
 
 project/assembly_name="endless_requirem"
 
+[gui]
+
+theme/custom_font="res://fonts/PixelifySans.ttf"
+theme/default_font_antialiasing=0
+theme/default_font_hinting=0
+
 [input]
 
 move_up={
@@ -91,5 +97,8 @@ weapon_prev={
 3d/physics_engine="Jolt Physics"
 
 [rendering]
+
+textures/canvas_textures/default_texture_filter=0
+environment/defaults/default_clear_color=Color(0.09, 0.094, 0.114, 1)
 
 rendering_device/driver.windows="d3d12"

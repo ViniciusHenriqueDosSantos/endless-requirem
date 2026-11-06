@@ -1,6 +1,8 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://objects/boss/BossTarget.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://sprites/objects/alvo.png" id="2_sprite"]
 
 [node name="BossTarget" type="Area2D"]
 script = ExtResource("1_script")
+Sprite = ExtResource("2_sprite")
