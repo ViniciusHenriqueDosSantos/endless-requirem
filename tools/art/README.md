@@ -23,9 +23,10 @@ As cores e os objetos vieram das fotos do tour 360° da UNIFESP São José dos C
 | Lugar no jogo | O que veio do campus de verdade |
 |---|---|
 | Calçada e portão | bloquete vermelho em espinha de peixe, faixa tátil amarela, meio-fio branco, gradil verde, ponto de ônibus verde |
-| Entrada | piso sextavado com grama nas juntas, fachada de concreto bege com faixa de janelas e o letreiro UNIFESP (sem o N e o S) |
-| Portaria | guarita de concreto com janelão, catraca de aço com luz vermelha/verde |
-| Corredor (praça) | granito claro em placas, canteiros brancos com palmeiras e agaves, postes de globo, caixa d'água verde |
+| Entrada (nível de baixo) | praça de bloquete vermelho com gramados e mastros; fachada de concreto claro com brises, janelas de bloco de vidro, logo verde e o letreiro UNIFESP (o N e o S caíram) |
+| Portaria | pavilhão branco com frente de vidro escuro; a catraca fica no pé da rampa com guarda-corpo que sobe para o terraço |
+| Corredor (terraço elevado) | granito claro em placas, canteiros com palmeiras, agaves e postes de globo (no meio e junto ao prédio), mureta com guarda-corpo na borda |
+| Estacionamento (nível de baixo, só para ver) | ao lado do terraço: faixa de bloquete junto ao muro, sextavado com vagas, carros abandonados, postes de sódio; a caixa d'água verde depois dele |
 | RU | cerâmica bege, mesas brancas compridas com banquinhos fixos, cadeiras pretas "R.U.", bufê de aço, devolução de bandejas |
 | Cantina | granito branco, vitrines de salgados, geladeira de bebidas, sinucas, mesas redondas com cadeiras pretas, lixeiras da coleta seletiva, bebedouro, sofá, mural |
 

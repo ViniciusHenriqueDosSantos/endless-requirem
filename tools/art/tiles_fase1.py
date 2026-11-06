@@ -500,6 +500,80 @@ for top in (0, 1):
                 tile(f"sombra_{top}{left}{right}", k, 15); place(shadow(top, left, right), f"sombra_{top}{left}{right}")
                 k += 1
 
+# ---------------------------------------------------------------- terraço elevado: mureta, rampa e o nível de baixo
+RAIL, RAIL_HI, RAIL_D = hexc("9aa1a8"), hexc("d4d9dd"), hexc("5d636a")
+
+
+def mureta_top(mask):
+    """Mureta de concreto na borda do terraço com o guarda-corpo de tubo de aço por cima (vista de cima)."""
+    cv = Canvas(T, T, hexc("c9c6bc"))
+    r = rng(1500 + mask)
+    cv.noise(0, 0, T, T, [hexc("b8b4a8"), hexc("d6d3ca"), hexc("7d8a62")], 0.14, r)
+    n, e, so, w = mask & 1, mask & 2, mask & 4, mask & 8
+    vertical = (n or so) and not (e or w)
+    if vertical or not (e or w):
+        cv.vline(7, 0, T, RAIL); cv.vline(6, 0, T, RAIL_HI); cv.vline(8, 0, T, RAIL_D)
+        for y in (2, 10): cv.rect(5, y, 5, 2, RAIL_D)
+    else:
+        cv.hline(0, 7, T, RAIL); cv.hline(0, 6, T, RAIL_HI); cv.hline(0, 8, T, RAIL_D)
+        for x in (2, 10): cv.rect(x, 5, 2, 5, RAIL_D)
+    if not w: cv.vline(0, 0, T, hexc("8f8b80"))
+    if not e: cv.vline(T - 1, 0, T, hexc("4a4740"))
+    if not n: cv.hline(0, 0, T, hexc("8f8b80"))
+    if not so: cv.hline(0, T - 1, T, hexc("4a4740"))
+    return cv
+
+
+def mureta_front(ew):
+    """Mureta vista de frente (ponta do terraço): concreto baixo com o guarda-corpo em cima."""
+    cv = Canvas(T, T)
+    r = rng(1600 + ew)
+    cv.rect(0, 7, T, 9, hexc("c9c6bc")); cv.hline(0, 7, T, hexc("e2dfd6")); cv.hline(0, 15, T, hexc("8f8b80"))
+    cv.noise(0, 8, T, 7, [hexc("b8b4a8"), hexc("7d8a62")], 0.15, r)
+    cv.hline(0, 1, T, RAIL_HI); cv.hline(0, 2, T, RAIL); cv.hline(0, 4, T, RAIL_D)
+    for x in (2, 10): cv.rect(x, 1, 2, 7, RAIL_D); cv.put(x, 1, RAIL_HI)
+    if not (ew & 2): cv.vline(0, 0, T, hexc("8f8b80"))
+    if not (ew & 1): cv.vline(T - 1, 0, T, hexc("4a4740"))
+    return cv
+
+
+def rampa(v):
+    """Rampa de concreto claro com as ranhuras antiderrapantes (sobe da portaria para o terraço)."""
+    cv = age(Canvas(T, T, hexc("cfcbc0")), "calcada", 1700 + v)
+    r = rng(1700 + v)
+    cv.noise(0, 0, T, T, [hexc("bdb9ae"), hexc("dcd8ce")], 0.15, r)
+    for y in range(1, T, 4):
+        cv.hline(0, y, T, hexc("a8a498")); cv.hline(0, y + 1, T, hexc("e0ddd4"))
+    return cv
+
+
+def lowered(cv):
+    """Nível de baixo (estacionamento visto do terraço): mais escuro e azulado."""
+    px = cv.img.load()
+    for y in range(T):
+        for x in range(T):
+            r_, g, b, a = px[x, y]
+            px[x, y] = (int(r_ * 0.55), int(g * 0.57), int(b * 0.66), a)
+    return cv
+
+
+for mask in range(16):
+    tile(f"topo_mureta_{mask}", mask, 18); place(mureta_top(mask), f"topo_mureta_{mask}")
+for ew in range(4):
+    tile(f"frente_mureta_{ew}", ew, 19); place(mureta_front(ew), f"frente_mureta_{ew}")
+for v in range(2):
+    tile(f"rampa{v}", 4 + v, 19); place(rampa(v), f"rampa{v}")
+for j, (name, fn) in enumerate([("bloquete0", lambda: floor_bricks(0)), ("bloquete1", lambda: floor_bricks(1)),
+                                ("bloquete2", lambda: floor_bricks(2)), ("bloquete3", lambda: floor_bricks(3)),
+                                ("sextavado0", lambda: floor_hex(0)), ("sextavado1", lambda: floor_hex(2)),
+                                ("sextavado_vaga0", None)]):
+    if fn is None:
+        cv = age(floor_hex(1), "sextavado", 120); cv.rect(0, 0, 2, T, hexc("d8d6cc", 200))
+    else:
+        cv = age(fn(), "sextavado", 130 + j)
+    tile(f"baixo_{name}", 6 + j, 19); place(lowered(cv), f"baixo_{name}")
+DECOS["mureta"] = []
+
 # linha 0: compatibilidade com o atlas provisório (0/1 piso, 2 topo, 3 frente)
 for n, c in [("granito0", 0), ("granito1", 1), ("topo_interno_15", 2), ("frente_interno_3", 3)]:
     col, row = names[n]

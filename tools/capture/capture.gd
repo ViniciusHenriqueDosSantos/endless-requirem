@@ -6,6 +6,7 @@
 #   mouse:dx:dy  mira (posição do mouse relativa ao centro da tela)
 #   wait:n       espera n quadros a mais antes da foto
 #   hud          mostra o HUD nesta foto
+#   dia          desliga a noite nesta foto (para ver o layout)
 extends SceneTree
 
 func _initialize():
@@ -25,6 +26,9 @@ func _initialize():
 		var parts: PackedStringArray = p.split(",")
 		var extra_wait := 20
 		if hud: hud.visible = false
+		for n in ["Noite", "NightOverlay"]:
+			var nd = level.get_node_or_null(n)
+			if nd: nd.visible = true
 		for e in get_nodes_in_group("enemies"):
 			if not ("ghosts" in parts): e.queue_free()
 		player.global_position = Vector2(float(parts[0]), float(parts[1]))
@@ -47,6 +51,10 @@ func _initialize():
 				Input.warp_mouse(center + Vector2(float(m[1]), float(m[2])))
 			elif a.begins_with("wait:"):
 				extra_wait += int(a.substr(5))
+			elif a == "dia":
+				for n in ["Noite", "NightOverlay"]:
+					var nd = level.get_node_or_null(n)
+					if nd: nd.visible = false
 			elif a == "hud" and hud:
 				hud.visible = true
 		for i in extra_wait:

@@ -736,10 +736,91 @@ def entulho():
     return cv
 
 
+# ======================================================================== v3: pavilhão da portaria, mastros, rampa, canteiro lateral
+def pavilhao():
+    """Portaria: o pavilhão baixo e branco da entrada, com a frente de vidro escuro recuada e a laje com a borda escura
+    (foto da entrada). Abandonado: vidro quebrado, manchas, mato na base."""
+    W, H = 160, 80
+    cv = Canvas(W, H)
+    r = rng(61)
+    # laje vista de cima: concreto claro, borda escura (rufo) e as rampas de corrimão aparecendo atrás
+    cv.rect(0, 0, W, 50, hexc("d9d7d0")); cv.noise(1, 1, W - 2, 48, [hexc("c8c6bf"), hexc("e4e2dc"), hexc("9a9a8e")], 0.18, r)
+    cv.rect(0, 0, W, 2, hexc("2c2d31")); cv.vline(0, 0, 50, hexc("2c2d31")); cv.vline(W - 1, 0, 50, hexc("2c2d31"))
+    for y in range(8, 46, 9):  # rampas com corrimão por trás do pavilhão
+        cv.hline(70, y, 84, RAIL_HI if 'RAIL_HI' in globals() else hexc("d4d9dd")); cv.hline(70, y + 1, 84, hexc("8f969d"))
+        for x in range(72, 154, 12): cv.vline(x, y, 4, hexc("7a8188"))
+    cv.rect(6, 6, 56, 38, hexc("cfcdc6")); cv.frame(6, 6, 56, 38, hexc("b0aea6"))  # laje mais baixa da marquise
+    cv.rect(14, 14, 10, 8, hexc("9a9c98")); cv.ellipse(19, 18, 3, 2.5, hexc("5a5c60"))  # condensadora
+    for _ in range(18):  # manchas de água parada e limo
+        cv.ellipse(r.randrange(4, W - 4), r.randrange(4, 46), r.uniform(1.5, 4), r.uniform(1, 2.5), hexc("6f6c5e", 70))
+    cv.hline(0, 49, W, hexc("2c2d31"))
+    # frente: parede branca e o grande vão de vidro escuro
+    cv.rect(0, 50, W, 30, hexc("e4e2dc")); cv.noise(0, 50, W, 30, [hexc("d4d2cb")], 0.15, r)
+    cv.rect(18, 54, 110, 24, hexc("2f3136"))  # sombra do recuo
+    cv.rect(20, 55, 106, 23, hexc("0f151c"))
+    for x in range(20, 127, 15): cv.vline(x, 55, 23, hexc("9aa1a8"))
+    cv.hline(20, 55, 106, hexc("9aa1a8"))
+    for (x0, y0, x1, y1) in [(24, 57, 31, 66), (60, 56, 52, 70), (100, 58, 108, 75)]:
+        cv.line(x0, y0, x1, y1, hexc("5c7690"))
+    cv.rect(80, 60, 14, 18, hexc("050709"))  # vidro arrebentado
+    for (x, y) in [(81, 61), (86, 62), (92, 64), (83, 70), (93, 74)]: cv.put(x, y, hexc("9fb6cc"))
+    cv.rect(134, 62, 8, 14, hexc("6b6f75")); cv.rect(135, 63, 6, 5, hexc("2a2d33")); cv.put(136, 65, hexc("ff3b30"))  # interfone
+    text(cv, "PORTARIA", 128, 52, hexc("4a4a50"))
+    for x in range(W):  # mato na base
+        for y in range(H - (r.randrange(0, 4) if r.random() < 0.6 else 0), H):
+            cv.put(x, y, r.choice([C["leaf_d"], C["grass_d"]]))
+    return cv
+
+
+def mastros():
+    """Três mastros de bandeira (à esquerda da entrada). As bandeiras sumiram; sobrou um trapo."""
+    cv = Canvas(28, 72)
+    shadow_ellipse(cv, 14, 70, 13, 2, 70)
+    cv.rect(1, 66, 26, 5, hexc("bdbab1")); cv.hline(1, 66, 26, hexc("dedbd2"))
+    for i, x in enumerate((4, 13, 22)):
+        top = 2 + i * 3
+        cv.vline(x, top, 66 - top, hexc("c7ccd1")); cv.vline(x + 1, top, 66 - top, hexc("7f868d"))
+        cv.put(x, top - 1, hexc("e9ecef"))
+    cv.rect(15, 6, 7, 4, hexc("7a2e2e")); cv.put(21, 9, hexc("5a2020")); cv.line(15, 10, 18, 13, hexc("7a2e2e"))
+    return cv
+
+
+def corrimao(h=80):
+    """Guarda-corpo de tubo de aço ao lado da rampa (visto de cima: o tubo e os postes)."""
+    cv = Canvas(4, h)
+    for y in range(h):
+        cv.put(1, y, hexc("d4d9dd")); cv.put(2, y, hexc("8f969d"))
+    for y in range(2, h, 12): cv.rect(0, y, 4, 3, hexc("5d636a"))
+    return cv
+
+
+def jardim_lateral(tiles, lamps=(), seed=0):
+    """Canteiro comprido junto ao prédio, como na foto da praça: borda de concreto, palmeiras, agaves e globos."""
+    w, h = 16, tiles * 16
+    extra = 30
+    cv = Canvas(w + 20, h + extra)
+    r = rng(70 + seed)
+    ox, y0 = 10, extra
+    cv.rect(ox, y0, w, h, hexc("cfccc2")); cv.frame(ox, y0, w, h, hexc("9d988a"))
+    cv.rect(ox, y0 + h - 4, w, 4, hexc("b9b5a8")); cv.hline(ox, y0 + h - 4, w, hexc("dedad0"))
+    cv.rect(ox + 2, y0 + 2, w - 4, h - 7, C["grass_d"])
+    cv.noise(ox + 2, y0 + 2, w - 4, h - 7, [C["grass"], C["grass_k"], hexc("6d7a3a")], 0.45, r)
+    for _ in range(tiles * 3):
+        x, y = r.randrange(ox + 1, ox + w - 1), r.randrange(y0 + 2, y0 + h - 4)
+        for k in range(r.randrange(2, 5)): cv.put(x, y - k, r.choice([C["grass"], C["grass_l"], hexc("7f8f45")]))
+    for k in range(tiles // 3):
+        agave(cv, ox + 8, y0 + 10 + k * 48 + 30)
+    for k in range(max(1, tiles // 5)):
+        palmeira(cv, ox + 8, y0 + 18 + k * 80, 26 + (k % 2) * 4, r)
+    for ly, lit in lamps:
+        poste_globo(cv, ox + 7, y0 + ly, lit)
+    return cv
+
+
 SPRITES = {
     "predio": predio, "letra_n": lambda: letra_caida("N"), "letra_s": lambda: letra_caida("S"),
     "gradil": gradil, "poste_portao": poste_portao, "placa_portao": placa_portao, "ponto_onibus": ponto_onibus,
-    "guarita": guarita, "jardim": jardim, "caixa_dagua": caixa_dagua,
+    "jardim": jardim, "caixa_dagua": caixa_dagua,
     "lixeiras": lixeiras, "balcao_devolucao": balcao_devolucao, "microondas": microondas,
     "balcao_comida": balcao_comida,
     "balcao_cantina": balcao_cantina, "balcao_lateral": balcao_lateral, "letreiro_cantina": letreiro_cantina,
@@ -750,6 +831,9 @@ SPRITES = {
     "carro0": lambda: carro(0), "carro1": lambda: carro(1), "carro2": lambda: carro(2),
     "mesa_ru_longa": mesa_ru_longa, "mesa_ru_cadeiras": mesa_ru_cadeiras, "lixeiras_pedal": lixeiras_pedal,
     "catraca_ru": catraca_ru, "cadeira_caida": cadeira_caida, "entulho": entulho,
+    "pavilhao": pavilhao, "mastros": mastros, "corrimao": corrimao,
+    "jardim_lateral_a": lambda: jardim_lateral(15, lamps=((40, True), (200, False)), seed=1),
+    "jardim_lateral_b": lambda: jardim_lateral(4, lamps=((50, True),), seed=2),
 }
 
 if __name__ == "__main__":
