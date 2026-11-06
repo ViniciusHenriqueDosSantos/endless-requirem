@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://objects/night/FlickerLight.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://sprites/lights/radial.png" id="2_tex"]
+
+[node name="FlickerLight" type="PointLight2D"]
+texture = ExtResource("2_tex")
+script = ExtResource("1_script")

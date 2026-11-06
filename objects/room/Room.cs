@@ -109,7 +109,7 @@ public partial class Room : Node2D
 
 	private void CreateBanner()
 	{
-		CanvasLayer layer = new() { Name = "Banner" };
+		CanvasLayer layer = new() { Name = "Banner", Layer = 3 };
 		_banner = new Label
 		{
 			HorizontalAlignment = HorizontalAlignment.Center,
