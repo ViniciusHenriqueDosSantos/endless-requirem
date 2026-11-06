@@ -925,6 +925,19 @@ def portao_estac():
     return cv
 
 
+def anexo():
+    """Anexo branco baixo ao lado do prédio principal (foto aérea), abandonado no meio da mata."""
+    cv = Canvas(64, 36)
+    r = rng(81)
+    cv.rect(0, 0, 64, 22, hexc("8f8d86")); cv.noise(0, 0, 64, 22, [hexc("7f7d76"), hexc("a3a19a"), hexc("4e6a3e")], 0.25, r)
+    cv.hline(0, 0, 64, hexc("c9c7c0")); cv.hline(0, 21, 64, hexc("5a5852"))
+    cv.rect(0, 22, 64, 14, hexc("dedcd5")); cv.noise(0, 22, 64, 14, [hexc("c9c7c0")], 0.2, r)
+    cv.rect(26, 25, 14, 8, hexc("12171d")); cv.frame(26, 25, 14, 8, hexc("8e959d")); cv.line(28, 26, 33, 31, hexc("5c7690"))
+    for x in range(64):
+        for y in range(36 - r.randrange(0, 5), 36): cv.put(x, y, r.choice([C["leaf_d"], C["grass_d"]]))
+    return cv
+
+
 SPRITES = {
     "predio": predio_ponta, "letra_n": lambda: letra_caida("N"), "letra_s": lambda: letra_caida("S"),
     "gradil": gradil, "poste_portao": poste_portao, "placa_portao": placa_portao, "ponto_onibus": ponto_onibus,
@@ -939,7 +952,7 @@ SPRITES = {
     "carro0": lambda: carro(0), "carro1": lambda: carro(1), "carro2": lambda: carro(2),
     "mesa_ru_longa": mesa_ru_longa, "mesa_ru_cadeiras": mesa_ru_cadeiras, "lixeiras_pedal": lixeiras_pedal,
     "catraca_ru": catraca_ru, "cadeira_caida": cadeira_caida, "entulho": entulho,
-    "portaria": portaria, "portao_estac": lambda: portao_estac(), "gradil_curto": lambda: gradil(w=80), "mastros": mastros, "corrimao": corrimao,
+    "portaria": portaria, "anexo": anexo, "portao_estac": lambda: portao_estac(), "gradil_curto": lambda: gradil(w=80), "mastros": mastros, "corrimao": corrimao,
     "jardim_lateral_a": lambda: jardim_lateral(15, lamps=((40, True), (200, False)), seed=1),
     "jardim_lateral_b": lambda: jardim_lateral(4, lamps=((50, True),), seed=2),
     "jardim_lateral_c": lambda: jardim_lateral(15, lamps=((120, False), (220, True)), seed=3),
