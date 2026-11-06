@@ -17,10 +17,18 @@ def cracha():
 
 
 def marmita():
-    cv = Canvas(13, 10)
-    cv.rect(1, 3, 11, 6, hexc("c5ccd3")); cv.hline(1, 8, 11, hexc("8a939c"))
-    cv.rect(0, 1, 13, 3, hexc("e3e8ec")); cv.hline(1, 1, 11, hexc("ffffff")); cv.hline(0, 3, 13, hexc("9aa3ac"))
-    cv.rect(4, 5, 5, 2, hexc("f0c060")); cv.put(5, 5, hexc("ffffff"))  # etiqueta
+    """Marmitex de alumínio aberta, vista de cima em 3/4: borda dobrada, arroz, feijão, bife e salada
+    (o formato que todo mundo reconhece), com a tampa de papel-alumínio meio levantada atrás."""
+    cv = Canvas(16, 13)
+    AL, AL_L, AL_D = hexc("c9d0d6"), hexc("eef2f5"), hexc("8d969f")
+    cv.rect(2, 0, 12, 3, AL_L); cv.hline(2, 0, 12, hexc("ffffff")); cv.hline(3, 2, 10, AL)     # tampa levantada
+    cv.rect(0, 3, 16, 9, AL); cv.hline(0, 3, 16, AL_L); cv.hline(0, 11, 16, AL_D)              # bandeja
+    for x in range(0, 16, 2): cv.put(x, 3, AL_D)                                                # borda dobrada
+    cv.rect(2, 5, 6, 5, hexc("f3f0e6")); cv.put(3, 6, hexc("ffffff")); cv.put(6, 8, hexc("ddd8c8"))  # arroz
+    cv.rect(8, 5, 6, 3, hexc("4a2a1c")); cv.put(9, 5, hexc("6b3d28")); cv.put(12, 6, hexc("6b3d28"))  # feijão
+    cv.rect(8, 8, 4, 2, hexc("8e4a2a")); cv.hline(8, 8, 4, hexc("b06538"))                     # bife
+    cv.rect(12, 8, 2, 2, hexc("4fa33a")); cv.put(13, 8, hexc("7fd05a"))                        # salada
+    cv.vline(1, 4, 7, AL_D); cv.vline(14, 4, 7, AL_D)
     cv.outline(INK)
     return cv
 
@@ -237,6 +245,12 @@ def cracha_grande():
     cv.rect(cx - 4, py0 + 9, 8, 2, hexc("3a3d40"))  # tarja sobre os olhos (desgaste)
     cv.frame(px0, py0, 22, 26, hexc("6b6f73"))
     text_center(cv, "L. MENDES", cx, py0 + 29, hexc("1b1b1e"))
+    # o nome foi riscado e raspado com o tempo (quase não dá para ler)
+    rr = rng(17)
+    for k in range(3):
+        cv.line(cx - 19, py0 + 30 + k, cx + 19, py0 + 29 + k + rr.choice((0, 1)), hexc("2a2a2e"))
+    for _ in range(14):
+        cv.put(rr.randrange(cx - 18, cx + 18), rr.randrange(py0 + 28, py0 + 35), hexc("f4f4ef"))
     text_center(cv, "GRADUACAO", cx, py0 + 37, hexc("3a3a3e"))
     text(cv, "CIENCIA E TECNOLOGIA", x0 + 3, py0 + 43, hexc("3a3a3e"), spacing=0)
     cv.put(x0 + 3 + 3 * 6 + 1, py0 + 42, hexc("3a3a3e"))  # acento
@@ -253,14 +267,31 @@ def cracha_grande():
 
 
 def marmita_grande():
+    """Marmitex de alumínio aberta, de perto: borda dobrada, tampa de papel-alumínio levantada com o nome escrito
+    à caneta, e a comida de RU (arroz, feijão, bife, farofa, salada). Esquecida há anos: fria, com uma mosca."""
     from pix import text
-    cv = Canvas(64, 44)
-    cv.ellipse(32, 40, 28, 3, hexc("000000", 60))
-    cv.rect(4, 12, 56, 26, hexc("c5ccd3")); cv.hline(4, 37, 56, hexc("8a939c")); cv.vline(59, 12, 26, hexc("9aa3ac"))
-    for x in range(8, 58, 6): cv.vline(x, 14, 22, hexc("b3bac2"))
-    cv.rect(2, 6, 60, 8, hexc("e3e8ec")); cv.hline(3, 6, 58, hexc("ffffff")); cv.hline(2, 13, 60, hexc("9aa3ac"))
-    cv.rect(18, 18, 28, 12, hexc("f3e7c4")); cv.frame(18, 18, 28, 12, hexc("c2b48a"))
-    text(cv, "RU", 21, 20, hexc("2f6b45")); text(cv, "QUI", 31, 20, hexc("7a2e2e")); text(cv, "FRIA", 21, 25, hexc("5a5f66"))
+    cv = Canvas(72, 52)
+    AL, AL_L, AL_D, AL_K = hexc("c9d0d6"), hexc("eef2f5"), hexc("8d969f"), hexc("6a737c")
+    cv.ellipse(36, 48, 33, 3, hexc("000000", 70))
+    # tampa levantada atrás (papelão por dentro, alumínio por fora) com o nome à caneta
+    cv.rect(8, 0, 56, 14, hexc("e9e4d6")); cv.frame(8, 0, 56, 14, hexc("b9b2a0")); cv.hline(8, 13, 56, AL_D)
+    text(cv, "JOAO", 12, 3, hexc("2b3a8a")); text(cv, "S/ CEBOLA", 30, 3, hexc("2b3a8a"), spacing=0)
+    cv.line(12, 10, 36, 10, hexc("2b3a8a"))
+    # bandeja
+    cv.rect(2, 14, 68, 32, AL); cv.hline(2, 14, 68, AL_L); cv.hline(2, 45, 68, AL_K)
+    for x in range(2, 70, 3): cv.put(x, 14, AL_D); cv.put(x + 1, 15, AL_L)                      # borda dobrada
+    cv.rect(5, 17, 62, 26, hexc("b3bbc3")); cv.vline(5, 17, 26, AL_D); cv.vline(66, 17, 26, AL_L)
+    # comida
+    cv.ellipse(18, 29, 12, 10, hexc("f3f0e6"))                                                   # arroz
+    for (x, y) in [(12, 25), (16, 23), (22, 27), (14, 32), (20, 34), (24, 30), (10, 29)]: cv.put(x, y, hexc("d9d3c0"))
+    cv.ellipse(43, 24, 13, 6, hexc("3d2218")); cv.ellipse(43, 23, 11, 4.5, hexc("5a3324"))       # feijão
+    for (x, y) in [(36, 22), (41, 21), (47, 23), (50, 25), (39, 25)]: cv.put(x, y, hexc("7a4630"))
+    cv.ellipse(44, 36, 9, 5, hexc("7e3f22")); cv.ellipse(43, 35, 7, 3.5, hexc("a3592e"))           # bife
+    cv.line(38, 35, 49, 35, hexc("6a3418"))
+    cv.ellipse(59, 35, 5, 6, hexc("e0b453")); cv.noise(54, 30, 10, 11, [hexc("c99a3c")], 0.3, rng(3))  # farofa
+    cv.ellipse(59, 22, 5, 4, hexc("4fa33a")); cv.put(57, 21, hexc("7fd05a")); cv.put(61, 23, hexc("d7372f"))  # salada e tomate
+    # tempo: manchas e uma mosca
+    cv.ellipse(28, 40, 3, 1.5, hexc("6f7a4a", 120)); cv.put(50, 18, hexc("1b1b1e")); cv.put(49, 17, hexc("9fb6cc", 180)); cv.put(51, 17, hexc("9fb6cc", 180))
     cv.outline(INK)
     return cv
 
