@@ -23,10 +23,11 @@ As cores e os objetos vieram das fotos do tour 360° da UNIFESP São José dos C
 | Lugar no jogo | O que veio do campus de verdade |
 |---|---|
 | Calçada e portão | bloquete vermelho em espinha de peixe, faixa tátil amarela, meio-fio branco, gradil verde, ponto de ônibus verde |
-| Entrada (nível de baixo) | praça de bloquete vermelho com gramados e mastros; fachada de concreto claro com brises, janelas de bloco de vidro, logo verde e o letreiro UNIFESP (o N e o S caíram) |
-| Portaria | pavilhão branco com frente de vidro escuro; a catraca fica no pé da rampa com guarda-corpo que sobe para o terraço |
-| Corredor (terraço elevado) | granito claro em placas, canteiros com palmeiras, agaves e postes de globo (no meio e junto ao prédio), mureta com guarda-corpo na borda |
-| Estacionamento (nível de baixo, só para ver) | ao lado do terraço: faixa de bloquete junto ao muro, sextavado com vagas, carros abandonados, postes de sódio; a caixa d'água verde depois dele |
+| Entrada (nível de baixo) | praça de bloquete vermelho com gramados e mastros; a ponta do prédio é lisa (só logo verde, letreiro UNIFESP sem o N e o S, texto do campus e a faixa vertical perfurada); a face comprida, recuada, tem as janelas por andar |
+| Portaria | volume branco com um grande vão (a catraca passa por ele) e a cabine de vidro escuro do porteiro; a laje fica transparente quando o jogador passa por baixo |
+| Rampa | depois da catraca, rampa com ranhuras e guarda-corpo dos dois lados sobe para o pátio; à direita, lá embaixo, o estacionamento |
+| Corredor (pátio entre duas alas) | granito claro em placas; as duas fachadas com janelas de caixilho branco nos andares de cima e blocos de vidro/portas de vidro no térreo; canteiros com palmeiras, agaves e globos junto às fachadas e no meio; o fundo é aberto, com mureta, gramado e a caixa d'água |
+| Estacionamento (nível de baixo, só para ver) | ao lado da rampa: faixa de bloquete junto ao muro, sextavado com vagas, carros abandonados, postes de sódio |
 | RU | cerâmica bege, mesas brancas compridas com banquinhos fixos, cadeiras pretas "R.U.", bufê de aço, devolução de bandejas |
 | Cantina | granito branco, vitrines de salgados, geladeira de bebidas, sinucas, mesas redondas com cadeiras pretas, lixeiras da coleta seletiva, bebedouro, sofá, mural |
 
@@ -77,6 +78,13 @@ O jogo se passa em 2061, à noite, com o campus abandonado há décadas.
 - **Abandono**: pisos com sujeira e mato; uma camada `Abandono` com rachaduras, folhas, mato, poças, papéis, cacos e forro
   caído; paredes com vidro quebrado, mofo, rachaduras, pichações e trepadeira; carros abandonados, cadeiras caídas, entulho.
 - Texturas de luz: `lights.py` gera `sprites/lights/` (radial, cone da lanterna, tubo fluorescente).
+
+## Inspeção de itens
+
+Ao pegar um item com `InspectTexture` (crachá, marmita, escopeta), `objects/inspect/item_inspect.tscn` pausa o jogo e mostra
+a arte grande (`sprites/items/inspecao/`), balançando com um brilho passando, com nome e descrição ao lado, como no
+Resident Evil. O crachá segue o modelo real da UNIFESP SJC (cordão verde, logo, faixa "SÃO JOSÉ DOS CAMPOS"), com foto
+apagada e nome fictício.
 
 ## Fonte
 

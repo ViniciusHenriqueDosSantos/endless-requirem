@@ -107,8 +107,10 @@ def deco_rule(c, style, below):
 def style_rule(c):
     """Bordas do terraço elevado e da rampa: mureta de concreto com guarda-corpo (dali se vê o estacionamento lá embaixo)."""
     x, y = c
-    if x == 31 and 7 <= y <= 46: return "mureta"          # lado de fora do terraço
-    if y == 7 and 22 <= x <= 31: return "mureta"          # ponta do terraço
+    if x == 22 and 8 <= y <= 45: return "lateral_l"       # pátio entre duas alas: fachada da ala esquerda
+    if x == 31 and 8 <= y <= 45: return "lateral_r"       # e da ala direita (janelas por andar, portas no térreo)
+    if x == 31 and y in (7, 46): return "mureta"
+    if y == 7 and 22 <= x <= 31: return "mureta"          # fundo do pátio: aberto, com a mureta (vista para o gramado)
     if y == 46 and 25 <= x <= 31: return "mureta"         # borda que dá para a praça da entrada
     if x in (22, 25) and 46 <= y <= 50: return "mureta"   # os dois lados da rampa
     return None
@@ -160,7 +162,11 @@ TEXTURES = []  # sprites usados pelos props (viram ext_resource no fim)
 def tex(name, folder="props/fase1"):
     path = f"res://sprites/{folder}/{name}.png"
     if path not in TEXTURES: TEXTURES.append(path)
-    return f'ExtResource("tex_{name}")'
+    return f'ExtResource("{tex_id(path)}")'
+
+
+def tex_id(path):
+    return "tex_" + path[len("res://sprites/"):-4].replace("/", "_")
 
 
 def prop(name, parent, x, y, w, h, color, text="", depth=None, font=16, text_color=None, solid=True, z=None, tall=False,
@@ -210,19 +216,22 @@ for y in range(_by0, _by1 + 1):
         inside_buildings = 1 <= x <= 22 and 1 <= y <= 51   # bloco do RU, cantina e elevador
         if inside_buildings:
             background[c] = tiler.at(f"laje{int(h('l', *c) * 3)}")
-        elif 32 <= x <= 41 and 6 <= y <= 46:
-            # estacionamento no nível de baixo, ao lado do terraço: faixa de bloquete junto ao muro e o sextavado com vagas
-            if x == 32:
+        elif 32 <= x <= 37 and 5 <= y <= 46:
+            background[c] = tiler.at(f"laje{int(h('l', *c) * 3)}")            # telhado da ala direita do pátio
+        elif (26 <= x <= 41 and 46 <= y <= 50) or (36 <= x <= 41 and 51 <= y <= 62):
+            # estacionamento no nível de baixo, ao lado da rampa (dá para ver de cima, não dá para ir):
+            # faixa de bloquete junto ao muro da rampa e o sextavado com as vagas
+            if x == 26:
                 background[c] = tiler.at(f"baixo_bloquete{(x % 2) + 2 * (y % 2)}")
-            elif y % 6 in (1, 2) and x % 2 == 0 and x != 37:
+            elif (y in (47, 48) and x % 2 == 0) or (y >= 51 and x in (37, 39) and y % 3 != 0):
                 background[c] = tiler.at("baixo_sextavado_vaga0")
             else:
                 background[c] = tiler.at(f"baixo_sextavado{int(h('e', *c) * 2)}")
         else:
             background[c] = tiler.at(f"grama{int(h('g', *c) * 3)}")
-# sombra do muro do terraço caindo sobre o estacionamento
-for y in range(6, 47):
-    shadow_cells[(32, y)] = tiler.at("sombra_010")
+# sombra do muro da rampa caindo sobre o estacionamento
+for y in range(46, 51):
+    shadow_cells[(26, y)] = tiler.at("sombra_010")
 node("Fundo", type="TileMapLayer", props={"z_index": "-11", "texture_filter": "1", "scale": v(4, 4),
      "tile_map_data": f'PackedByteArray("{tile_data(background)}")', "tile_set": 'ExtResource("tiles")'})
 
@@ -269,7 +278,8 @@ prop("LetraS", ".", 7 * T + 40, 56 * T + 24, 96, 96, col(0, 0, 0, 0), "S", font=
 # crachá escondido: aparece debaixo da pilha sorteada
 node("Cracha", inst="pickup", props={"position": v(11 * T, 57 * T), "ItemId": '"cracha"', "DisplayName": '"Crachá"',
      "Color": col(0.4, 0.75, 1, 1), "StartsHidden": "true",
-     "Texture": tex("cracha", "items")})
+     "Texture": tex("cracha", "items"), "InspectTexture": tex("cracha", "items/inspecao"), "InspectTitle": '"CRACHÁ"',
+     "InspectText": '"Crachá de estudante da UNIFESP de São José dos Campos. A foto se apagou com o tempo. Validade: 12/2041. Talvez a catraca ainda reconheça."'})
 node("Pilhas", type="Node2D", props={"y_sort_enabled": "true"})
 for i, (tx, ty) in enumerate([(5, 56), (11, 59), (19, 56), (24, 60), (28, 57), (33, 59),
                                (8, 55), (15, 55), (23, 54), (31, 54)]):
@@ -281,11 +291,11 @@ prop("Mastros", ".", 3 * T, 55 * T + 40, 112, 288, col(0, 0, 0, 0), depth=16, sp
 
 # estacionamento: fica lá embaixo, ao lado do terraço (só dá para ver por cima da mureta). Carros abandonados nas vagas.
 BAIXO = col(0.62, 0.64, 0.74)
-for i, (tx, ty, variant) in enumerate([(34, 10, 0), (40, 10, 1), (34, 16, 2), (38, 22, 0), (40, 28, 2), (34, 34, 1), (38, 40, 0)]):
+for i, (tx, ty, variant) in enumerate([(28, 48, 0), (32, 48, 1), (35, 48, 2), (38, 52, 2), (40, 56, 0), (38, 60, 1)]):
     prop(f"Carro{i+1}", ".", tx * T + 32, (ty + 1) * T + 40, 96, 128, col(0, 0, 0, 0), solid=False,
          sprite=f"carro{variant}", modulate=BAIXO)
-for i, ty in enumerate([14, 32]):
-    prop(f"PosteEstac{i+1}", ".", 37 * T, ty * T + 40, 24, 240, col(0, 0, 0, 0), solid=False,
+for i, (tx, ty) in enumerate([(30, 50), (40, 50)]):
+    prop(f"PosteEstac{i+1}", ".", tx * T, ty * T + 40, 24, 240, col(0, 0, 0, 0), solid=False,
          sprite="poste_rua" if i == 0 else "poste_rua_apagado", modulate=BAIXO)
 
 # ===== PORTÃO (separa a calçada da entrada) =====
@@ -306,9 +316,14 @@ for i, tx in enumerate([4, 12, 24]):
 # ===== PORTARIA =====
 # guarita do porteiro: bloco grande à esquerda da passagem estreita
 # portaria: o pavilhão branco de vidro escuro na base do terraço (a catraca fica do lado, no começo da rampa)
-prop("Guarita", ".", 30 * T, 51 * T, 10 * T, 5 * T, BEGE, "PORTEIRO\n\n[ janela ]", depth=5 * T, font=18, tall=True,
-     blocks_ghosts=True, sprite="pavilhao")
-node("Catraca", inst="door", props={"position": v(24 * T, 49 * T), "Size": v(2 * T, 64), "StartsLocked": "true",
+# portaria como na foto: volume branco com um grande vão; no vão passa a catraca e começa a rampa,
+# ao lado fica a cabine de vidro escuro. A laje fica transparente quando o jogador passa por baixo.
+prop("Portaria", ".", 26 * T + 32, 52 * T, 11 * T, 5 * T, col(0, 0, 0, 0), solid=False, sprite="portaria")
+s_fade_index = len(nodes) - 1
+nodes[s_fade_index] += "\nFadeWhenBehind = true"
+prop("PortariaParedeEsq", ".", 22 * T, 52 * T, 2 * T, 64, col(0, 0, 0, 0), depth=64, tall=True, blocks_ghosts=True)
+prop("PortariaCabine", ".", 28 * T + 32, 52 * T, 7 * T, 64, col(0, 0, 0, 0), depth=64, tall=True, blocks_ghosts=True)
+node("Catraca", inst="door", props={"position": v(24 * T, 51 * T), "Size": v(2 * T, 64), "StartsLocked": "true",
      "Color": col(0.95, 0.8, 0.3, 1), "RequiredItem": '"cracha"',
      "LockedMessage": '"Acesso negado: precisa de crachá."', "UnlockMessage": '"BIP! Acesso liberado."',
      "LockedSprite": tex("catraca_trancada", "objects"), "UnlockedSprite": tex("catraca_aberta", "objects")})
@@ -325,9 +340,10 @@ for i, (top, bottom) in enumerate([(14, 19), (30, 35)]):
     prop(f"Jardim{i+1}", "Corredor", 27 * T - cor[0], (bottom + 1) * T - cor[1], 2 * T, hh, CONCRETE, depth=hh,
          inner=col(0.22, 0.42, 0.22), sprite=("jardim", "jardim_b")[i])
 # canteiros compridos junto ao prédio, com palmeiras e globos (deixam livres as portas da cantina e do RU)
-for i, (top, bottom, spr) in enumerate([(20, 34, "jardim_lateral_a"), (41, 44, "jardim_lateral_b")]):
+for i, (tx, top, bottom, spr) in enumerate([(23, 20, 34, "jardim_lateral_a"), (23, 41, 44, "jardim_lateral_b"),
+                                            (30, 9, 23, "jardim_lateral_c"), (30, 37, 42, "jardim_lateral_d")]):
     hh = (bottom - top + 1) * T
-    prop(f"JardimLateral{i+1}", "Corredor", 23 * T + 32 - cor[0], (bottom + 1) * T - cor[1], T, hh, CONCRETE, depth=hh,
+    prop(f"JardimLateral{i+1}", "Corredor", tx * T + 32 - cor[0], (bottom + 1) * T - cor[1], T, hh, CONCRETE, depth=hh,
          sprite=spr)
 for i, ty in enumerate([10, 15, 20, 26, 31, 41, 44]):
     x, y = px(24 + 5 * (i % 2), ty)
@@ -354,7 +370,8 @@ prop("BalcaoComida", "RU", 18 * T - ru[0], 26 * T - ru[1], 4 * T, 96, BEGE, "peg
      blocks_ghosts=True, sprite="balcao_comida")
 node("Marmita", "RU", inst="pickup", props={"position": v(18 * T - ru[0], 26 * T + 8 - ru[1]),
      "ItemId": '"marmita"', "DisplayName": '"Marmita"', "Color": col(1, 0.6, 0.25, 1),
-     "Texture": tex("marmita", "items")})
+     "Texture": tex("marmita", "items"), "InspectTexture": tex("marmita", "items/inspecao"), "InspectTitle": '"MARMITA DO RU"',
+     "InspectText": '"Alguém deixou aqui e nunca voltou. Está gelada. O micro-ondas do RU talvez ainda funcione."'})
 # ala do fundo: mesas brancas com as cadeiras pretas R.U.
 for i, ty in enumerate([31, 33, 35, 37]):
     prop(f"Mesa{i+1}", "RU", 5 * T + 32 - ru[0], (ty + 1) * T - ru[1], 3 * T, 64, WHITE, depth=44, sprite="mesa_ru_cadeiras")
@@ -411,7 +428,9 @@ for i, (cx, cy, spr) in enumerate([(3 * T + 30, 19 * T + 40, "entulho"), (11 * T
 
 node("Escopeta", inst="pickup", props={"position": v(13 * T, 12 * T), "ItemId": '"escopeta"',
      "DisplayName": '"Escopeta"', "Color": col(0.95, 0.45, 0.2, 1), "WeaponReward": 'ExtResource("shotgun")',
-     "StartsHidden": "true", "Texture": tex("escopeta", "items")})
+     "StartsHidden": "true", "Texture": tex("escopeta", "items"), "InspectTexture": tex("escopeta", "items/inspecao"),
+     "InspectTitle": '"ESCOPETA"',
+     "InspectText": '"A Tia guardava embaixo do balcão. Cinco chumbos por tiro: de perto, nenhum fantasma aguenta. Tecla 2."'})
 
 # ===== ELEVADOR =====
 node("PortaElevador", inst="door", props={"position": v(3 * T, 8 * T), "Size": v(2 * T, 64), "StartsLocked": "true",
@@ -420,7 +439,8 @@ node("Elevador", inst="area_trigger", props={"position": v(7 * T, 2 * T), "Size"
      "Color": col(1, 0.85, 0.3, 0.08), "Text": '""'})
 prop("PortaElevador1", ".", 9 * T, 2 * T, 128, 64, col(0, 0, 0, 0), solid=False, z=1, sprite="porta_elevador")
 # caixa d'água verde no gramado ao lado da praça (aparece de quase todo o campus)
-prop("CaixaDagua", ".", 43 * T, 26 * T, 80, 288, col(0, 0, 0, 0), solid=False, sprite="caixa_dagua")
+# caixa d'água verde no gramado, vista pelo fundo aberto do pátio (como na foto da praça central)
+prop("CaixaDagua", ".", 28 * T, 4 * T, 80, 288, col(0, 0, 0, 0), solid=False, sprite="caixa_dagua")
 
 # ===== NOITE =====
 # Escuro azulado (CanvasModulate no grupo "night": o jogador acende a lanterna quando acha este grupo).
@@ -445,11 +465,11 @@ for i, tx in enumerate([4, 12, 24]):
     light(f"Rua{i+1}", tx * T + 56, 64 * T + 20, SODIO, 2.6, 1.1, (STEADY, BROKEN, FLICKER)[i])
 # entrada
 light("Marquise", 11 * T, 54 * T + 30, QUENTE, 1.6, 0.7, FLICKER)
-light("GuaritaTV", 27 * T, 51 * T + 30, col(0.45, 0.6, 1), 1.2, 0.9, FLICKER)
-light("Estacionamento1", 37 * T + 56, 14 * T + 60, SODIO, 2.6, 0.75, STEADY)
-light("Estacionamento2", 37 * T + 56, 32 * T + 60, SODIO, 2.6, 0.75, BROKEN)
+light("GuaritaTV", 28 * T, 51 * T + 40, col(0.45, 0.6, 1), 1.2, 0.9, FLICKER)
+light("Estacionamento1", 30 * T + 56, 50 * T + 60, SODIO, 2.4, 0.7, FLICKER)
+light("Estacionamento2", 40 * T + 56, 50 * T + 60, SODIO, 2.4, 0.7, BROKEN)
 light("Mastros", 3 * T, 55 * T, FRIA, 1.2, 0.5, FLICKER)
-light("Catraca", 23 * T + 64, 48 * T + 32, TUBO, 1.5, 0.8, FLICKER, tube=True)
+light("Catraca", 24 * T, 50 * T + 20, TUBO, 1.5, 0.8, FLICKER, tube=True)
 # praça: os globos dos canteiros (um aceso piscando, outro com o globo quebrado só dando estalos)
 light("Globo1", 27 * T - 48, 14 * T + 24, FRIA, 2.2, 1.0, FLICKER)
 light("Globo2", 27 * T + 40, 14 * T + 344, FRIA, 1.6, 0.8, BROKEN)
@@ -458,6 +478,9 @@ light("Globo4", 27 * T - 48, 30 * T + 336, FRIA, 2.2, 1.0, STEADY)
 light("GloboLateral1", 23 * T + 28, 20 * T + 160, FRIA, 2.0, 0.9, FLICKER)
 light("GloboLateral2", 23 * T + 28, 20 * T + 800, FRIA, 1.4, 0.7, BROKEN)
 light("GloboLateral3", 23 * T + 28, 41 * T + 200, FRIA, 2.0, 0.9, STEADY)
+light("GloboLateral4", 30 * T + 28, 9 * T + 480, FRIA, 1.4, 0.7, BROKEN)
+light("GloboLateral5", 30 * T + 28, 9 * T + 880, FRIA, 2.0, 0.9, FLICKER)
+light("GloboLateral6", 30 * T + 28, 37 * T + 120, FRIA, 2.0, 0.9, STEADY)
 # RU: lâmpadas fluorescentes do teto
 for i, (tx, ty, mode) in enumerate([(5, 26.5, FLICKER), (12, 26, STEADY), (19, 26.5, BROKEN), (5, 32, STEADY),
                                     (5, 37, FLICKER), (12, 34, BROKEN), (18, 38, FLICKER)]):
@@ -479,6 +502,7 @@ for i, (c, a) in enumerate(sorted((c, a) for c, a in {**wall_cells, **outer_cell
 node("Player", inst="player", props={"position": v(18 * T, 64 * T + 16), "StartWithAllWeapons": "false"})
 node("Hud", inst="hud", props={"Player": 'NodePath("../Player")'}, node_paths=["Player"])
 node("MessageScreen", inst="message_screen")
+node("ItemInspect", inst="item_inspect")
 
 ext = [
     ('Script', 'res://levels/Fase1.cs', 'fase1'),
@@ -495,6 +519,7 @@ ext = [
     ('PackedScene', 'res://objects/hud/hud.tscn', 'hud'),
     ('PackedScene', 'res://objects/message_screen/message_screen.tscn', 'message_screen'),
     ('PackedScene', 'res://objects/night/night_overlay.tscn', 'night_overlay'),
+    ('PackedScene', 'res://objects/inspect/item_inspect.tscn', 'item_inspect'),
     ('PackedScene', 'res://objects/night/flicker_light.tscn', 'flicker_light'),
     ('Texture2D', 'res://sprites/lights/tubo.png', 'light_tubo'),
     ('PackedScene', 'res://objects/boss/boss.tscn', 'boss'),
@@ -504,7 +529,7 @@ ext = [
 ]
 with open(OUT, "w") as f:
     f.write("[gd_scene format=4]\n\n")
-    ext += [('Texture2D', p, "tex_" + p.rsplit("/", 1)[1][:-4]) for p in TEXTURES]
+    ext += [('Texture2D', p, tex_id(p)) for p in TEXTURES]
     for t, p, i in ext:
         f.write(f'[ext_resource type="{t}" path="{p}" id="{i}"]\n')
     f.write("\n" + "\n\n".join(nodes) + "\n")

@@ -711,6 +711,38 @@
   "baixo_sextavado_vaga0": [
    12,
    19
+  ],
+  "lateral_l0": [
+   0,
+   20
+  ],
+  "lateral_r0": [
+   4,
+   20
+  ],
+  "lateral_l1": [
+   1,
+   20
+  ],
+  "lateral_r1": [
+   5,
+   20
+  ],
+  "lateral_l2": [
+   2,
+   20
+  ],
+  "lateral_r2": [
+   6,
+   20
+  ],
+  "lateral_l3": [
+   3,
+   20
+  ],
+  "lateral_r3": [
+   7,
+   20
   ]
  },
  "decos": {

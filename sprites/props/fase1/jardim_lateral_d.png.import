@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bftbhes1ax2qa"
-path="res://.godot/imported/pavilhao.png-ce1ec3054d4de2afc3089ff9972e4177.ctex"
+uid="uid://bdj41bawolgpx"
+path="res://.godot/imported/jardim_lateral_d.png-72298c498b036f2874e906bd0691e20b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://sprites/props/fase1/pavilhao.png"
-dest_files=["res://.godot/imported/pavilhao.png-ce1ec3054d4de2afc3089ff9972e4177.ctex"]
+source_file="res://sprites/props/fase1/jardim_lateral_d.png"
+dest_files=["res://.godot/imported/jardim_lateral_d.png-72298c498b036f2874e906bd0691e20b.ctex"]
 
 [params]
 

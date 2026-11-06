@@ -15,7 +15,7 @@ from palette import C
 
 T = 16
 COLS = 16
-atlas = Canvas(T * COLS, T * 20)
+atlas = Canvas(T * COLS, T * 22)
 names = {}
 
 
@@ -573,6 +573,51 @@ for j, (name, fn) in enumerate([("bloquete0", lambda: floor_bricks(0)), ("bloque
         cv = age(fn(), "sextavado", 130 + j)
     tile(f"baixo_{name}", 6 + j, 19); place(lowered(cv), f"baixo_{name}")
 DECOS["mureta"] = []
+
+
+# ---------------------------------------------------------------- fachadas laterais do pátio (prédio dos dois lados)
+def lateral(v, facing_right):
+    """Parede comprida de um prédio vista de cima e de lado: a laje (borda de cima) e a face com os 3 andares —
+    janelas de caixilho branco nos dois de cima, blocos de vidro e portas de vidro no térreo (foto da praça central).
+    facing_right: a face olha para a direita (prédio à esquerda do pátio)."""
+    cv = Canvas(T, T)
+    r = rng(1800 + v + (50 if facing_right else 0))
+    WALL, WALL_D, STAIN = hexc("d6cfbf"), hexc("b9b1a0"), hexc("9c9381")
+    GLASS, FRAME_W = hexc("1c2633"), hexc("e8e8e4")
+    # colunas, da laje (longe do pátio) até o chão (perto do pátio)
+    cols = list(range(T)) if facing_right else list(range(T - 1, -1, -1))
+    def col(i): return cols[i]
+    for y in range(T):
+        for i in range(0, 4): cv.put(col(i), y, hexc("bdb9b0"))          # laje
+        cv.put(col(4), y, hexc("6e6a62"))                                  # borda da laje
+        for i in range(5, 16): cv.put(col(i), y, WALL)
+    for y in range(T):
+        # 3º andar e 2º andar: faixa de janelas (vidro escuro com montantes brancos a cada 4 px)
+        for band in ((6, 7), (9, 10)):
+            for i in band:
+                c = FRAME_W if y % 4 == 0 else GLASS
+                if v == 2 and band == (6, 7) and 4 <= y <= 9: c = hexc("05070a") if y % 4 else FRAME_W  # vidro quebrado
+                cv.put(col(i), y, c)
+        # térreo: blocos de vidro (faixa alta) ou porta de vidro (variação 1)
+        if v == 1:
+            for i in (12, 13, 14):
+                cv.put(col(i), y, FRAME_W if y % 5 == 0 or i == 12 else hexc("18222d"))
+        else:
+            cv.put(col(12), y, hexc("cfd6dc") if y % 2 else hexc("8fa1b0"))
+        cv.put(col(15), y, WALL_D)                                         # rodapé
+    # manchas de chuva e mofo, típicos do concreto da UNIFESP
+    for _ in range(5):
+        y = r.randrange(T); cv.put(col(r.randrange(5, 12)), y, STAIN)
+    if v == 3:  # trepadeira subindo pela parede
+        for y in range(T):
+            for i in range(11, 16):
+                if r.random() < 0.55: cv.put(col(i), y, r.choice([C["leaf"], C["leaf_d"]]))
+    return cv
+
+
+for v in range(4):
+    tile(f"lateral_l{v}", v, 20); place(lateral(v, True), f"lateral_l{v}")
+    tile(f"lateral_r{v}", 4 + v, 20); place(lateral(v, False), f"lateral_r{v}")
 
 # linha 0: compatibilidade com o atlas provisório (0/1 piso, 2 topo, 3 frente)
 for n, c in [("granito0", 0), ("granito1", 1), ("topo_interno_15", 2), ("frente_interno_3", 3)]:

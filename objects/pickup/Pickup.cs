@@ -16,6 +16,11 @@ public partial class Pickup : Area2D
 	[Export] public Color Color { get => _color; set { _color = value; QueueRedraw(); } }
 	[Export] public Weapon WeaponReward;
 
+	// Inspeção estilo Resident Evil ao pegar (opcional): arte grande, nome e descrição.
+	[Export] public Texture2D InspectTexture;
+	[Export] public string InspectTitle = "";
+	[Export(PropertyHint.MultilineText)] public string InspectText = "";
+
 	// Pixel art do item (opcional). Sem ela, aparece a bolinha colorida.
 	private Texture2D _texture;
 	[Export] public Texture2D Texture { get => _texture; set { _texture = value; QueueRedraw(); } }
@@ -82,6 +87,9 @@ public partial class Pickup : Area2D
 		Hide();
 		SetDeferred(Area2D.PropertyName.Monitoring, false);
 		EmitSignal(SignalName.PickedUp, ItemId);
+
+		if (InspectTexture != null && GetTree().GetFirstNodeInGroup("inspect") is ItemInspect inspect)
+			inspect.Show(InspectTexture, InspectTitle != "" ? InspectTitle : DisplayName, InspectText);
 	}
 
 	// Põe o coletável de volta no lugar (usado quando o jogador é reprovado).

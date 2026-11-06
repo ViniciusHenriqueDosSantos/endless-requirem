@@ -47,6 +47,10 @@ public partial class Prop : StaticBody2D
 	[Export] public Texture2D Texture { get => _texture; set { _texture = value; QueueRedraw(); } }
 	public const float PixelScale = 4f;
 
+	// Telhado/marquise: fica quase transparente quando o jogador passa por trás ou por baixo do desenho.
+	[Export] public bool FadeWhenBehind;
+	private Node2D _player;
+
 	// Desligado: o jogador e os tiros passam por cima/por trás.
 	[Export] public bool Solid = true;
 
@@ -85,6 +89,21 @@ public partial class Prop : StaticBody2D
 			Shape = new RectangleShape2D { Size = new Vector2(Size.X, Depth) },
 			Position = new Vector2(0, -Depth / 2),
 		});
+	}
+
+	public override void _Process(double delta)
+	{
+		if (Engine.IsEditorHint() || !FadeWhenBehind || Texture == null) return;
+		if (!IsInstanceValid(_player))
+			_player = GetTree().GetFirstNodeInGroup("player") as Node2D;
+		if (_player == null) return;
+
+		Vector2 size = Texture.GetSize() * PixelScale;
+		Rect2 visual = new(GlobalPosition + new Vector2(-size.X / 2, -size.Y), size);
+		Vector2 p = _player.GlobalPosition + new Vector2(0, -30);
+		bool behind = visual.HasPoint(p) && _player.GlobalPosition.Y < GlobalPosition.Y;
+		float target = behind ? 0.3f : 1f;
+		Modulate = new Color(Modulate, Mathf.MoveToward(Modulate.A, target, (float)delta * 4f));
 	}
 
 	public override void _Draw()

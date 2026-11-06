@@ -7,6 +7,7 @@
 #   wait:n       espera n quadros a mais antes da foto
 #   hud          mostra o HUD nesta foto
 #   dia          desliga a noite nesta foto (para ver o layout)
+#   pegar:Item   faz o item aparecer em cima do jogador (ex.: pegar:Cracha, para ver a inspeção)
 extends SceneTree
 
 func _initialize():
@@ -51,6 +52,8 @@ func _initialize():
 				Input.warp_mouse(center + Vector2(float(m[1]), float(m[2])))
 			elif a.begins_with("wait:"):
 				extra_wait += int(a.substr(5))
+			elif a.begins_with("pegar:"):
+				level.get_node(a.substr(6)).call("Reveal", player.global_position)
 			elif a == "dia":
 				for n in ["Noite", "NightOverlay"]:
 					var nd = level.get_node_or_null(n)
