@@ -393,7 +393,7 @@ prop("BalcaoComida", "RU", 18 * T - ru[0], 26 * T - ru[1], 4 * T, 96, BEGE, "peg
 node("Marmita", "RU", inst="pickup", props={"position": v(18 * T - ru[0], 26 * T + 8 - ru[1]),
      "ItemId": '"marmita"', "DisplayName": '"Marmita"', "Color": col(1, 0.6, 0.25, 1),
      "Texture": tex("marmita", "items"), "InspectTexture": tex("marmita", "items/inspecao"), "InspectTitle": '"MARMITA DO RU"',
-     "InspectText": '"Alguém deixou aqui e nunca voltou. Está gelada. O micro-ondas do RU talvez ainda funcione."'})
+     "InspectText": '"Um pote de plástico com comida, esquecido no balcão do RU há anos. Está gelada. O micro-ondas talvez ainda funcione."'})
 # ala do fundo: mesas brancas com as cadeiras pretas R.U.
 for i, ty in enumerate([31, 33, 35, 37]):
     prop(f"Mesa{i+1}", "RU", 5 * T + 32 - ru[0], (ty + 1) * T - ru[1], 3 * T, 64, WHITE, depth=44, sprite="mesa_ru_cadeiras")

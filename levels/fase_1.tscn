@@ -635,7 +635,7 @@ Color = Color(1, 0.6, 0.25, 1)
 Texture = ExtResource("tex_items_marmita")
 InspectTexture = ExtResource("tex_items_inspecao_marmita")
 InspectTitle = "MARMITA DO RU"
-InspectText = "Alguém deixou aqui e nunca voltou. Está gelada. O micro-ondas do RU talvez ainda funcione."
+InspectText = "Um pote de plástico com comida, esquecido no balcão do RU há anos. Está gelada. O micro-ondas talvez ainda funcione."
 
 [node name="Mesa1" parent="RU" instance=ExtResource("prop")]
 position = Vector2(224, 512)
