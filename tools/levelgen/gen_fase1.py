@@ -224,7 +224,7 @@ for y in range(_by0, _by1 + 1):
             # Dá para ver de cima e da entrada; não dá para ir.
             if x == 32 or (x == 36 and y >= 51):
                 background[c] = tiler.at(f"baixo_bloquete{(x % 2) + 2 * (y % 2)}")
-            elif (y <= 50 and x in (34, 35, 39, 40) and y % 3 != 0) or (y >= 51 and y in (52, 53, 56, 57, 60, 61) and x % 2 == 1):
+            elif y <= 46 and x in (34, 35, 39, 40) and y % 3 != 0:  # vagas só lá dentro; perto da avenida é a pista de entrada
                 background[c] = tiler.at("baixo_sextavado_vaga0")
             else:
                 background[c] = tiler.at(f"baixo_sextavado{int(h('e', *c) * 2)}")
@@ -303,15 +303,16 @@ prop("Mastros", ".", 3 * T, 55 * T + 40, 112, 288, col(0, 0, 0, 0), depth=16, sp
 
 # estacionamento: fica lá embaixo, ao lado do terraço (só dá para ver por cima da mureta). Carros abandonados nas vagas.
 BAIXO = col(0.62, 0.64, 0.74)
-for i, (tx, ty, variant) in enumerate([(34, 9, 0), (39, 12, 1), (34, 18, 2), (39, 24, 0), (34, 30, 1), (39, 33, 2), (34, 39, 0),
-                                       (39, 45, 1), (37, 52, 2), (41, 52, 0), (45, 56, 1), (39, 56, 2), (43, 60, 0)]):
+# os carros ficam lá dentro, nas vagas ao lado do terraço; a parte perto da avenida é só a entrada (pista livre)
+for i, (tx, ty, variant) in enumerate([(34, 9, 0), (39, 12, 1), (34, 15, 2), (39, 18, 0), (34, 21, 1), (39, 24, 2), (34, 30, 0),
+                                       (39, 33, 1), (34, 39, 2), (39, 42, 0)]):
     prop(f"Carro{i+1}", ".", tx * T + 32, (ty + 1) * T + 40, 96, 128, col(0, 0, 0, 0), solid=False,
          sprite=f"carro{variant}", modulate=BAIXO)
 # o portão dos carros e a cerca do estacionamento, na avenida
 prop("PortaoEstac", ".", 42 * T + 32, 63 * T + 8, 3 * T, 72, col(0, 0, 0, 0), solid=False, sprite="portao_estac")
 prop("GradeEstac1", ".", 38 * T + 32, 63 * T + 8, 5 * T, 72, col(0, 0, 0, 0), solid=False, sprite="gradil_curto")
 prop("GradeEstac2", ".", 46 * T, 63 * T + 8, 4 * T, 72, col(0, 0, 0, 0), solid=False, sprite="gradil_curto")
-for i, (tx, ty) in enumerate([(37, 15), (37, 33), (40, 57), (46, 53)]):
+for i, (tx, ty) in enumerate([(37, 15), (37, 33), (37, 45), (46, 56)]):
     prop(f"PosteEstac{i+1}", ".", tx * T, ty * T + 40, 24, 240, col(0, 0, 0, 0), solid=False,
          sprite="poste_rua_apagado" if i in (1, 3) else "poste_rua", modulate=BAIXO)
 # anexos brancos ao lado do prédio, engolidos pela mata
@@ -487,10 +488,10 @@ for i, tx in enumerate([4, 12, 24]):
 # entrada
 light("Marquise", 11 * T, 54 * T + 30, QUENTE, 1.6, 0.7, FLICKER)
 light("GuaritaTV", 28 * T, 51 * T + 40, col(0.45, 0.6, 1), 1.2, 0.9, FLICKER)
-light("Estacionamento1", 40 * T + 56, 57 * T + 60, SODIO, 2.6, 0.75, FLICKER)
+light("Estacionamento1", 37 * T + 56, 45 * T + 60, SODIO, 2.6, 0.75, FLICKER)
 light("Estacionamento3", 37 * T + 56, 15 * T + 60, SODIO, 2.6, 0.75, STEADY)
 light("Estacionamento4", 37 * T + 56, 33 * T + 60, SODIO, 2.4, 0.7, BROKEN)
-light("Estacionamento2", 46 * T + 56, 53 * T + 60, SODIO, 2.4, 0.7, BROKEN)
+light("Estacionamento2", 46 * T + 56, 56 * T + 60, SODIO, 2.4, 0.7, BROKEN)
 light("RuaLeste", 44 * T + 56, 64 * T + 20, SODIO, 2.6, 0.9, STEADY)
 light("Mastros", 3 * T, 55 * T, FRIA, 1.2, 0.5, FLICKER)
 light("Catraca", 24 * T, 50 * T + 20, TUBO, 1.5, 0.8, FLICKER, tube=True)
