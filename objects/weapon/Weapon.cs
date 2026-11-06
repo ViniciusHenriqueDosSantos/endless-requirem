@@ -16,4 +16,9 @@ public partial class Weapon : Resource
 	[Export] public float ReloadTime = 1f;
 	[Export] public int Pellets = 1;
 	[Export] public float SpreadDegrees;
+
+	// Pixel art (1 pixel da arte = 4 do jogo). Vazios = desenho provisório.
+	// Sprite: a arma na mão do jogador, apontando para a direita. BulletSprite: o tiro, em branco (a cor vem de Color).
+	[Export] public Texture2D Sprite;
+	[Export] public Texture2D BulletSprite;
 }

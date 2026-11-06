@@ -31,6 +31,13 @@ public partial class Door : StaticBody2D
 	private bool _wallStyle;
 	[Export] public bool WallStyle { get => _wallStyle; set { _wallStyle = value; QueueRedraw(); } }
 
+	// Pixel art. Grades: tile de 16x16 que se repete pelo tamanho da porta trancada (horizontal e vertical).
+	// LockedSprite/UnlockedSprite: desenho inteiro no lugar da grade (ex.: a catraca da portaria).
+	[Export] public Texture2D GridHorizontal;
+	[Export] public Texture2D GridVertical;
+	[Export] public Texture2D LockedSprite;
+	[Export] public Texture2D UnlockedSprite;
+
 	[Export] public string RequiredItem = "";
 	[Export] public string LockedMessage = "Trancado.";
 	[Export] public string UnlockMessage = "";
@@ -54,6 +61,7 @@ public partial class Door : StaticBody2D
 
 		AddToGroup("obstacles");
 		IsLocked = StartsLocked;
+		TextureRepeat = TextureRepeatEnum.Enabled;
 
 		_collision = new CollisionShape2D
 		{
@@ -133,6 +141,39 @@ public partial class Door : StaticBody2D
 			// Mesmas cores da parede do tileset (frente da parede).
 			DrawRect(rect, new Color(0.588f, 0.596f, 0.612f));
 			DrawRect(rect, new Color(0.463f, 0.471f, 0.494f), false, 2f);
+			return;
+		}
+
+		Texture2D whole = locked ? LockedSprite : UnlockedSprite;
+		if (whole != null)
+		{
+			Vector2 size = whole.GetSize() * 4f;
+			DrawTextureRect(whole, new Rect2(-size.X / 2, -size.Y + 8, size.X, size.Y), false);
+			return;
+		}
+
+		bool vertical0 = Size.Y > Size.X;
+		Texture2D grid = vertical0 ? GridVertical : GridHorizontal;
+		if (grid != null)
+		{
+			if (locked)
+			{
+				// Desenha em escala de pixel art (4x) repetindo o tile.
+				DrawSetTransform(Vector2.Zero, 0f, Vector2.One * 4f);
+				DrawTextureRect(grid, new Rect2(rect.Position / 4f, rect.Size / 4f), true);
+				DrawSetTransform(Vector2.Zero, 0f, Vector2.One);
+			}
+			else if (vertical0)
+			{
+				// Aberta: só o trilho no chão.
+				DrawRect(new Rect2(-6, rect.Position.Y, 12, rect.Size.Y), new Color(0.24f, 0.27f, 0.3f, 0.55f));
+				DrawRect(new Rect2(-2, rect.Position.Y, 4, rect.Size.Y), new Color(0.55f, 0.6f, 0.65f, 0.6f));
+			}
+			else
+			{
+				DrawRect(new Rect2(rect.Position.X, -10, rect.Size.X, 8), new Color(0.24f, 0.27f, 0.3f, 0.55f));
+				DrawRect(new Rect2(rect.Position.X, -8, rect.Size.X, 3), new Color(0.55f, 0.6f, 0.65f, 0.6f));
+			}
 			return;
 		}
 
