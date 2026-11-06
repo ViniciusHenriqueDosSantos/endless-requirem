@@ -49,10 +49,12 @@ def material(x, y):
     if y >= 64: return "asfalto_faixa" if y == 65 and x % 3 == 1 else ("asfalto_meiofio" if y == 64 else "asfalto")
     if y == 63: return "bloquete_meiofio"
     if y == 62: return "bloquete"
-    if y >= 51:  # Entrada: estacionamento de piso sextavado, caminho de bloquete do portão até a catraca
-        if 16 <= x <= 20 or y <= 53 or (x >= 21 and y <= 53):
-            return "bloquete_tatil" if (y == 57 and 16 <= x <= 20) else "bloquete"
-        return "sextavado"
+    if y >= 51:  # Entrada: praça de bloquete vermelho; o estacionamento (sextavado com vagas) fica embaixo, à direita
+        if (y == 55 and x >= 22) or (x == 22 and y >= 55): return "calcada"          # guia de concreto do estacionamento
+        if x >= 23 and y >= 56:
+            stall = y in (56, 57, 60, 61)
+            return "sextavado_vaga0" if stall and x % 2 == 0 else "sextavado"
+        return "bloquete_tatil" if (y == 57 and 16 <= x <= 20) else "bloquete"
     if 23 <= x <= 30 and 8 <= y <= 45: return "praca"        # Corredor: praça aberta entre os prédios
     if 46 <= y <= 50: return "granito"                       # Portaria
     if 24 <= y <= 39 and x <= 22: return "ceramica"          # RU
@@ -75,18 +77,34 @@ def is_outer(c):
 def wall_tile(c):
     return 3 if (c[0], c[1] + 1) in floor else 2
 
+RU_WALL = {4: "cozinha", 5: "cozinha", 7: "porta_dupla", 9: "cartaz", 10: "tv", 13: "extintor", 16: "saida"}
+
+
 def deco_rule(c, style, below):
-    """Decoração da frente da parede: janelões no RU e na cantina, extintor, saída, mural, ar-condicionado."""
+    """Decoração da frente da parede: o RU como nas fotos (cozinha, porta dupla, cartaz, TV, janelões) e o abandono
+    (vidros quebrados, rachaduras, mofo, pichações, trepadeira)."""
     x, y = c
     r = h("deco", x, y)
     if style == "interno":
-        if below == "ceramica" and y == 23: return "janela" if x % 4 != 1 else None
+        if below == "ceramica" and y == 23:
+            return RU_WALL.get(x) or ("janela_quebrada" if r < 0.4 else "janela")
+        if below == "ceramica" and y == 36:  # divisória de vidro da entrada do RU
+            return "vidro_quebrado" if r < 0.35 else "vidro"
         if below == "granito" and y == 7 and x in (6, 15): return "mural"
-        if r < 0.07: return "extintor"
-        if r < 0.12: return "saida"
+        if below == "granito" and y == 7 and x == 11: return "pichacao0"
+        if r < 0.05: return "extintor"
+        if r < 0.10: return "saida"
+        if r < 0.20: return "rachada"
+        if r < 0.30: return "mofo"
+        if r < 0.34: return "pichacao1"
+        if r < 0.37: return "pichacao2"
         return None
     if style == "fachada":
-        return "ar" if r < 0.15 else ("lisa" if r < 0.25 else None)
+        if r < 0.22: return "trepadeira"
+        if r < 0.45: return "quebrada"
+        if r < 0.50: return "pichacao"
+        if r < 0.58: return "ar"
+        return "lisa" if r < 0.66 else None
     return None
 
 outer_set = {c for c in walls if is_outer(c)}
@@ -190,6 +208,27 @@ node("Fundo", type="TileMapLayer", props={"z_index": "-11", "texture_filter": "1
 node("Sombras", type="TileMapLayer", props={"z_index": "-9", "texture_filter": "1", "scale": v(4, 4),
      "tile_map_data": f'PackedByteArray("{tile_data(shadow_cells)}")', "tile_set": 'ExtResource("tiles")'})
 
+# detalhes de abandono por cima do piso: rachaduras, folhas secas, mato, poças, papéis, cacos, forro caído
+DECAL_RULES = {
+    "ext": [("rachadura", 3, 0.09), ("folhas", 2, 0.07), ("mato", 2, 0.06), ("poca", 2, 0.025), ("papel", 2, 0.02)],
+    "int": [("rachadura", 3, 0.05), ("papel", 2, 0.07), ("mancha", 2, 0.04), ("vidro", 1, 0.025), ("forro", 1, 0.008),
+            ("poca", 2, 0.015)],
+}
+decal_cells = {}
+for (x, y), m in floor_mat.items():
+    base = m.split("_")[0]
+    if base == "aco": continue
+    rules = DECAL_RULES["int" if base in ("granito", "ceramica") else "ext"]
+    roll = h("decal", x, y)
+    acc = 0.0
+    for kind, n, p_ in rules:
+        acc += p_
+        if roll < acc:
+            decal_cells[(x, y)] = tiler.at(f"decal_{kind}{int(h('dv', x, y) * n)}")
+            break
+node("Abandono", type="TileMapLayer", props={"z_index": "-8", "texture_filter": "1", "scale": v(4, 4),
+     "tile_map_data": f'PackedByteArray("{tile_data(decal_cells)}")', "tile_set": 'ExtResource("tiles")'})
+
 node("Walls", type="TileMapLayer", groups=["obstacles"], props={"y_sort_enabled": "true", "texture_filter": "1",
      "scale": v(4, 4), "tile_map_data": f'PackedByteArray("{tile_data(wall_cells)}")', "tile_set": 'ExtResource("tiles")'})
 # paredes da borda do mapa: mesma aparência, mas também seguram os fantasmas
@@ -201,9 +240,9 @@ node("OuterWalls", type="TileMapLayer", groups=["obstacles", "outer_walls"], pro
 prop("Predio", ".", 11 * T, 54 * T, 20 * T, 240, CONCRETE, depth=128, tall=True, sprite="predio")
 # o letreiro "U IFE P" faz parte do desenho do prédio (sprites/props/fase1/predio.png)
 # letras caídas: deitadas no chão, não bloqueiam nada
-prop("LetraN", ".", 8 * T, 57 * T + 40, 96, 96, col(0, 0, 0, 0), "N", font=84,
+prop("LetraN", ".", 4 * T + 40, 55 * T + 40, 96, 96, col(0, 0, 0, 0), "N", font=84,
      text_color=col(0.58, 0.58, 0.56), solid=False, z=-4, sprite="letra_n")
-prop("LetraS", ".", 15 * T, 58 * T + 40, 96, 96, col(0, 0, 0, 0), "S", font=84,
+prop("LetraS", ".", 7 * T + 40, 56 * T + 24, 96, 96, col(0, 0, 0, 0), "S", font=84,
      text_color=col(0.58, 0.58, 0.56), solid=False, z=-4, sprite="letra_s")
 # crachá escondido: aparece debaixo da pilha sorteada
 node("Cracha", inst="pickup", props={"position": v(11 * T, 57 * T), "ItemId": '"cracha"', "DisplayName": '"Crachá"',
@@ -213,6 +252,10 @@ node("Pilhas", type="Node2D", props={"y_sort_enabled": "true"})
 for i, (tx, ty) in enumerate([(5, 56), (11, 59), (19, 56), (24, 60), (28, 57), (33, 59),
                                (8, 55), (15, 55), (23, 54), (31, 54)]):
     node(f"Pilha{i+1}", "Pilhas", inst="paper_pile", props={"position": v(tx * T + 32, ty * T + 48)})
+
+# estacionamento: carros que ficaram para trás (cobertura baixa)
+for i, (cx, bottom, variant) in enumerate([(27 * T, 61 * T + 56, 0), (31 * T + 32, 58 * T + 20, 1), (24 * T, 57 * T + 40, 2)]):
+    prop(f"Carro{i+1}", ".", cx, bottom, 96, 128, col(0, 0, 0, 0), depth=64, sprite=f"carro{variant}")
 
 # ===== PORTÃO (separa a calçada da entrada) =====
 GRADE = col(0.5, 0.52, 0.56)
@@ -224,6 +267,10 @@ prop("PlacaPortao", ".", 18 * T, 63 * T - 96, 260, 36, col(0, 0, 0, 0), "UNIFESP
      text_color=col(0.9, 0.9, 0.9), solid=False, z=1, sprite="placa_portao")
 # ponto de ônibus verde da avenida, do lado de fora do portão
 prop("PontoOnibus", ".", 30 * T, 64 * T - 8, 192, 136, col(0, 0, 0, 0), depth=20, sprite="ponto_onibus")
+# postes da avenida (um deles queimado)
+for i, tx in enumerate([4, 12, 24]):
+    prop(f"PosteRua{i+1}", ".", tx * T, 63 * T + 44, 24, 240, col(0, 0, 0, 0), depth=12,
+         sprite="poste_rua_apagado" if i == 1 else "poste_rua")
 
 # ===== PORTARIA =====
 # guarita do porteiro: bloco grande à esquerda da passagem estreita
@@ -240,14 +287,11 @@ node("Corredor", inst="room", props={"position": v(*cor), "Size": v(8 * T, 38 * 
      "EnemiesPerWave": "6", "SpawnAnywhere": "true", "Active": "false", "RespawnPoint": 'NodePath("Respawn")'}, node_paths=["RespawnPoint"])
 node("Respawn", "Corredor", type="Marker2D", props={"position": v(24 * T - cor[0], 47 * T + 32 - cor[1])})
 # dois jardins no meio do corredor (borda de concreto, miolo verde)
+# os postes de globo ficam dentro dos canteiros, junto das palmeiras (como nas fotos da praça)
 for i, (top, bottom) in enumerate([(14, 19), (30, 35)]):
-    h = (bottom - top + 1) * T
-    prop(f"Jardim{i+1}", "Corredor", 27 * T - cor[0], (bottom + 1) * T - cor[1], 2 * T, h, CONCRETE, depth=h,
-         inner=col(0.22, 0.42, 0.22), sprite="jardim")
-# postes brancos de globo ao longo da praça
-for i, (tx, ty) in enumerate([(23, 11), (30, 11), (23, 24), (30, 24), (23, 38), (30, 38)]):
-    prop(f"Poste{i+1}", "Corredor", tx * T + 32 - cor[0], ty * T + 48 - cor[1], 32, 176, col(0, 0, 0, 0), depth=12,
-         sprite="poste_luz")
+    hh = (bottom - top + 1) * T
+    prop(f"Jardim{i+1}", "Corredor", 27 * T - cor[0], (bottom + 1) * T - cor[1], 2 * T, hh, CONCRETE, depth=hh,
+         inner=col(0.22, 0.42, 0.22), sprite=("jardim", "jardim_b")[i])
 for i, ty in enumerate([10, 15, 20, 26, 31, 41, 44]):
     x, y = px(24 + 5 * (i % 2), ty)
     node(f"Spawn{i+1}", "Corredor", type="Marker2D", props={"position": v(x - cor[0], y - cor[1])})
@@ -274,11 +318,18 @@ prop("BalcaoComida", "RU", 18 * T - ru[0], 26 * T - ru[1], 4 * T, 96, BEGE, "peg
 node("Marmita", "RU", inst="pickup", props={"position": v(18 * T - ru[0], 26 * T + 8 - ru[1]),
      "ItemId": '"marmita"', "DisplayName": '"Marmita"', "Color": col(1, 0.6, 0.25, 1),
      "Texture": tex("marmita", "items")})
+# ala do fundo: mesas brancas com as cadeiras pretas R.U.
 for i, ty in enumerate([31, 33, 35, 37]):
-    prop(f"Mesa{i+1}", "RU", 5 * T + 32 - ru[0], (ty + 1) * T - ru[1], 3 * T, 64, WHITE, depth=44, sprite="mesa_ru")
-    prop(f"CadeiraRU{i+1}", "RU", 8 * T + 8 - ru[0], (ty + 1) * T - 4 - ru[1], 32, 48, col(0, 0, 0, 0), solid=False,
-         sprite="cadeira_ru")
+    prop(f"Mesa{i+1}", "RU", 5 * T + 32 - ru[0], (ty + 1) * T - ru[1], 3 * T, 64, WHITE, depth=44, sprite="mesa_ru_cadeiras")
+# salão: as mesas compridas com banquinhos presos (deixam o meio livre para quem vem da passagem)
+for i, cx in enumerate([6 * T, 17 * T + 32]):
+    prop(f"MesaLonga{i+1}", "RU", cx - ru[0], 29 * T + 44 - ru[1], 5 * T, 64, WHITE, depth=40, sprite="mesa_ru_longa")
 prop("LixeirasRU", "RU", 15 * T - ru[0], 24 * T + 44 - ru[1], 84, 48, col(0, 0, 0, 0), solid=False, sprite="lixeiras")
+prop("LixeirasPedal", "RU", 8 * T + 16 - ru[0], 24 * T + 44 - ru[1], 64, 48, col(0, 0, 0, 0), solid=False, sprite="lixeiras_pedal")
+prop("CatracaRU", "RU", 15 * T + 32 - ru[0], 37 * T + 40 - ru[1], 64, 80, col(0, 0, 0, 0), solid=False, sprite="catraca_ru")
+for i, (cx, cy, spr) in enumerate([(10 * T, 33 * T, "cadeira_caida"), (13 * T + 40, 27 * T + 20, "cadeira_caida"),
+                                   (20 * T + 20, 30 * T - 10, "entulho"), (3 * T + 20, 39 * T + 40, "entulho")]):
+    prop(f"Destrocos{i+1}", "RU", cx - ru[0], cy - ru[1], 48, 32, col(0, 0, 0, 0), solid=False, sprite=spr)
 # primeira porta: entre o corredor e a entradinha do RU (tranca quando o corredor fica assombrado)
 node("PortaEntradaRU", inst="door", props={"position": v(22 * T + 32, 40 * T), "Size": v(64, 3 * T)})
 
@@ -317,6 +368,9 @@ prop("Sinuca2", "Cantina", 13 * T - ca[0], 19 * T + 16 - ca[1], 3 * T, 80, col(0
 prop("LixeirasCantina", "Cantina", 19 * T - ca[0], 12 * T + 8 - ca[1], 84, 48, col(0, 0, 0, 0), solid=False, sprite="lixeiras")
 prop("Bebedouro", "Cantina", 21 * T + 8 - ca[0], 12 * T + 8 - ca[1], 32, 64, col(0, 0, 0, 0), solid=False, sprite="bebedouro")
 prop("Sofa", "Cantina", 18 * T + 32 - ca[0], 19 * T + 56 - ca[1], 128, 56, col(0, 0, 0, 0), solid=False, sprite="sofa")
+for i, (cx, cy, spr) in enumerate([(3 * T + 30, 19 * T + 40, "entulho"), (11 * T, 15 * T + 20, "cadeira_caida"),
+                                   (20 * T, 17 * T, "cadeira_caida")]):
+    prop(f"Destrocos{i+1}", "Cantina", cx - ca[0], cy - ca[1], 48, 32, col(0, 0, 0, 0), solid=False, sprite=spr)
 
 node("Escopeta", inst="pickup", props={"position": v(13 * T, 12 * T), "ItemId": '"escopeta"',
      "DisplayName": '"Escopeta"', "Color": col(0.95, 0.45, 0.2, 1), "WeaponReward": 'ExtResource("shotgun")',
@@ -330,6 +384,54 @@ node("Elevador", inst="area_trigger", props={"position": v(7 * T, 2 * T), "Size"
 prop("PortaElevador1", ".", 9 * T, 2 * T, 128, 64, col(0, 0, 0, 0), solid=False, z=1, sprite="porta_elevador")
 # caixa d'água verde no gramado ao lado da praça (aparece de quase todo o campus)
 prop("CaixaDagua", ".", 34 * T, 30 * T, 80, 288, col(0, 0, 0, 0), solid=False, sprite="caixa_dagua")
+
+# ===== NOITE =====
+# Escuro azulado (CanvasModulate no grupo "night": o jogador acende a lanterna quando acha este grupo).
+node("Noite", type="CanvasModulate", groups=["night"], props={"color": col(0.12, 0.13, 0.21, 1)})
+node("NightOverlay", inst="night_overlay")
+STEADY, FLICKER, BROKEN, PULSE = 0, 1, 2, 3
+SODIO, FRIA, TUBO, QUENTE = col(1, 0.6, 0.28), col(0.8, 0.88, 1), col(0.82, 0.92, 1), col(1, 0.84, 0.6)
+lights = []
+
+
+def light(name, x, y, color, scale, energy, mode, tube=False):
+    lights.append(name)
+    p = {"position": v(x, y), "color": color, "texture_scale": f"{scale:g}", "BaseEnergy": f"{energy:g}",
+         "Behavior": str(mode), "Seed": str(len(lights))}
+    if tube: p["texture"] = 'ExtResource("light_tubo")'
+    node(name, "Luzes", inst="flicker_light", props=p)
+
+
+node("Luzes", type="Node2D")
+# avenida: vapor de sódio (o segundo poste está queimado)
+for i, tx in enumerate([4, 12, 24]):
+    light(f"Rua{i+1}", tx * T + 56, 64 * T + 20, SODIO, 2.6, 1.1, (STEADY, BROKEN, FLICKER)[i])
+# entrada
+light("Marquise", 11 * T, 54 * T + 30, QUENTE, 1.6, 0.7, FLICKER)
+light("GuaritaTV", 27 * T, 51 * T + 30, col(0.45, 0.6, 1), 1.2, 0.9, FLICKER)
+light("Estacionamento", 33 * T, 58 * T, SODIO, 2.2, 0.8, BROKEN)
+light("Catraca", 23 * T + 64, 48 * T + 32, TUBO, 1.5, 0.8, FLICKER, tube=True)
+# praça: os globos dos canteiros (um aceso piscando, outro com o globo quebrado só dando estalos)
+light("Globo1", 27 * T - 48, 14 * T + 24, FRIA, 2.2, 1.0, FLICKER)
+light("Globo2", 27 * T + 40, 14 * T + 344, FRIA, 1.6, 0.8, BROKEN)
+light("Globo3", 27 * T + 40, 30 * T + 32, FRIA, 1.6, 0.8, BROKEN)
+light("Globo4", 27 * T - 48, 30 * T + 336, FRIA, 2.2, 1.0, STEADY)
+# RU: lâmpadas fluorescentes do teto
+for i, (tx, ty, mode) in enumerate([(5, 26.5, FLICKER), (12, 26, STEADY), (19, 26.5, BROKEN), (5, 32, STEADY),
+                                    (5, 37, FLICKER), (12, 34, BROKEN), (18, 38, FLICKER)]):
+    light(f"RU{i+1}", tx * T, ty * T, TUBO, 2.0, 0.9, mode, tube=True)
+# cantina
+for i, (tx, ty, mode) in enumerate([(5, 13, FLICKER), (12, 13.5, STEADY), (19, 13, BROKEN), (8, 17, FLICKER), (16, 17, STEADY)]):
+    light(f"Cantina{i+1}", tx * T, ty * T, TUBO, 2.0, 0.85, mode, tube=True)
+light("Geladeira", 21 * T + 30, 10 * T + 40, col(0.55, 0.8, 1), 0.9, 0.9, STEADY)
+light("Balcao", 13 * T, 9 * T + 40, QUENTE, 1.6, 0.8, FLICKER)
+# elevador: luz de emergência vermelha pulsando
+light("Emergencia", 8 * T + 32, 3 * T + 32, col(1, 0.15, 0.1), 1.8, 1.1, PULSE)
+light("CorredorElevador", 2 * T + 32, 5 * T, TUBO, 1.4, 0.7, BROKEN, tube=True)
+# plaquinhas verdes de SAÍDA ainda acesas
+saida_at = tuple(tiler.names["frente_interno_saida"])
+for i, (c, a) in enumerate(sorted((c, a) for c, a in {**wall_cells, **outer_cells}.items() if a == saida_at)):
+    light(f"Saida{i+1}", c[0] * T + 32, c[1] * T + 72, col(0.2, 1, 0.45), 0.7, 0.8, STEADY)
 
 # ===== JOGADOR / HUD =====
 node("Player", inst="player", props={"position": v(18 * T, 64 * T + 16), "StartWithAllWeapons": "false"})
@@ -350,6 +452,9 @@ ext = [
     ('PackedScene', 'res://objects/player/player.tscn', 'player'),
     ('PackedScene', 'res://objects/hud/hud.tscn', 'hud'),
     ('PackedScene', 'res://objects/message_screen/message_screen.tscn', 'message_screen'),
+    ('PackedScene', 'res://objects/night/night_overlay.tscn', 'night_overlay'),
+    ('PackedScene', 'res://objects/night/flicker_light.tscn', 'flicker_light'),
+    ('Texture2D', 'res://sprites/lights/tubo.png', 'light_tubo'),
     ('PackedScene', 'res://objects/boss/boss.tscn', 'boss'),
     ('PackedScene', 'res://objects/boss/boss_target.tscn', 'boss_target'),
     ('Resource', 'res://objects/boss/tia_cantina.tres', 'tia'),

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cwihmcbkdf2lu"
-path="res://.godot/imported/cadeira_ru.png-b76b800ece120356c089257a016ec5e8.ctex"
+uid="uid://bgmknmpmkv0kj"
+path="res://.godot/imported/cone.png-d5aa0b06df638ba9136243c6e718035f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://sprites/props/fase1/cadeira_ru.png"
-dest_files=["res://.godot/imported/cadeira_ru.png-b76b800ece120356c089257a016ec5e8.ctex"]
+source_file="res://sprites/lights/cone.png"
+dest_files=["res://.godot/imported/cone.png-d5aa0b06df638ba9136243c6e718035f.ctex"]
 
 [params]
 
