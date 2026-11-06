@@ -23,11 +23,11 @@ As cores e os objetos vieram das fotos do tour 360° da UNIFESP São José dos C
 | Lugar no jogo | O que veio do campus de verdade |
 |---|---|
 | Calçada e portão | bloquete vermelho em espinha de peixe, faixa tátil amarela, meio-fio branco, gradil verde, ponto de ônibus verde |
-| Entrada (nível de baixo) | praça de bloquete vermelho com gramados e mastros; a ponta do prédio é lisa (só logo verde, letreiro UNIFESP sem o N e o S, texto do campus e a faixa vertical perfurada); a face comprida, recuada, tem as janelas por andar |
+| Entrada (nível de baixo) | praça de bloquete vermelho com gramados e mastros; a parte do prédio que se vê daqui é a ponta lisa, sem janelas: só o logo verde, o letreiro UNIFESP (sem o N e o S), o texto do campus e a faixa vertical perfurada |
 | Portaria | volume branco com um grande vão (a catraca passa por ele) e a cabine de vidro escuro do porteiro; a laje fica transparente quando o jogador passa por baixo |
-| Rampa | depois da catraca, rampa com ranhuras e guarda-corpo dos dois lados sobe para o pátio; à direita, lá embaixo, o estacionamento |
+| Rampa | depois da catraca, rampa com ranhuras e guarda-corpo dos dois lados sobe para o pátio |
 | Corredor (pátio entre duas alas) | granito claro em placas; as duas fachadas com janelas de caixilho branco nos andares de cima e blocos de vidro/portas de vidro no térreo; canteiros com palmeiras, agaves e globos junto às fachadas e no meio; o fundo é aberto, com mureta, gramado e a caixa d'água |
-| Estacionamento (nível de baixo, só para ver) | ao lado da rampa: faixa de bloquete junto ao muro, sextavado com vagas, carros abandonados, postes de sódio |
+| Estacionamento (nível de baixo, só para ver) | do lado de fora, a leste da praça de entrada, atrás da cerca: faixa de bloquete, sextavado com vagas, carros abandonados, postes de sódio; tem a entrada própria pela avenida (portão de carros fechado), não é a mesma dos pedestres |
 | RU | cerâmica bege, mesas brancas compridas com banquinhos fixos, cadeiras pretas "R.U.", bufê de aço, devolução de bandejas |
 | Cantina | granito branco, vitrines de salgados, geladeira de bebidas, sinucas, mesas redondas com cadeiras pretas, lixeiras da coleta seletiva, bebedouro, sofá, mural |
 

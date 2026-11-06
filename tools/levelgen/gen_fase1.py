@@ -113,6 +113,9 @@ def style_rule(c):
     if y == 7 and 22 <= x <= 31: return "mureta"          # fundo do pátio: aberto, com a mureta (vista para o gramado)
     if y == 46 and 25 <= x <= 31: return "mureta"         # borda que dá para a praça da entrada
     if x in (22, 25) and 46 <= y <= 50: return "mureta"   # os dois lados da rampa
+    if x == 35 and y == 63: return f"via:topo_via_meiofio{x % 2}"   # a avenida e a calçada seguem até o estacionamento
+    if x == 35 and y == 64: return "via:topo_via_asfalto_meiofio"
+    if x == 35 and y == 65: return "via:topo_via_asfalto"
     return None
 
 
@@ -206,7 +209,7 @@ node("Floor", type="TileMapLayer", groups=["floor"], props={"z_index": "-10", "t
      "tile_map_data": f'PackedByteArray("{tile_data(floor_cells)}")', "tile_set": 'ExtResource("tiles")'})
 
 # fundo: o que fica fora das salas. Perto da rua e da praça é grama; perto das salas, a laje dos prédios.
-_bx0, _bx1 = min(c[0] for c in walls) - 6, max(c[0] for c in walls) + 6
+_bx0, _bx1 = min(c[0] for c in walls) - 6, max(c[0] for c in walls) + 15
 _by0, _by1 = min(c[1] for c in walls) - 6, max(c[1] for c in walls) + 6
 background = {}
 for y in range(_by0, _by1 + 1):
@@ -218,20 +221,25 @@ for y in range(_by0, _by1 + 1):
             background[c] = tiler.at(f"laje{int(h('l', *c) * 3)}")
         elif 32 <= x <= 37 and 5 <= y <= 46:
             background[c] = tiler.at(f"laje{int(h('l', *c) * 3)}")            # telhado da ala direita do pátio
-        elif (26 <= x <= 41 and 46 <= y <= 50) or (36 <= x <= 41 and 51 <= y <= 62):
-            # estacionamento no nível de baixo, ao lado da rampa (dá para ver de cima, não dá para ir):
-            # faixa de bloquete junto ao muro da rampa e o sextavado com as vagas
-            if x == 26:
+        elif 36 <= x <= 47 and 50 <= y <= 62:
+            # estacionamento: embaixo, do lado de fora (a leste da praça de entrada), no nível rebaixado.
+            # Dá para ver por cima da cerca; não dá para ir. Faixa de bloquete junto à cerca e o sextavado com vagas.
+            if x == 36:
                 background[c] = tiler.at(f"baixo_bloquete{(x % 2) + 2 * (y % 2)}")
-            elif (y in (47, 48) and x % 2 == 0) or (y >= 51 and x in (37, 39) and y % 3 != 0):
+            elif y in (51, 52, 55, 56, 59, 60) and x % 2 == 1:
                 background[c] = tiler.at("baixo_sextavado_vaga0")
             else:
                 background[c] = tiler.at(f"baixo_sextavado{int(h('e', *c) * 2)}")
+        elif 36 <= x <= 47 and y == 63:
+            # calçada da avenida continua; o portão dos carros (a entrada do estacionamento é outra, não a nossa)
+            background[c] = tiler.at("asfalto0") if 41 <= x <= 43 else tiler.at(f"bloquete_meiofio{x % 2}")
+        elif 36 <= x <= 47 and y in (64, 65):
+            background[c] = tiler.at("asfalto_meiofio") if y == 64 else (tiler.at("asfalto_faixa") if x % 3 == 1 else tiler.at(f"asfalto{int(h('a', *c) * 3)}"))
         else:
             background[c] = tiler.at(f"grama{int(h('g', *c) * 3)}")
-# sombra do muro da rampa caindo sobre o estacionamento
-for y in range(46, 51):
-    shadow_cells[(26, y)] = tiler.at("sombra_010")
+# sombra da cerca/talude caindo sobre o estacionamento
+for y in range(50, 63):
+    shadow_cells[(36, y)] = tiler.at("sombra_010")
 node("Fundo", type="TileMapLayer", props={"z_index": "-11", "texture_filter": "1", "scale": v(4, 4),
      "tile_map_data": f'PackedByteArray("{tile_data(background)}")', "tile_set": 'ExtResource("tiles")'})
 
@@ -291,10 +299,14 @@ prop("Mastros", ".", 3 * T, 55 * T + 40, 112, 288, col(0, 0, 0, 0), depth=16, sp
 
 # estacionamento: fica lá embaixo, ao lado do terraço (só dá para ver por cima da mureta). Carros abandonados nas vagas.
 BAIXO = col(0.62, 0.64, 0.74)
-for i, (tx, ty, variant) in enumerate([(28, 48, 0), (32, 48, 1), (35, 48, 2), (38, 52, 2), (40, 56, 0), (38, 60, 1)]):
+for i, (tx, ty, variant) in enumerate([(37, 51, 0), (41, 51, 2), (45, 51, 1), (39, 55, 1), (43, 55, 0), (37, 59, 2), (45, 59, 0)]):
     prop(f"Carro{i+1}", ".", tx * T + 32, (ty + 1) * T + 40, 96, 128, col(0, 0, 0, 0), solid=False,
          sprite=f"carro{variant}", modulate=BAIXO)
-for i, (tx, ty) in enumerate([(30, 50), (40, 50)]):
+# o portão dos carros e a cerca do estacionamento, na avenida
+prop("PortaoEstac", ".", 42 * T + 32, 63 * T + 8, 3 * T, 72, col(0, 0, 0, 0), solid=False, sprite="portao_estac")
+prop("GradeEstac1", ".", 38 * T + 32, 63 * T + 8, 5 * T, 72, col(0, 0, 0, 0), solid=False, sprite="gradil_curto")
+prop("GradeEstac2", ".", 46 * T, 63 * T + 8, 4 * T, 72, col(0, 0, 0, 0), solid=False, sprite="gradil_curto")
+for i, (tx, ty) in enumerate([(40, 57), (46, 53)]):
     prop(f"PosteEstac{i+1}", ".", tx * T, ty * T + 40, 24, 240, col(0, 0, 0, 0), solid=False,
          sprite="poste_rua" if i == 0 else "poste_rua_apagado", modulate=BAIXO)
 
@@ -308,7 +320,8 @@ prop("PlacaPortao", ".", 18 * T, 63 * T - 96, 260, 36, col(0, 0, 0, 0), "UNIFESP
      text_color=col(0.9, 0.9, 0.9), solid=False, z=1, sprite="placa_portao")
 # ponto de ônibus verde da avenida, do lado de fora do portão
 prop("PontoOnibus", ".", 30 * T, 64 * T - 8, 192, 136, col(0, 0, 0, 0), depth=20, sprite="ponto_onibus")
-# postes da avenida (um deles queimado)
+# postes da avenida (um deles queimado); o último já fica em frente ao estacionamento
+prop("PosteRua4", ".", 44 * T, 63 * T + 44, 24, 240, col(0, 0, 0, 0), solid=False, sprite="poste_rua")
 for i, tx in enumerate([4, 12, 24]):
     prop(f"PosteRua{i+1}", ".", tx * T, 63 * T + 44, 24, 240, col(0, 0, 0, 0), depth=12,
          sprite="poste_rua_apagado" if i == 1 else "poste_rua")
@@ -466,8 +479,9 @@ for i, tx in enumerate([4, 12, 24]):
 # entrada
 light("Marquise", 11 * T, 54 * T + 30, QUENTE, 1.6, 0.7, FLICKER)
 light("GuaritaTV", 28 * T, 51 * T + 40, col(0.45, 0.6, 1), 1.2, 0.9, FLICKER)
-light("Estacionamento1", 30 * T + 56, 50 * T + 60, SODIO, 2.4, 0.7, FLICKER)
-light("Estacionamento2", 40 * T + 56, 50 * T + 60, SODIO, 2.4, 0.7, BROKEN)
+light("Estacionamento1", 40 * T + 56, 57 * T + 60, SODIO, 2.6, 0.75, FLICKER)
+light("Estacionamento2", 46 * T + 56, 53 * T + 60, SODIO, 2.4, 0.7, BROKEN)
+light("RuaLeste", 44 * T + 56, 64 * T + 20, SODIO, 2.6, 0.9, STEADY)
 light("Mastros", 3 * T, 55 * T, FRIA, 1.2, 0.5, FLICKER)
 light("Catraca", 24 * T, 50 * T + 20, TUBO, 1.5, 0.8, FLICKER, tube=True)
 # praça: os globos dos canteiros (um aceso piscando, outro com o globo quebrado só dando estalos)

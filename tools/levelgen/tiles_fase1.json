@@ -743,6 +743,26 @@
   "lateral_r3": [
    7,
    20
+  ],
+  "topo_via_meiofio0": [
+   8,
+   20
+  ],
+  "topo_via_meiofio1": [
+   9,
+   20
+  ],
+  "topo_via_asfalto_meiofio": [
+   10,
+   20
+  ],
+  "topo_via_asfalto_faixa": [
+   11,
+   20
+  ],
+  "topo_via_asfalto": [
+   12,
+   20
   ]
  },
  "decos": {
