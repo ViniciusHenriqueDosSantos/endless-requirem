@@ -652,8 +652,14 @@ atlas.save("sprites/tiles/fase1_tiles.png")
 
 
 # ---------------------------------------------------------------- recursos da Godot
+# Todo tile de parede precisa ter colisão. A colisão vai pelo começo do nome do tile:
+# ao criar um tipo novo de parede, use um destes prefixos (ou acrescente o novo aqui).
+# tools/levelgen/check_walls.py confere a cena pronta e acusa parede sem colisão.
+WALL_PREFIXES = ("topo_", "frente_", "lateral_")
+
+
 def write_tileset(path, collision_layer):
-    walls = [v for k, v in names.items() if k.startswith(("topo_", "frente_", "lateral_"))] + [[2, 0], [3, 0]]
+    walls = [v for k, v in names.items() if k.startswith(WALL_PREFIXES)] + [[2, 0], [3, 0]]
     lines = ['[gd_resource type="TileSet" format=3]', "",
              '[ext_resource type="Texture2D" path="res://sprites/tiles/fase1_tiles.png" id="1_tex"]', "",
              '[sub_resource type="TileSetAtlasSource" id="atlas"]', 'texture = ExtResource("1_tex")']
