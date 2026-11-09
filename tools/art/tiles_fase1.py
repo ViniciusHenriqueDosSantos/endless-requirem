@@ -653,7 +653,7 @@ atlas.save("sprites/tiles/fase1_tiles.png")
 
 # ---------------------------------------------------------------- recursos da Godot
 def write_tileset(path, collision_layer):
-    walls = [v for k, v in names.items() if k.startswith(("topo_", "frente_"))] + [[2, 0], [3, 0]]
+    walls = [v for k, v in names.items() if k.startswith(("topo_", "frente_", "lateral_"))] + [[2, 0], [3, 0]]
     lines = ['[gd_resource type="TileSet" format=3]', "",
              '[ext_resource type="Texture2D" path="res://sprites/tiles/fase1_tiles.png" id="1_tex"]', "",
              '[sub_resource type="TileSetAtlasSource" id="atlas"]', 'texture = ExtResource("1_tex")']
