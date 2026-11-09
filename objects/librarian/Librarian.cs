@@ -71,6 +71,8 @@ public partial class Librarian : CharacterBody2D, IHittable
 	private Vector2 _waypoint;
 	private float _strafeSign = 1f;
 	private float _flash;
+	private float _throwTimer;
+	private const float ThrowPoseTime = 0.35f;
 	private float _time;
 	private Vector2 _home;
 
@@ -118,6 +120,8 @@ public partial class Librarian : CharacterBody2D, IHittable
 		QueueRedraw();
 		if (Engine.IsEditorHint()) return;
 
+		// Fantasma: aparece no escuro (o cone da lanterna também).
+		Material = SharedMaterials.Unshaded;
 		_health = Config.Health;
 		_home = GlobalPosition;
 		_room = GetParent() as Room;
@@ -278,6 +282,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 		float dt = (float)delta;
 		_time += dt;
 		if (_flash > 0) _flash -= dt;
+		if (_throwTimer > 0) _throwTimer -= dt;
 		QueueRedraw();
 	}
 
@@ -527,6 +532,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 
 	private void FireFan()
 	{
+		_throwTimer = ThrowPoseTime;
 		Vector2 origin = GlobalPosition + Eye;
 		Vector2 aim = (_player.GlobalPosition + new Vector2(0, -32) - origin).Normalized();
 
@@ -537,6 +543,11 @@ public partial class Librarian : CharacterBody2D, IHittable
 			projectile.Direction = aim.Rotated(Mathf.DegToRad(spread));
 			projectile.Speed = Config.ProjectileSpeed;
 			projectile.Color = Config.ProjectileColor;
+			if (Config.ProjectileSprite != null)
+			{
+				projectile.Texture = Config.ProjectileSprite;
+				projectile.Frames = Config.ProjectileFrames;
+			}
 			projectile.TreeExiting += () => _projectiles.Remove(projectile);
 			_projectiles.Add(projectile);
 			GetParent().AddChild(projectile);
@@ -556,7 +567,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 		(GetTree().GetFirstNodeInGroup("hud") as Hud)?.ShowMessage(text, seconds);
 	}
 
-	// ---------- Desenho provisório ----------
+	// ---------- Desenho ----------
 
 	public override void _Draw()
 	{
@@ -567,7 +578,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 		// Lanterna (cone de luz): amarela na patrulha, vermelha na caçada.
 		if (editor || IsFighting)
 		{
-			Color light = IsHunting || IsAttacking ? new Color(1f, 0.3f, 0.25f, 0.2f) : new Color(1f, 0.92f, 0.5f, 0.16f);
+			Color light = IsHunting || IsAttacking ? new Color(1f, 0.3f, 0.25f, 0.13f) : new Color(1f, 0.92f, 0.5f, 0.09f);
 			const int segments = 10;
 			Vector2[] cone = new Vector2[segments + 2];
 			cone[0] = Eye;
@@ -581,19 +592,38 @@ public partial class Librarian : CharacterBody2D, IHittable
 
 		Rect2 body = new(-BodySize.X / 2, -BodySize.Y, BodySize.X, BodySize.Y);
 		Color color = _flash > 0 ? Colors.White : Config.BodyColor;
-		DrawCircle(new Vector2(0, -4), BodySize.X * 0.55f, new Color(0, 0, 0, 0.3f));
-		DrawRect(body, color);
-		DrawRect(body, Config.BodyColor.Darkened(0.5f), false, 3f);
-		DrawCircle(new Vector2(0, -BodySize.Y - 16), 24, color);
-		// Óculos (lado para onde olha).
-		Vector2 look = Vector2.FromAngle(_facing) * 8f;
-		DrawCircle(new Vector2(-9, -BodySize.Y - 18) + look, 6, Colors.White);
-		DrawCircle(new Vector2(9, -BodySize.Y - 18) + look, 6, Colors.White);
+		float labelY = -BodySize.Y - 52;
+		if (Config.Sprite != null)
+		{
+			// Pixel art: 0/1 andando (flutua), 2 jogando livro, 3 caçando (olhos vermelhos). Vira para onde olha.
+			int frames = Mathf.Max(1, Config.SpriteFrames);
+			Vector2 frameSize = new(Config.Sprite.GetWidth() / (float)frames, Config.Sprite.GetHeight());
+			int frame = _throwTimer > 0 ? 2 : (IsHunting || IsAttacking) ? 3 : ((int)(_time * 2f) % 2);
+			frame = Mathf.Min(frame, frames - 1);
+			Vector2 size = frameSize * 4f;
+			bool left = Mathf.Cos(_facing) < -0.2f;
+			Rect2 dest = new(-size.X / 2, -size.Y + 8, size.X, size.Y);
+			if (left) dest = new Rect2(dest.Position.X + size.X, dest.Position.Y, -size.X, size.Y);
+			DrawTextureRectRegion(Config.Sprite, dest, new Rect2(frame * frameSize.X, 0, frameSize.X, frameSize.Y),
+				_flash > 0 ? new Color(2.5f, 2.5f, 2.5f) : Colors.White);
+			labelY = -size.Y - 8;
+		}
+		else
+		{
+			DrawCircle(new Vector2(0, -4), BodySize.X * 0.55f, new Color(0, 0, 0, 0.3f));
+			DrawRect(body, color);
+			DrawRect(body, Config.BodyColor.Darkened(0.5f), false, 3f);
+			DrawCircle(new Vector2(0, -BodySize.Y - 16), 24, color);
+			// Óculos (lado para onde olha).
+			Vector2 look = Vector2.FromAngle(_facing) * 8f;
+			DrawCircle(new Vector2(-9, -BodySize.Y - 18) + look, 6, Colors.White);
+			DrawCircle(new Vector2(9, -BodySize.Y - 18) + look, 6, Colors.White);
+		}
 
 		Font font = ThemeDB.FallbackFont;
-		DrawString(font, new Vector2(-120, -BodySize.Y - 52), Config.Name, HorizontalAlignment.Center, 240, 16, Colors.White);
+		DrawString(font, new Vector2(-120, labelY), Config.Name, HorizontalAlignment.Center, 240, 16, Colors.White);
 		if (IsHunting)
-			DrawString(font, new Vector2(-60, -BodySize.Y - 72), $"! {Mathf.CeilToInt(_huntTimer)}", HorizontalAlignment.Center, 120, 32,
+			DrawString(font, new Vector2(-60, labelY - 20), $"! {Mathf.CeilToInt(_huntTimer)}", HorizontalAlignment.Center, 120, 32,
 				new Color(1f, 0.3f, 0.25f));
 	}
 }

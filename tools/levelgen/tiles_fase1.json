@@ -775,6 +775,90 @@
   "topo_via_asfalto": [
    12,
    20
+  ],
+  "vinil0": [
+   0,
+   22
+  ],
+  "vinil1": [
+   1,
+   22
+  ],
+  "vinil2": [
+   2,
+   22
+  ],
+  "vinil3": [
+   3,
+   22
+  ],
+  "xadrez_a": [
+   4,
+   22
+  ],
+  "xadrez_b": [
+   5,
+   22
+  ],
+  "frente_interno_maos0": [
+   0,
+   23
+  ],
+  "frente_interno_maos1": [
+   1,
+   23
+  ],
+  "frente_interno_maos2": [
+   2,
+   23
+  ],
+  "frente_interno_quadro_bib": [
+   3,
+   23
+  ],
+  "frente_interno_mural_b0": [
+   4,
+   23
+  ],
+  "frente_interno_mural_b1": [
+   5,
+   23
+  ],
+  "frente_interno_mural_b2": [
+   6,
+   23
+  ],
+  "frente_interno_mural_b3": [
+   7,
+   23
+  ],
+  "frente_interno_persiana": [
+   8,
+   23
+  ],
+  "frente_interno_janelao": [
+   9,
+   23
+  ],
+  "frente_interno_janelao_quebrado": [
+   10,
+   23
+  ],
+  "frente_interno_armarios": [
+   11,
+   23
+  ],
+  "decal_livros0": [
+   0,
+   24
+  ],
+  "decal_livros1": [
+   1,
+   24
+  ],
+  "decal_livros2": [
+   2,
+   24
   ]
  },
  "decos": {
@@ -794,7 +878,19 @@
    "tv",
    "cartaz",
    "porta_dupla",
-   "cozinha"
+   "cozinha",
+   "maos0",
+   "maos1",
+   "maos2",
+   "quadro_bib",
+   "mural_b0",
+   "mural_b1",
+   "mural_b2",
+   "mural_b3",
+   "persiana",
+   "janelao",
+   "janelao_quebrado",
+   "armarios"
   ],
   "fachada": [
    "janela",

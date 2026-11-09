@@ -87,10 +87,63 @@ class Level:
             "y_sort_enabled": "true", "texture_filter": "1", "scale": v(4, 4),
             "tile_map_data": f'PackedByteArray("{self.tile_data(self.outer_walls)}")', "tile_set": 'ExtResource("tiles_outer")'})
 
+    def tex(self, name, folder):
+        """Textura de sprites/<folder>/<name>.png como ExtResource."""
+        path = f"res://sprites/{folder}/{name}.png"
+        return self.res('Texture2D', path, "tex_" + f"{folder}_{name}".replace("/", "_"))
+
+    def tiled_layers(self, atlas_name, floor_mat, deco_rule=None, style_rule=None, decal_rules=None, background=None):
+        """Camadas com a arte do tileset (tools/art/tiles_<atlas_name>.py): piso por material, sombras de contato,
+        detalhes de abandono, paredes com autotile e decoração, e o fundo (o que fica fora das salas).
+        decal_rules: lista de (função(material) -> bool, [(tipo, variações, chance), ...]).
+        background: função (x, y) -> nome do tile, para as células vazias em volta (None = nada)."""
+        from tiling import Tiler, load_atlas, tile_data, h
+        walls = set(self.inner_walls) | set(self.outer_walls)
+        tiler = Tiler(load_atlas(atlas_name), floor_mat, walls, set(self.outer_walls), deco_rule, style_rule)
+        self.tiler = tiler
+        self.res('TileSet', f'res://tilesets/{atlas_name}_tileset.tres', 'tiles')
+        self.res('TileSet', f'res://tilesets/{atlas_name}_tileset_outer.tres', 'tiles_outer')
+        layer = lambda name, z, cells, extra=None, groups=None: self.node(name, type="TileMapLayer", groups=groups, props={
+            **({"z_index": str(z)} if z is not None else {}), **(extra or {}), "texture_filter": "1", "scale": v(4, 4),
+            "tile_map_data": f'PackedByteArray("{tile_data(cells)}")',
+            "tile_set": 'ExtResource("tiles_outer")' if name == "OuterWalls" else 'ExtResource("tiles")'})
+        layer("Floor", -10, tiler.floor_cells(), groups=["floor"])
+        if background:
+            xs = [c[0] for c in walls]; ys = [c[1] for c in walls]
+            bg = {}
+            for y in range(min(ys) - 8, max(ys) + 9):
+                for x in range(min(xs) - 8, max(xs) + 9):
+                    if (x, y) in floor_mat or (x, y) in walls: continue
+                    n = background(x, y)
+                    if n: bg[(x, y)] = tiler.at(n)
+            layer("Fundo", -11, bg)
+        layer("Sombras", -9, tiler.shadow_cells())
+        decals = {}
+        self.decal_cells = {}
+        for (x, y), m in floor_mat.items():
+            for test, rules in (decal_rules or []):
+                if not test(m): continue
+                roll, acc = h("decal", x, y), 0.0
+                for kind, n, p_ in rules:
+                    acc += p_
+                    if roll < acc:
+                        decals[(x, y)] = tiler.at(f"decal_{kind}{int(h('dv', x, y) * n)}")
+                        self.decal_cells[(x, y)] = kind
+                        break
+                break
+        layer("Abandono", -8, decals)
+        self.wall_tiles = tiler.wall_cells(only_outer=False)
+        self.outer_wall_tiles = tiler.wall_cells(only_outer=True)
+        layer("Walls", None, self.wall_tiles, {"y_sort_enabled": "true"}, groups=["obstacles"])
+        layer("OuterWalls", None, self.outer_wall_tiles, {"y_sort_enabled": "true"}, groups=["obstacles", "outer_walls"])
+        return tiler
+
     def prop(self, name, parent, x, y, w, h, color, text="", depth=None, font=16, text_color=None, solid=True, z=None,
-             tall=False, blocks_ghosts=False, inner=None):
+             tall=False, blocks_ghosts=False, inner=None, sprite=None, folder="props/fase2", fade=False):
         self.res('PackedScene', 'res://objects/prop/prop.tscn', 'prop')
         p = {"position": v(x, y), "Size": v(w, h), "Color": color}
+        if sprite: p["Texture"] = self.tex(sprite, folder)
+        if fade: p["FadeWhenBehind"] = "true"
         if tall: p["Tall"] = "true"
         if blocks_ghosts: p["BlocksGhosts"] = "true"
         if inner: p["InnerColor"] = inner
