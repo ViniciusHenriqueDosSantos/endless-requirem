@@ -7,6 +7,7 @@
 #   wait:n       espera n quadros a mais antes da foto
 #   hud          mostra o HUD nesta foto
 #   dia          desliga a noite nesta foto (para ver o layout)
+#   raio         solta um relâmpago da chuva e tira a foto no clarão
 #   pegar:Item   faz o item aparecer em cima do jogador (ex.: pegar:Cracha, para ver a inspeção)
 extends SceneTree
 
@@ -26,6 +27,7 @@ func _initialize():
 	for p in points:
 		var parts: PackedStringArray = p.split(",")
 		var extra_wait := 20
+		var raio := false
 		if hud: hud.visible = false
 		for n in ["Noite", "NightOverlay"]:
 			var nd = level.get_node_or_null(n)
@@ -58,11 +60,17 @@ func _initialize():
 				for n in ["Noite", "NightOverlay"]:
 					var nd = level.get_node_or_null(n)
 					if nd: nd.visible = false
+			elif a == "raio":
+				raio = true
 			elif a == "hud" and hud:
 				hud.visible = true
 		for i in extra_wait:
 			player.call("HealFull")  # nas fotos o jogador não morre
 			await process_frame
+		if raio:
+			level.get_node("Chuva").call("Lightning")
+			for i in 3:
+				await process_frame
 		await RenderingServer.frame_post_draw
 		var img := root.get_viewport().get_texture().get_image()
 		img.save_png("%s_%02d.png" % [prefix, idx])

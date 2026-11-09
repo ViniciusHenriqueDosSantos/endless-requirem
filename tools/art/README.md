@@ -80,6 +80,21 @@ O jogo se passa em 2061, à noite, com o campus abandonado há décadas.
   caído; paredes com vidro quebrado, mofo, rachaduras, pichações e trepadeira; carros abandonados, cadeiras caídas, entulho.
 - Texturas de luz: `lights.py` gera `sprites/lights/` (radial, cone da lanterna, tubo fluorescente).
 
+## Chuva (Fase 1)
+
+`objects/weather/rain.tscn` (`Rain`): chove a noite toda.
+
+- **Pingos**: `rain.gdshader` desenha no mundo, em pixel art, três camadas de riscos inclinados, respingos no chão e anéis
+  nas poças. Escurecem com a noite e brilham na lanterna e perto dos postes. A chuva é dividida em pedaços de 6x6 tiles para
+  cada pedaço receber só as luzes de perto.
+- **Onde chove**: o gerador da fase grava `levels/fase_1_chuva.png` (1 pixel por tile: R = chove, G = respinga, B = poça).
+  Dentro do RU, da cantina e do elevador não chove; só pinga nas poças, do teto furado.
+- **Relâmpagos**: a cada 14 a 32 s o `CanvasModulate` da noite clareia de repente (às vezes duas vezes) e o trovão vem
+  depois: quase junto quando o raio cai perto, segundos depois quando é longe. Dentro das salas o clarão é mais fraco.
+- **Som**: `sounds/clima/` (`chuva.ogg` em loop e três trovões), gerados por `tools/audio/gen_chuva.py` (ruído filtrado e
+  gotas sintetizadas, precisa de numpy, scipy e ffmpeg). Tocam no bus `Chuva`, criado pelo script, que abafa o som com um
+  filtro passa-baixa quando o jogador entra numa sala.
+
 ## Inspeção de itens
 
 Ao pegar um item com `InspectTexture` (crachá, marmita, escopeta), `objects/inspect/item_inspect.tscn` pausa o jogo e mostra
