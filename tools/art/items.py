@@ -182,6 +182,38 @@ def grade(vertical):
     return cv
 
 
+def porta_escada():
+    """Porta corta-fogo da escada (16x32), vista de cima numa parede lateral: o batente na espessura da parede,
+    a folha de aço pintada, corrente com cadeado e a luz vermelha da escada vazando pela fresta."""
+    import json
+    from PIL import Image
+    tiles = json.load(open("tools/levelgen/tiles_fase1.json"))["tiles"]
+    atlas = Image.open("sprites/tiles/fase1_tiles.png").convert("RGBA")
+    ax, ay = tiles["topo_interno_5"]
+    wall = atlas.crop((ax * 16, ay * 16, ax * 16 + 16, ay * 16 + 16))
+    cv = Canvas(16, 32)
+    for y0 in (0, 16):
+        for y in range(16):
+            for x in range(16):
+                cv.px[x, y0 + y] = wall.getpixel((x, y))
+    cv.rect(2, 3, 12, 26, hexc("3b3f45"))                       # vão do batente
+    cv.hline(2, 3, 12, hexc("2a2d32")); cv.hline(2, 28, 12, hexc("7e868f")); cv.hline(2, 2, 12, hexc("7e868f"))
+    cv.vline(8, 4, 24, hexc("6e1a17")); cv.vline(9, 6, 20, hexc("4a1412"))  # luz vermelha pela fresta
+    LEAF, LEAF_L, LEAF_D = hexc("4f5d58"), hexc("7d8f88"), hexc("323b38")
+    cv.rect(3, 4, 5, 24, LEAF); cv.vline(3, 4, 24, LEAF_L); cv.vline(7, 4, 24, LEAF_D)
+    for (x, y) in ((5, 7), (4, 11), (6, 20), (5, 24), (6, 9)):
+        cv.put(x, y, hexc("7a4a2c"))                            # ferrugem
+    for y in range(25, 28):                                     # faixa de aviso amarela e preta
+        for x in range(4, 7):
+            cv.put(x, y, hexc("d8ad2e") if (x + y) % 2 else hexc("23252a"))
+    cv.vline(1, 13, 6, hexc("c9cfd4")); cv.put(2, 13, hexc("8f969d")); cv.put(2, 18, hexc("8f969d"))  # barra antipânico
+    for i in range(12):                                          # corrente em X
+        for x, y in ((1 + i * 7 // 11, 9 + i), (8 - i * 7 // 11, 9 + i)):
+            cv.put(x, y, hexc("a3a9af") if i % 2 else hexc("5d636a"))
+    cv.rect(3, 15, 3, 3, hexc("d9a83a")); cv.hline(3, 17, 3, hexc("9c7420")); cv.put(4, 14, hexc("8f969d"))  # cadeado
+    return cv
+
+
 def catraca(locked):
     """Catraca da portaria (32x16): braços de aço e a luzinha vermelha/verde."""
     cv = Canvas(32, 18)
@@ -322,6 +354,7 @@ if __name__ == "__main__":
     for i in range(3): pilha(i).save(f"sprites/objects/pilha_{i}.png")
     sheet([alvo(0), alvo(1)], 2).save("sprites/objects/alvo.png")
     grade(False).save("sprites/objects/grade_h.png"); grade(True).save("sprites/objects/grade_v.png")
+    porta_escada().save("sprites/objects/porta_escada.png")
     catraca(True).save("sprites/objects/catraca_trancada.png"); catraca(False).save("sprites/objects/catraca_aberta.png")
     cracha_grande().save("sprites/items/inspecao/cracha.png")
     marmita_grande().save("sprites/items/inspecao/marmita.png")

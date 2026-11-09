@@ -409,6 +409,10 @@ prop("CatracaRU", "RU", 15 * T + 32 - ru[0], 37 * T + 40 - ru[1], 64, 80, col(0,
 for i, (cx, cy, spr) in enumerate([(10 * T, 33 * T, "cadeira_caida"), (13 * T + 40, 27 * T + 20, "cadeira_caida"),
                                    (20 * T + 20, 30 * T - 10, "entulho"), (3 * T + 20, 39 * T + 40, "entulho")]):
     prop(f"Destrocos{i+1}", "RU", cx - ru[0], cy - ru[1], 48, 32, col(0, 0, 0, 0), solid=False, sprite=spr)
+# porta da escada, na parede direita da passagem do RU: trancada com corrente, com a luz de emergência vazando
+node("PortaEscada", inst="door", props={"position": v(14 * T + 32, 35 * T - 8), "Size": v(64, 2 * T),
+     "StartsLocked": "true", "MessageWhenLocked": "true", "LockedSprite": tex("porta_escada", "objects"),
+     "LockedMessage": '"Porta da escada, trancada com corrente. Do outro lado, uma luz vermelha pisca."'})
 # primeira porta: entre o corredor e a entradinha do RU (tranca quando o corredor fica assombrado)
 node("PortaEntradaRU", inst="door", props={"position": v(22 * T + 32, 40 * T), "Size": v(64, 3 * T)})
 
@@ -474,7 +478,8 @@ node("NightOverlay", inst="night_overlay")
 
 # ===== CHUVA =====
 # Máscara de 1 pixel por tile (objects/weather/rain.gdshader): R = chove, G = respinga no chão, B = poça.
-# Dentro das salas não chove (só pinga nas poças, do teto furado); na laje, na grama e na mata chove, mas respinga menos.
+# Dentro do prédio (salas, paredes e a laje entre elas) não chove; só pinga nas poças, do teto furado.
+# Na grama e na mata chove, mas respinga menos.
 HARD = 255
 SPLASH_BG = {"laje": 170, "grama": 90, "mata": 35, "baixo": 255, "asfalto": 255, "bloquete": 255}
 _name_of = {tuple(a): n for n, a in tiler.names.items()}
@@ -491,6 +496,8 @@ for y in range(_by0, _by1 + 1):
                 b = 255 if c in pocas else 0
             else:
                 b = 110 if c in pocas else 0
+        elif 1 <= x <= 22 and 1 <= y <= 51:
+            pass  # paredes e laje do bloco do RU/cantina/elevador: é tudo prédio, não chove dentro
         elif c in walls:
             below = floor_mat.get((x, y + 1))
             r = 0 if below and below.split("_")[0] in ("granito", "ceramica", "aco") else 255
@@ -551,6 +558,7 @@ light("Geladeira", 21 * T + 30, 10 * T + 40, col(0.55, 0.8, 1), 0.9, 0.9, STEADY
 light("Balcao", 13 * T, 9 * T + 40, QUENTE, 1.6, 0.8, FLICKER)
 # elevador: luz de emergência vermelha pulsando
 light("Emergencia", 8 * T + 32, 3 * T + 32, col(1, 0.15, 0.1), 1.8, 1.1, PULSE)
+light("Escada", 14 * T + 56, 34 * T, col(1, 0.15, 0.1), 1.1, 0.8, PULSE)  # vaza pela porta da escada do RU
 light("CorredorElevador", 2 * T + 32, 5 * T, TUBO, 1.4, 0.7, BROKEN, tube=True)
 # plaquinhas verdes de SAÍDA ainda acesas
 saida_at = tuple(tiler.names["frente_interno_saida"])

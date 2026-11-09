@@ -62,6 +62,7 @@
 [ext_resource type="Texture2D" path="res://sprites/props/fase1/catraca_ru.png" id="tex_props_fase1_catraca_ru"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase1/cadeira_caida.png" id="tex_props_fase1_cadeira_caida"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase1/entulho.png" id="tex_props_fase1_entulho"]
+[ext_resource type="Texture2D" path="res://sprites/objects/porta_escada.png" id="tex_objects_porta_escada"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase1/balcao_cantina.png" id="tex_props_fase1_balcao_cantina"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase1/balcao_lateral.png" id="tex_props_fase1_balcao_lateral"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase1/letreiro_cantina.png" id="tex_props_fase1_letreiro_cantina"]
@@ -730,6 +731,14 @@ Color = Color(0, 0, 0, 0)
 Texture = ExtResource("tex_props_fase1_entulho")
 Solid = false
 
+[node name="PortaEscada" parent="." instance=ExtResource("door")]
+position = Vector2(928, 2232)
+Size = Vector2(64, 128)
+StartsLocked = true
+MessageWhenLocked = true
+LockedSprite = ExtResource("tex_objects_porta_escada")
+LockedMessage = "Porta da escada, trancada com corrente. Do outro lado, uma luz vermelha pisca."
+
 [node name="PortaEntradaRU" parent="." instance=ExtResource("door")]
 position = Vector2(1440, 2560)
 Size = Vector2(64, 192)
@@ -1272,13 +1281,21 @@ BaseEnergy = 1.1
 Behavior = 3
 Seed = 37
 
+[node name="Escada" parent="Luzes" instance=ExtResource("flicker_light")]
+position = Vector2(952, 2176)
+color = Color(1, 0.15, 0.1, 1)
+texture_scale = 1.1
+BaseEnergy = 0.8
+Behavior = 3
+Seed = 38
+
 [node name="CorredorElevador" parent="Luzes" instance=ExtResource("flicker_light")]
 position = Vector2(160, 320)
 color = Color(0.82, 0.92, 1, 1)
 texture_scale = 1.4
 BaseEnergy = 0.7
 Behavior = 2
-Seed = 38
+Seed = 39
 texture = ExtResource("light_tubo")
 
 [node name="Saida1" parent="Luzes" instance=ExtResource("flicker_light")]
@@ -1287,7 +1304,7 @@ color = Color(0.2, 1, 0.45, 1)
 texture_scale = 0.7
 BaseEnergy = 0.8
 Behavior = 0
-Seed = 39
+Seed = 40
 
 [node name="Saida2" parent="Luzes" instance=ExtResource("flicker_light")]
 position = Vector2(1056, 1544)
@@ -1295,7 +1312,7 @@ color = Color(0.2, 1, 0.45, 1)
 texture_scale = 0.7
 BaseEnergy = 0.8
 Behavior = 0
-Seed = 40
+Seed = 41
 
 [node name="Player" parent="." instance=ExtResource("player")]
 position = Vector2(1152, 4112)
