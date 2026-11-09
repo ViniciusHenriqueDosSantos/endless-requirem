@@ -69,6 +69,7 @@ public partial class ItemInspect : CanvasLayer
 		_title.Text = title;
 		_text.Text = text;
 		_hint.Text = "Aperte qualquer tecla para guardar";
+		GetNode<AudioStreamPlayer>("Som").Play();
 		_shownAt = Time.GetTicksMsec();
 		_time = 0;
 		_open = true;

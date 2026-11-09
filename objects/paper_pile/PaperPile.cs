@@ -74,6 +74,7 @@ public partial class PaperPile : StaticBody2D
 
 		Health -= damage;
 		_flash = HitFlashTime;
+		GetNode<AudioStreamPlayer2D>("Som").Play();
 		(GetTree().GetFirstNodeInGroup("player") as Player)?.TriggerShake(HitShake);
 		QueueRedraw();
 

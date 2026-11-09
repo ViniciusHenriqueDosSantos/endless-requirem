@@ -49,8 +49,27 @@ public partial class Fase1 : Node2D
 		Catraca.Unlocked += () => Hud.SetObjective("Vá ao RU (porta à esquerda do corredor)");
 		Ru.Entered += OnRuEntered;
 		Marmita.PickedUp += _ => Hud.SetObjective("Esquente a marmita no micro-ondas");
-		Microondas.Used += () => Ru.StartFight();
+		Microondas.Used += () =>
+		{
+			Ru.StartFight();
+			_microondasSom = new AudioStreamPlayer2D
+			{
+				Stream = GD.Load<AudioStream>("res://sounds/objects/microondas.ogg"),
+				MaxDistance = 1200f, Attenuation = 1.5f,
+			};
+			Microondas.AddChild(_microondasSom);
+			_microondasSom.Play();
+		};
 		Ru.Cleared += OnRuCleared;
+		Ru.Cleared += () =>
+		{
+			if (IsInstanceValid(_microondasSom))
+				_microondasSom.QueueFree();
+			var apito = new AudioStreamPlayer { Stream = GD.Load<AudioStream>("res://sounds/objects/microondas_apito.wav") };
+			AddChild(apito);
+			apito.Play();
+			apito.Finished += apito.QueueFree;
+		};
 		// Voltou ao corredor depois do RU: a entrada do RU fecha de vez.
 		Corredor.Entered += () => PortaEntradaRu.Lock();
 		Corredor.Cleared += OnCorredorCleared;
@@ -206,8 +225,12 @@ public partial class Fase1 : Node2D
 		Player.Revive(position);
 	}
 
+	private AudioStreamPlayer2D _microondasSom;
+
 	private void ResetRu()
 	{
+		if (IsInstanceValid(_microondasSom))
+			_microondasSom.QueueFree();
 		Player.RemoveItem("marmita");
 		Marmita.Reset();
 		Microondas.Reset();

@@ -6,6 +6,9 @@
 [ext_resource type="Texture2D" path="res://sprites/characters/fantasma_normal.png" id="4_normal"]
 [ext_resource type="Texture2D" path="res://sprites/characters/fantasma_fast.png" id="5_fast"]
 [ext_resource type="Texture2D" path="res://sprites/characters/fantasma_tank.png" id="6_tank"]
+[ext_resource type="AudioStream" path="res://sounds/enemy/fantasma.wav" id="7_som"]
+[ext_resource type="AudioStream" path="res://sounds/enemy/acerto.wav" id="8_acerto"]
+[ext_resource type="AudioStream" path="res://sounds/enemy/morte.wav" id="9_morte"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy"]
 size = Vector2(80, 32)
@@ -35,3 +38,20 @@ monitoring = false
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox"]
 position = Vector2(0, -64)
 shape = SubResource("RectangleShape2D_hitbox")
+
+[node name="Aparecer" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("7_som")
+volume_db = -8.0
+autoplay = true
+max_distance = 1000.0
+attenuation = 2.0
+
+[node name="Acerto" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("8_acerto")
+volume_db = -10.0
+max_distance = 1000.0
+
+[node name="Morte" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("9_morte")
+volume_db = -2.0
+max_distance = 1000.0
