@@ -46,17 +46,15 @@ float streaks(vec2 p, float t, vec2 cell, float speed, float len, float density,
 }
 
 // Respingos: um ponto que vira uma cruz e depois um anel, em lugares sorteados do chão.
-float splash(vec2 p, float t, float cell, float rate, float seed, float amount, bool puddle) {
+// chance: vem da máscara do próprio pixel (G ou B), lida uma vez só no fragment().
+float splash(vec2 p, float t, float cell, float rate, float seed, float amount, bool puddle, float chance) {
 	vec2 id = floor(p / cell);
 	float r = hash(id + seed);
-	vec2 c = id * cell + floor(vec2(hash(id + seed + 1.3), hash(id + seed + 2.9)) * (cell - 4.0)) + 2.0;
-	vec3 m = mask_at(c);
-	float chance = puddle ? m.b : m.g * m.r;
-	if (chance <= 0.0) return 0.0;
 	float period = 1.0 / rate;
 	float ph = fract(t / period + r);
 	float cycle = floor(t / period + r);
 	if (hash(id + seed + cycle * 0.37) > amount * chance * intensity) return 0.0;  // cada ciclo cai num lugar diferente
+	vec2 c = id * cell + floor(vec2(hash(id + seed + 1.3), hash(id + seed + 2.9)) * (cell - 4.0)) + 2.0;
 	vec2 d = p - c;
 	if (puddle) {  // anel achatado (perspectiva) que cresce e some
 		float k = ph / 0.55;
@@ -74,16 +72,18 @@ float splash(vec2 p, float t, float cell, float rate, float seed, float amount, 
 
 void fragment() {
 	vec2 p = floor(world / pixel);
-	vec3 m = mask_at(p);
+	vec3 m = mask_at(p);   // a única leitura de textura
+	if (m.r <= 0.0 && m.b <= 0.0) discard;   // seco (dentro do prédio)
 	float t = TIME;
 	float a = 0.0;
 	if (m.r > 0.0) {
 		a = max(a, streaks(p, t, vec2(7.0, 30.0), 150.0, 6.0, 0.55, 0.0) * 0.55);   // perto: riscos longos
 		a = max(a, streaks(p, t, vec2(5.0, 22.0), 115.0, 4.0, 0.5, 17.0) * 0.4);    // meio
 		a = max(a, streaks(p, t, vec2(4.0, 15.0), 80.0, 2.0, 0.45, 41.0) * 0.25);   // longe: tracinhos
-		a = max(a, splash(p, t, 9.0, 1.6, 5.0, 0.6, false) * 0.55);
+		if (m.g > 0.0) a = max(a, splash(p, t, 9.0, 1.6, 5.0, 0.6, false, m.g) * 0.55);
 		a *= m.r;
 	}
-	a = max(a, splash(p, t, 5.0, 1.1, 23.0, 0.9, true) * 0.5);  // poças (também nas de dentro, onde o teto pinga)
+	if (m.b > 0.0) a = max(a, splash(p, t, 5.0, 1.1, 23.0, 0.9, true, m.b) * 0.5);  // poças (também dentro, onde o teto pinga)
+	if (a <= 0.0) discard;   // a maior parte da tela: nada para misturar nem iluminar
 	COLOR = vec4(rain_color.rgb * boost, a * rain_color.a);
 }

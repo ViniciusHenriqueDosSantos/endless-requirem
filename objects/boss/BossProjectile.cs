@@ -22,7 +22,7 @@ public partial class BossProjectile : Area2D
 	public override void _Ready()
 	{
 		Monitorable = false;
-		Material = new CanvasItemMaterial { LightMode = CanvasItemMaterial.LightModeEnum.Unshaded };
+		Material = SharedMaterials.Unshaded;
 		SetCollisionMaskValue((int)Prop.FurnitureLayer, true);
 		AddChild(new CollisionShape2D { Shape = new CircleShape2D { Radius = Radius } });
 		AreaEntered += OnAreaEntered;

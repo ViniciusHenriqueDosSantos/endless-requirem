@@ -6,7 +6,7 @@ public partial class HealDrop : Area2D
 {
 	public override void _Ready()
 	{
-		GetNode<Sprite2D>("Sprite2D").Material = new CanvasItemMaterial { LightMode = CanvasItemMaterial.LightModeEnum.Unshaded };
+		GetNode<Sprite2D>("Sprite2D").Material = SharedMaterials.Unshaded;
 		BodyEntered += body =>
 		{
 			if (body is not Player player) return;

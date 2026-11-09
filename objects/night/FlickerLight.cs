@@ -19,6 +19,9 @@ public partial class FlickerLight : PointLight2D
 	private float _target = 1f;
 	private float _level = 1f;
 	private float _time;
+	private AudioStreamPlayer2D _som;
+	private Node2D _player;
+	private float _audioCheck;
 
 	public override void _Ready()
 	{
@@ -26,8 +29,12 @@ public partial class FlickerLight : PointLight2D
 		_time = _rng.Randf() * 10f;
 		Energy = BaseEnergy;
 
+		_som = GetNodeOrNull<AudioStreamPlayer2D>("Som");
 		if (Behavior is Mode.Steady or Mode.Pulse)
-			GetNode<AudioStreamPlayer2D>("Som").QueueFree();
+		{
+			_som?.QueueFree();
+			_som = null;
+		}
 	}
 
 	public override void _Process(double delta)
@@ -65,5 +72,17 @@ public partial class FlickerLight : PointLight2D
 		}
 
 		Energy = BaseEnergy * _level;
+		// Apagada não entra na conta da iluminação (as queimadas passam quase o tempo todo assim).
+		Enabled = Energy > 0.01f;
+
+		// O zumbido da lâmpada só toca com o jogador por perto: longe, o áudio nem é decodificado.
+		_audioCheck -= dt;
+		if (_som != null && _audioCheck <= 0f)
+		{
+			_audioCheck = 0.25f;
+			if (!IsInstanceValid(_player)) _player = GetTree().GetFirstNodeInGroup("player") as Node2D;
+			bool near = _player != null && _player.GlobalPosition.DistanceTo(GlobalPosition) < _som.MaxDistance + 150f;
+			_som.StreamPaused = !near;
+		}
 	}
 }

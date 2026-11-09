@@ -130,7 +130,7 @@ public partial class Enemy : CharacterBody2D
 		}
 		_sprite.Modulate = _baseColor;
 		// Fantasmas brilham no escuro: não dependem das luzes da fase (sem efeito em fase sem noite).
-		_sprite.Material = new CanvasItemMaterial { LightMode = CanvasItemMaterial.LightModeEnum.Unshaded };
+		_sprite.Material = SharedMaterials.Unshaded;
 		_collision.Scale = Vector2.One * _stats.Scale;
 		_collision.Position *= _stats.Scale;
 		_hitBox.Scale = Vector2.One * _stats.Scale;
