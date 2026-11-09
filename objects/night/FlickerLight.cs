@@ -25,6 +25,9 @@ public partial class FlickerLight : PointLight2D
 		_rng = new RandomNumberGenerator { Seed = (ulong)(Seed * 7919 + 17) };
 		_time = _rng.Randf() * 10f;
 		Energy = BaseEnergy;
+
+		if (Behavior is Mode.Steady or Mode.Pulse)
+			GetNode<AudioStreamPlayer2D>("Som").QueueFree();
 	}
 
 	public override void _Process(double delta)

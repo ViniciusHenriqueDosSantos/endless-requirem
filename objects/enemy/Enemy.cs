@@ -71,6 +71,8 @@ public partial class Enemy : CharacterBody2D
 	private bool _pixelArt;
 	private Color _baseColor;
 	private float _animTimer;
+	private float _hurtFaceTimer;
+	private const float HurtFaceTime = 0.25f;
 	[Export] public PackedScene HealDropScene;
 	[Export] public float HitKnockback = 600f;
 
@@ -114,7 +116,7 @@ public partial class Enemy : CharacterBody2D
 			// Cada tipo tem o seu desenho no tamanho certo: escala fixa de 4 (pixel art), apoiado nos pés.
 			_baseColor = Colors.White;
 			_sprite.Texture = art;
-			_sprite.Hframes = SpriteFrames;
+			_sprite.Hframes = SpriteFrames + 1;
 			_sprite.Frame = (int)(GD.Randi() % SpriteFrames);
 			_sprite.Scale = Vector2.One * 4f;
 			_sprite.Position = new Vector2(0, -art.GetHeight() * 2f);
@@ -143,6 +145,12 @@ public partial class Enemy : CharacterBody2D
 
 		_health -= damage;
 		_knockback = hitDirection * KnockbackForce;
+		GetNode<AudioStreamPlayer2D>("Acerto").Play();
+		if (_pixelArt)
+		{
+			_sprite.Frame = SpriteFrames;
+			_hurtFaceTimer = HurtFaceTime;
+		}
 
 		_sprite.Modulate = _pixelArt ? HitFlash : Colors.White;
 		GetTree().CreateTimer(HitFlashTime).Timeout += () =>
@@ -167,6 +175,11 @@ public partial class Enemy : CharacterBody2D
 			drop.Position = dropPosition;
 			GetTree().CurrentScene.CallDeferred(Node.MethodName.AddChild, drop);
 		}
+
+		var deathSound = GetNode<AudioStreamPlayer2D>("Morte");
+		deathSound.Reparent(GetParent());
+		deathSound.Play();
+		deathSound.Finished += deathSound.QueueFree;
 
 		QueueFree();
 	}
@@ -234,6 +247,14 @@ public partial class Enemy : CharacterBody2D
 	private void Animate(float dt)
 	{
 		if (!_pixelArt) return;
+		_sprite.FlipH = _player.GlobalPosition.X < GlobalPosition.X;
+		if (_hurtFaceTimer > 0)
+		{
+			_hurtFaceTimer -= dt;
+			if (_hurtFaceTimer <= 0)
+				_sprite.Frame = 0;
+			return;
+		}
 		_animTimer -= dt;
 		if (_animTimer <= 0)
 		{
