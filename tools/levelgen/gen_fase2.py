@@ -36,7 +36,7 @@ for name, path in [('player', 'player/player'), ('hud', 'hud/hud'), ('message_sc
                    ('room', 'room/room'), ('door', 'door/door'), ('pickup', 'pickup/pickup'),
                    ('item_slot', 'item_slot/item_slot'), ('area_trigger', 'area_trigger/area_trigger'),
                    ('paper_pile', 'paper_pile/paper_pile'), ('librarian', 'librarian/librarian'),
-                   ('lamp', 'librarian/shield_lamp')]:
+                   ('shelf', 'librarian/estante_bamba')]:
     L.res('PackedScene', f'res://objects/{path}.tscn', name)
 L.res('Resource', 'res://objects/librarian/bibliotecario.tres', 'bib')
 L.res('Script', 'res://objects/decor/Signatures.cs', 'sig')
@@ -73,14 +73,11 @@ def deco_rule(c, style, below):
     if y in (-9, 2): return "janelao_quebrado" if r < 0.3 else "janelao"
     if y == 8 and below == "vinil": return MURAL.get(x)
     if y == 17 and 20 <= x <= 23: return "quadro_bib" if x == 21 else "maos1"
-    if below == "granito":
-        if r < 0.55: return f"maos{int(r * 100) % 3}"
-        if r < 0.62: return "persiana"
-        if r < 0.67: return "saida"
-        if r < 0.72: return "extintor"
-        if r < 0.80: return "rachada"
-        if r < 0.86: return "pichacao1"
-        return "mofo"
+    if below == "granito":  # como nas fotos: as mãos e os nomes dos formandos cobrem as paredes do começo ao fim
+        if r < 0.86: return f"maos{int(r * 1000) % 3}"
+        if r < 0.90: return "saida"
+        if r < 0.94: return "extintor"
+        return "persiana"
     if r < 0.2: return "rachada"
     if r < 0.4: return "mofo"
     return None
@@ -189,10 +186,13 @@ L.node("PortaBiblioteca", "Biblioteca", inst="door", props={"position": v(19 * T
        "Size": v(64, 3 * T), "StartsLocked": "true", "MessageWhenLocked": "true", "Color": col(0.6, 0.5, 0.9, 1),
        "LockedMessage": '"BIBLIOTECA FECHADA. Devolução pendente: \\"Cálculo I\\" (atrasado desde 2041). ...Shhh! Sem o livro, sem entrada."'})
 L.node("Respawn", "Biblioteca", type="Marker2D", props={"position": v(21 * T - bib[0], 22 * T + 32 - bib[1])})
-# estantes: altas (bloqueiam tiros e a visão da Bibliotecária) e seguram fantasmas
+# estantes bambas: altas (tapam a visão da Bibliotecária e os tiros) e são a arma contra ela:
+# um tiro balança (barulho que a atrai), outro tiro derruba em cima de quem estiver na frente (objects/librarian/ToppleShelf.cs)
+L.node("Estantes", "Biblioteca", type="Node2D", props={"y_sort_enabled": "true"})
 for i, ty in enumerate([14, 17, 20, 23]):
-    L.prop(f"Estante{i+1}", "Biblioteca", 5 * T - bib[0], ty * T - bib[1], 8 * T, 128, WOOD, "", depth=64,
-           tall=True, blocks_ghosts=True, sprite=f"estante{i}")
+    L.node(f"Estante{i+1}", "Biblioteca/Estantes", inst="shelf", props={
+        "position": v(5 * T - bib[0], ty * T - bib[1]), "Size": v(8 * T, 128), "Color": WOOD, "Depth": "64",
+        "Tall": "true", "BlocksGhosts": "true", "Texture": L.tex(f"estante{i}", "props/fase2")})
 # xadrez gigante: o tapete azul e branco está no piso; as peças ficam em cima (algumas tombadas)
 for i, (tx, ty, spr) in enumerate([(1, 25, "peca_torre"), (3, 26, "peca_rei"), (5, 25, "peca_cavalo"), (2, 28, "peca_peao"),
                                    (4, 29, "peca_caida"), (6, 27, "peca_caida_preta"), (0, 30, "peca_peao")]):
@@ -202,11 +202,10 @@ for i, (tx, ty, spr) in enumerate([(1, 25, "peca_torre"), (3, 26, "peca_rei"), (
 # mesas de estudo (baixas)
 L.prop("MesaEstudo1", "Biblioteca", 14 * T - bib[0], 13 * T - bib[1], 128, 60, WHITE, depth=40, sprite="mesa_estudo0")
 L.prop("MesaEstudo2", "Biblioteca", 14 * T - bib[0], 27 * T - bib[1], 128, 60, WHITE, depth=40, sprite="mesa_estudo1")
-# luminárias (uma por sala de estudo)
-L.node("Luminarias", "Biblioteca", type="Node2D", props={"y_sort_enabled": "true"})
+# luminárias de mesa das salas de estudo (só decoração e luz)
 for i, (a, b) in enumerate(STUDY_ROOMS):
-    L.node(f"Luminaria{i+1}", "Biblioteca/Luminarias", inst="lamp",
-           props={"position": v((a + b + 1) * T / 2 - bib[0], 4 * T + 48 - bib[1])})
+    L.prop(f"Luminaria{i+1}", "Biblioteca", (a + b + 1) * T / 2 - bib[0] + 40, 6 * T + 40 - bib[1], 56, 88, col(0, 0, 0, 0),
+           solid=False, sprite="luminaria" if i % 2 == 0 else "luminaria_apagada")
 # mesas de estudo dentro de cada sala + soleira de madeira nas portas (para parecer porta)
 for i, (a, b) in enumerate(STUDY_ROOMS):
     L.prop(f"MesaSala{i+1}", "Biblioteca", (a + b + 1) * T / 2 - bib[0], 7 * T + 8 - bib[1], 150, 56, WHITE, depth=36,
@@ -221,8 +220,8 @@ for i, (tx, ty) in enumerate([(7, 11), (13, 10), (17, 19), (11, 22), (16, 29), (
     x, y = px(tx, ty)
     L.node(f"Ponto{i+1}", "Biblioteca/Patrulha", type="Marker2D", props={"position": v(x - bib[0], y - bib[1])})
 L.node("Bibliotecario", "Biblioteca", inst="librarian", props={"position": v(14 * T - bib[0], 20 * T - bib[1]),
-       "Config": 'ExtResource("bib")', "Patrol": 'NodePath("../Patrulha")', "Lamps": 'NodePath("../Luminarias")'},
-       node_paths=["Patrol", "Lamps"])
+       "Config": 'ExtResource("bib")', "Patrol": 'NodePath("../Patrulha")', "Shelves": 'NodePath("../Estantes")'},
+       node_paths=["Patrol", "Shelves"])
 L.node("Canhao", inst="pickup", props={"position": v(14 * T, 21 * T), "ItemId": '"canhao"', "DisplayName": '"Canhão"',
        "Color": col(0.3, 0.9, 1, 1), "WeaponReward": 'ExtResource("cannon")', "StartsHidden": "true",
        "Texture": L.tex("canhao", "weapons")})
@@ -292,6 +291,9 @@ light("Achados", 33 * T, 19 * T + 32, TUBO, 1.6, 0.7, FLICKER)
 # biblioteca: escura (a Bibliotecária se guia pela luz das luminárias); duas lâmpadas dando estalos e a emergência
 light("Biblioteca1", 5 * T, 19 * T, TUBO, 2.2, 0.8, BROKEN)
 light("Biblioteca2", 12 * T, 27 * T, TUBO, 2.2, 0.8, BROKEN)
+for i, (a, b) in enumerate(STUDY_ROOMS):
+    if i % 2 == 0:
+        light(f"LuminariaSala{i+1}", (a + b + 1) * T / 2 + 40, 5 * T + 40, col(1, 0.88, 0.55), 1.5, 0.9, FLICKER, tube=False)
 light("EmergenciaBib", 17 * T + 32, 21 * T, col(1, 0.15, 0.1), 1.4, 0.9, PULSE, tube=False)
 # fim do corredor: a luz vermelha do elevador quebrado e a placa verde da escada
 light("ElevadorQuebrado", 24 * T + 48, -6 * T, col(1, 0.15, 0.1), 1.6, 1.0, PULSE, tube=False)

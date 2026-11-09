@@ -9,7 +9,7 @@ using System.Collections.Generic;
 //   -> Hall das Caronas (as cadeiras bloqueiam a saída, 3 ondas, o zelador solta a chave)
 //   -> Achados e Perdidos (caixas: uma tem o livro, algumas têm fantasma)
 //   -> devolução do livro -> biblioteca abre
-//   -> Bibliotecária (furtividade com as luminárias, depois luta) -> Canhão + chave da escada
+//   -> Bibliotecária (furtividade: barulho atrai, estante bamba esmaga) -> Canhão + chave da escada
 //   -> porta da escada -> escada até o 4º andar (levels/escada.tscn).
 public partial class Fase2 : LevelBase
 {
@@ -274,19 +274,29 @@ public partial class Fase2 : LevelBase
 		if (Bibliotecario.IsHunting)
 		{
 			int seconds = Mathf.CeilToInt(Bibliotecario.HuntTimeLeft);
-			Hud.SetObjective($"ELA TE VIU! Fique longe da luz (lanterna e luminárias) por {seconds} s");
-			Hud.HideBoss();
+			Hud.SetObjective($"ELA TE VIU! Suma da vista dela atrás das estantes ({seconds} s)");
+			Hud.SetBoss(Bibliotecario.DisplayName, Bibliotecario.HealthRatio, false);
+			Hud.PointTo(Bibliotecario.GlobalPosition + BossPointerOffset, "BIBLIOTECÁRIA");
+			return;
+		}
+
+		if (Bibliotecario.IsStunned)
+		{
+			Hud.SetObjective("Ela está tonta! Atire nela agora");
+			Hud.SetBoss(Bibliotecario.DisplayName, Bibliotecario.HealthRatio, false);
 			Hud.PointTo(Bibliotecario.GlobalPosition + BossPointerOffset, "BIBLIOTECÁRIA");
 			return;
 		}
 
 		if (Bibliotecario.InStealth)
 		{
-			Hud.SetObjective($"Apague as luminárias das salas de estudo sem ser vista na luz ({Bibliotecario.LampsLeft} restantes)");
-			Hud.HideBoss();
-			ShieldLamp lamp = Bibliotecario.NearestLamp(Player.GlobalPosition);
-			if (lamp != null)
-				Hud.PointTo(lamp.GlobalPosition + PointerOffset, "LUMINÁRIA");
+			Hud.SetObjective(Bibliotecario.IsInvestigating
+				? $"Ela ouviu! Quando ela parar na frente da estante, atire de novo para derrubar ({Bibliotecario.CrashesLeft} restantes)"
+				: $"Silêncio... Atire numa estante bamba para fazer barulho e atraí-la ({Bibliotecario.CrashesLeft} restantes)");
+			Hud.SetBoss(Bibliotecario.DisplayName, Bibliotecario.HealthRatio, false);
+			ToppleShelf shelf = Bibliotecario.NearestShelf(Player.GlobalPosition);
+			if (shelf != null)
+				Hud.PointTo(shelf.GlobalPosition + new Vector2(0, -150), "ESTANTE");
 			return;
 		}
 

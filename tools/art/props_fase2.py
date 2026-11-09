@@ -56,6 +56,26 @@ def estante(seed=0, w=128, h=32):
     return cv
 
 
+def estante_caida(w=128, h=30):
+    """A estante tombada de cara no chão: vemos as costas de aço, torta, e os livros espalhados em volta."""
+    cv = Canvas(w, h)
+    r = rng(3050)
+    shadow_ellipse(cv, w / 2, h / 2 + 2, w / 2 - 2, h / 2 - 3, 90)
+    cv.rect(2, 7, w - 4, 14, BEGE_MET_D); cv.hline(2, 7, w - 4, BEGE_MET_L); cv.hline(2, 20, w - 4, shade(BEGE_MET_D, -0.35))
+    for x in range(2, w - 2, 16):  # reforços das costas
+        cv.vline(x, 8, 12, BEGE_MET)
+    cv.line(w // 2 - 10, 8, w // 2 + 6, 20, shade(BEGE_MET_D, -0.3))  # amassado
+    for _ in range(46):  # livros espalhados pra todo lado
+        x, y = r.randrange(0, w - 4), r.choice([r.randrange(0, 7), r.randrange(21, h - 2)])
+        c = r.choice(BOOKS)
+        if r.random() < 0.3:
+            cv.rect(x, y, 4, 2, hexc("efeadd")); cv.vline(x + 2, y, 2, hexc("b9b2a0")); cv.hline(x, y + 1, 4, c)
+        else:
+            cv.rect(x, y, 3, 2, c); cv.put(x + 2, y, hexc("efeadd"))
+    cv.frame(2, 7, w - 4, 14, shade(BEGE_MET_D, -0.45))
+    return cv
+
+
 def cadeira_preta(cv, x, y, facing_up=True, fallen=False):
     """Cadeira preta de escritório (as da biblioteca), vista de cima em 3/4."""
     B, BL = C["black"], C["black_l"]
@@ -300,10 +320,11 @@ def luminaria(on=True):
 
 
 # ======================================================================== BIBLIOTECÁRIA (chefe)
-# Quadros (24x42): 0 e 1 = andando (flutua), 2 = arremessando livro, 3 = caçando (olhos vermelhos, cabelo solto)
+# Quadros (24x42): 0 e 1 = andando (flutua), 2 = arremessando livro, 3 = caçando (olhos vermelhos, cabelo solto),
+#                  4 = tonta (levou uma estante na cabeça: óculos tortos, olhos em X, livro no coque)
 def bibliotecaria(frame):
     cv = Canvas(24, 42)
-    bob = [0, -1, 0, 0][frame]
+    bob = [0, -1, 0, 0, 2][frame]
     y = 2 + bob
     SK, SK_D = hexc("cdd6dc"), hexc("9aa8b4")        # pele pálida de fantasma
     CARD, CARD_D, CARD_L = hexc("6a5a8a"), hexc("4a3e66"), hexc("8a7aac")  # cardigã roxo
@@ -322,7 +343,10 @@ def bibliotecaria(frame):
     cv.put(9, y + 17, hexc("d9a62e")); cv.put(9, y + 20, hexc("d9a62e"))                   # botões
     cv.put(12, y + 14, hexc("d9a62e")); cv.put(12, y + 15, hexc("d9a62e"))                 # corrente dos óculos
     # braços
-    if frame == 2:  # joga um livro: braço direito para cima
+    if frame == 4:  # tonta: braços caídos
+        cv.rect(4, y + 16, 3, 10, CARD); cv.rect(17, y + 16, 3, 10, CARD)
+        cv.rect(4, y + 26, 3, 2, SK); cv.rect(17, y + 26, 3, 2, SK)
+    elif frame == 2:  # joga um livro: braço direito para cima
         cv.rect(18, y + 6, 3, 10, CARD); cv.rect(18, y + 3, 4, 3, SK)
         cv.rect(19, y - 1 if y > 1 else 0, 5, 4, hexc("b33a2e")); cv.vline(19, 0 if y < 2 else y - 1, 4, hexc("efeadd"))
         cv.rect(3, y + 15, 3, 9, CARD); cv.rect(3, y + 24, 3, 2, SK)
@@ -346,6 +370,15 @@ def bibliotecaria(frame):
         cv.line(15, y - 2 if y > 2 else 0, 18, y + 1, hexc("e3b62a"))
         cv.vline(6, y + 5, 3, HAIR); cv.vline(17, y + 5, 3, HAIR)
     # óculos e olhos
+    if frame == 4:  # tonta: óculos tortos, olhos em X e um livro em cima da cabeça
+        cv.line(7, y + 7, 16, y + 9, hexc("2a2b30"))
+        for ex in (9, 14):
+            cv.put(ex, y + 8, hexc("1b1724")); cv.put(ex + 1, y + 9, hexc("1b1724"))
+            cv.put(ex + 1, y + 8, hexc("1b1724")); cv.put(ex, y + 9, hexc("1b1724"))
+        cv.rect(7, y - 1, 10, 3, hexc("2f5fa8")); cv.hline(7, y + 1, 10, hexc("efeadd"))
+        cv.ellipse(12, y + 12, 1.5, 1.2, hexc("1b1724"))
+        cv.outline(INK)
+        return cv
     eye = hexc("ff3b30") if frame == 3 else hexc("ffe9a0")
     for ex in (8, 13):
         cv.frame(ex, y + 7, 4, 3, hexc("2a2b30")); cv.rect(ex + 1, y + 8, 2, 1, eye)
@@ -440,6 +473,7 @@ def chave_grande(red):
 
 
 PROPS = {
+    "estante_caida": estante_caida,
     "estante0": lambda: estante(0), "estante1": lambda: estante(1), "estante2": lambda: estante(2), "estante3": lambda: estante(3),
     "mesa_estudo0": lambda: mesa_estudo(seed=0), "mesa_estudo1": lambda: mesa_estudo(seed=1),
     "mesa_sala": lambda: mesa_estudo(38, 14, seed=2),
@@ -458,7 +492,7 @@ PROPS = {
 if __name__ == "__main__":
     for name, fn in PROPS.items():
         fn().save(OUT + name + ".png")
-    sheet([bibliotecaria(f) for f in range(4)], 4).save("sprites/characters/bibliotecaria.png")
+    sheet([bibliotecaria(f) for f in range(5)], 5).save("sprites/characters/bibliotecaria.png")
     livros_voando().save("sprites/fx/livros.png")
     livro_item().save("sprites/items/livro.png")
     chave_item(hexc("e3b62a")).save("sprites/items/chave_achados.png")

@@ -11,7 +11,7 @@
 [ext_resource type="PackedScene" path="res://objects/area_trigger/area_trigger.tscn" id="area_trigger"]
 [ext_resource type="PackedScene" path="res://objects/paper_pile/paper_pile.tscn" id="paper_pile"]
 [ext_resource type="PackedScene" path="res://objects/librarian/librarian.tscn" id="librarian"]
-[ext_resource type="PackedScene" path="res://objects/librarian/shield_lamp.tscn" id="lamp"]
+[ext_resource type="PackedScene" path="res://objects/librarian/estante_bamba.tscn" id="shelf"]
 [ext_resource type="Resource" path="res://objects/librarian/bibliotecario.tres" id="bib"]
 [ext_resource type="Script" path="res://objects/decor/Signatures.cs" id="sig"]
 [ext_resource type="Resource" path="res://objects/weapon/cannon.tres" id="cannon"]
@@ -45,6 +45,8 @@
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/peca_caida_preta.png" id="tex_props_fase2_peca_caida_preta"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/mesa_estudo0.png" id="tex_props_fase2_mesa_estudo0"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/mesa_estudo1.png" id="tex_props_fase2_mesa_estudo1"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase2/luminaria.png" id="tex_props_fase2_luminaria"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase2/luminaria_apagada.png" id="tex_props_fase2_luminaria_apagada"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/mesa_sala.png" id="tex_props_fase2_mesa_sala"]
 [ext_resource type="Texture2D" path="res://sprites/weapons/canhao.png" id="tex_weapons_canhao"]
 [ext_resource type="Texture2D" path="res://sprites/items/chave_escada.png" id="tex_items_chave_escada"]
@@ -114,7 +116,7 @@ tile_set = ExtResource("tiles")
 y_sort_enabled = true
 texture_filter = 1
 scale = Vector2(4, 4)
-tile_map_data = PackedByteArray("AAABAAMAAAAFAAkAAAAEAAMAAAAFAAkAAAAIAAMAAAAFAAkAAAAMAAMAAAAFAAkAAAAPAAMAAAAFAAkAAAABAAQAAAAAAAwAAAAEAAQAAAAAAAwAAAAIAAQAAAAFAAkAAAAMAAQAAAAAAAwAAAAPAAQAAAAAAAwAAAAIAAUAAAAFAAkAAAABAAYAAAAEAAkAAAAEAAYAAAAEAAkAAAAIAAYAAAAFAAkAAAAMAAYAAAAEAAkAAAAPAAYAAAAEAAkAAAABAAcAAAAFAAkAAAAEAAcAAAAFAAkAAAAIAAcAAAAFAAkAAAAMAAcAAAAFAAkAAAAPAAcAAAAFAAkAAAD+/wgAAAAEABcAAAD//wgAAAAFABcAAAAAAAgAAAAGABcAAAABAAgAAAACAAwAAAAEAAgAAAABAAwAAAAFAAgAAAAHABcAAAAGAAgAAAAEABcAAAAHAAgAAAAFABcAAAAIAAgAAAAGABcAAAAJAAgAAAAHABcAAAAKAAgAAAAEABcAAAALAAgAAAAFABcAAAAMAAgAAAACAAwAAAAPAAgAAAABAAwAAAAQAAgAAAAGABcAAAARAAgAAAAHABcAAAASAAgAAAAEABcAAAAeABEAAAAFAAkAAAATABIAAAAFAAkAAAAeABIAAAAAAAwAAAATABMAAAAFAAkAAAATABQAAAAAAAwAAAAeABUAAAAEAAkAAAAeABYAAAAFAAkAAAATABgAAAAEAAkAAAATABkAAAAFAAkAAAATABoAAAAHAAkAAAAUABoAAAAKAAkAAAAVABoAAAAKAAkAAAAWABoAAAAKAAkAAAAXABoAAAAMAAkAAAATABsAAAAFAAkAAAAXABsAAAAFAAkAAAATABwAAAAFAAkAAAAXABwAAAAFAAkAAAATAB0AAAAFAAkAAAAXAB0AAAAFAAkAAAATAB4AAAAFAAkAAAAXAB4AAAAFAAkAAAATAB8AAAAFAAkAAAAXAB8AAAAFAAkAAAACACAAAAAOAAkAAAADACAAAAAOAAkAAAAEACAAAAAOAAkAAAAFACAAAAAOAAkAAAAGACAAAAAOAAkAAAAHACAAAAAOAAkAAAAIACAAAAAOAAkAAAAJACAAAAAOAAkAAAAKACAAAAAOAAkAAAALACAAAAAOAAkAAAAMACAAAAAOAAkAAAANACAAAAAOAAkAAAAOACAAAAAOAAkAAAAPACAAAAAOAAkAAAAQACAAAAAOAAkAAAARACAAAAAOAAkAAAASACAAAAAOAAkAAAATACAAAAANAAkAAAAXACAAAAAFAAkAAAACACEAAAAAABcAAAADACEAAAACABcAAAAEACEAAAACABcAAAAFACEAAAAIABcAAAAGACEAAAAIABcAAAAHACEAAAACABcAAAAIACEAAAAAABcAAAAJACEAAAAOAAwAAAAKACEAAAAGAAwAAAALACEAAAAFAAwAAAAMACEAAAAGAAwAAAANACEAAAABABcAAAAOACEAAAAFAAwAAAAPACEAAAAIABcAAAAQACEAAAAMAAwAAAARACEAAAABABcAAAASACEAAAAAABcAAAATACEAAAALAAwAAAAUACEAAAABABcAAAAVACEAAAAAABcAAAAWACEAAAAMAAwAAAAXACEAAAANAAkAAAAXACIAAAAFAAkAAAAXACMAAAAAAAwAAAAXACcAAAAEAAkAAAAXACgAAAAFAAkAAAA=")
+tile_map_data = PackedByteArray("AAABAAMAAAAFAAkAAAAEAAMAAAAFAAkAAAAIAAMAAAAFAAkAAAAMAAMAAAAFAAkAAAAPAAMAAAAFAAkAAAABAAQAAAAAAAwAAAAEAAQAAAAAAAwAAAAIAAQAAAAFAAkAAAAMAAQAAAAAAAwAAAAPAAQAAAAAAAwAAAAIAAUAAAAFAAkAAAABAAYAAAAEAAkAAAAEAAYAAAAEAAkAAAAIAAYAAAAFAAkAAAAMAAYAAAAEAAkAAAAPAAYAAAAEAAkAAAABAAcAAAAFAAkAAAAEAAcAAAAFAAkAAAAIAAcAAAAFAAkAAAAMAAcAAAAFAAkAAAAPAAcAAAAFAAkAAAD+/wgAAAAEABcAAAD//wgAAAAFABcAAAAAAAgAAAAGABcAAAABAAgAAAACAAwAAAAEAAgAAAABAAwAAAAFAAgAAAAHABcAAAAGAAgAAAAEABcAAAAHAAgAAAAFABcAAAAIAAgAAAAGABcAAAAJAAgAAAAHABcAAAAKAAgAAAAEABcAAAALAAgAAAAFABcAAAAMAAgAAAACAAwAAAAPAAgAAAABAAwAAAAQAAgAAAAGABcAAAARAAgAAAAHABcAAAASAAgAAAAEABcAAAAeABEAAAAFAAkAAAATABIAAAAFAAkAAAAeABIAAAAAAAwAAAATABMAAAAFAAkAAAATABQAAAAAAAwAAAAeABUAAAAEAAkAAAAeABYAAAAFAAkAAAATABgAAAAEAAkAAAATABkAAAAFAAkAAAATABoAAAAHAAkAAAAUABoAAAAKAAkAAAAVABoAAAAKAAkAAAAWABoAAAAKAAkAAAAXABoAAAAMAAkAAAATABsAAAAFAAkAAAAXABsAAAAFAAkAAAATABwAAAAFAAkAAAAXABwAAAAFAAkAAAATAB0AAAAFAAkAAAAXAB0AAAAFAAkAAAATAB4AAAAFAAkAAAAXAB4AAAAFAAkAAAATAB8AAAAFAAkAAAAXAB8AAAAFAAkAAAACACAAAAAOAAkAAAADACAAAAAOAAkAAAAEACAAAAAOAAkAAAAFACAAAAAOAAkAAAAGACAAAAAOAAkAAAAHACAAAAAOAAkAAAAIACAAAAAOAAkAAAAJACAAAAAOAAkAAAAKACAAAAAOAAkAAAALACAAAAAOAAkAAAAMACAAAAAOAAkAAAANACAAAAAOAAkAAAAOACAAAAAOAAkAAAAPACAAAAAOAAkAAAAQACAAAAAOAAkAAAARACAAAAAOAAkAAAASACAAAAAOAAkAAAATACAAAAANAAkAAAAXACAAAAAFAAkAAAACACEAAAACABcAAAADACEAAAACABcAAAAEACEAAAABABcAAAAFACEAAAABABcAAAAGACEAAAABABcAAAAHACEAAAABABcAAAAIACEAAAACABcAAAAJACEAAAABABcAAAAKACEAAAABABcAAAALACEAAAACABcAAAAMACEAAAAAABcAAAANACEAAAABABcAAAAOACEAAAABABcAAAAPACEAAAAAABcAAAAQACEAAAAIABcAAAARACEAAAABABcAAAASACEAAAAAABcAAAATACEAAAABABcAAAAUACEAAAACABcAAAAVACEAAAAAABcAAAAWACEAAAAFAAwAAAAXACEAAAANAAkAAAAXACIAAAAFAAkAAAAXACMAAAAAAAwAAAAXACcAAAAEAAkAAAAXACgAAAAFAAkAAAA=")
 tile_set = ExtResource("tiles")
 
 [node name="OuterWalls" type="TileMapLayer" parent="." groups=["obstacles", "outer_walls"]]
@@ -454,41 +456,44 @@ LockedMessage = "BIBLIOTECA FECHADA. Devolução pendente: \"Cálculo I\" (atras
 [node name="Respawn" type="Marker2D" parent="Biblioteca"]
 position = Vector2(1472, 1312)
 
-[node name="Estante1" parent="Biblioteca" instance=ExtResource("prop")]
+[node name="Estantes" type="Node2D" parent="Biblioteca"]
+y_sort_enabled = true
+
+[node name="Estante1" parent="Biblioteca/Estantes" instance=ExtResource("shelf")]
 position = Vector2(448, 768)
 Size = Vector2(512, 128)
 Color = Color(0.48, 0.34, 0.22, 1)
-Texture = ExtResource("tex_props_fase2_estante0")
+Depth = 64
 Tall = true
 BlocksGhosts = true
-Depth = 64
+Texture = ExtResource("tex_props_fase2_estante0")
 
-[node name="Estante2" parent="Biblioteca" instance=ExtResource("prop")]
+[node name="Estante2" parent="Biblioteca/Estantes" instance=ExtResource("shelf")]
 position = Vector2(448, 960)
 Size = Vector2(512, 128)
 Color = Color(0.48, 0.34, 0.22, 1)
-Texture = ExtResource("tex_props_fase2_estante1")
+Depth = 64
 Tall = true
 BlocksGhosts = true
-Depth = 64
+Texture = ExtResource("tex_props_fase2_estante1")
 
-[node name="Estante3" parent="Biblioteca" instance=ExtResource("prop")]
+[node name="Estante3" parent="Biblioteca/Estantes" instance=ExtResource("shelf")]
 position = Vector2(448, 1152)
 Size = Vector2(512, 128)
 Color = Color(0.48, 0.34, 0.22, 1)
-Texture = ExtResource("tex_props_fase2_estante2")
+Depth = 64
 Tall = true
 BlocksGhosts = true
-Depth = 64
+Texture = ExtResource("tex_props_fase2_estante2")
 
-[node name="Estante4" parent="Biblioteca" instance=ExtResource("prop")]
+[node name="Estante4" parent="Biblioteca/Estantes" instance=ExtResource("shelf")]
 position = Vector2(448, 1344)
 Size = Vector2(512, 128)
 Color = Color(0.48, 0.34, 0.22, 1)
-Texture = ExtResource("tex_props_fase2_estante3")
+Depth = 64
 Tall = true
 BlocksGhosts = true
-Depth = 64
+Texture = ExtResource("tex_props_fase2_estante3")
 
 [node name="Peca1" parent="Biblioteca" instance=ExtResource("prop")]
 position = Vector2(224, 1528)
@@ -553,20 +558,33 @@ Color = Color(0.78, 0.79, 0.8, 1)
 Texture = ExtResource("tex_props_fase2_mesa_estudo1")
 Depth = 40
 
-[node name="Luminarias" type="Node2D" parent="Biblioteca"]
-y_sort_enabled = true
+[node name="Luminaria1" parent="Biblioteca" instance=ExtResource("prop")]
+position = Vector2(136, 296)
+Size = Vector2(56, 88)
+Color = Color(0, 0, 0, 0)
+Texture = ExtResource("tex_props_fase2_luminaria")
+Solid = false
 
-[node name="Luminaria1" parent="Biblioteca/Luminarias" instance=ExtResource("lamp")]
-position = Vector2(96, 176)
+[node name="Luminaria2" parent="Biblioteca" instance=ExtResource("prop")]
+position = Vector2(584, 296)
+Size = Vector2(56, 88)
+Color = Color(0, 0, 0, 0)
+Texture = ExtResource("tex_props_fase2_luminaria_apagada")
+Solid = false
 
-[node name="Luminaria2" parent="Biblioteca/Luminarias" instance=ExtResource("lamp")]
-position = Vector2(544, 176)
+[node name="Luminaria3" parent="Biblioteca" instance=ExtResource("prop")]
+position = Vector2(840, 296)
+Size = Vector2(56, 88)
+Color = Color(0, 0, 0, 0)
+Texture = ExtResource("tex_props_fase2_luminaria")
+Solid = false
 
-[node name="Luminaria3" parent="Biblioteca/Luminarias" instance=ExtResource("lamp")]
-position = Vector2(800, 176)
-
-[node name="Luminaria4" parent="Biblioteca/Luminarias" instance=ExtResource("lamp")]
-position = Vector2(1248, 176)
+[node name="Luminaria4" parent="Biblioteca" instance=ExtResource("prop")]
+position = Vector2(1288, 296)
+Size = Vector2(56, 88)
+Color = Color(0, 0, 0, 0)
+Texture = ExtResource("tex_props_fase2_luminaria_apagada")
+Solid = false
 
 [node name="MesaSala1" parent="Biblioteca" instance=ExtResource("prop")]
 position = Vector2(96, 328)
@@ -661,11 +679,11 @@ position = Vector2(800, 928)
 [node name="Ponto9" type="Marker2D" parent="Biblioteca/Patrulha"]
 position = Vector2(96, 672)
 
-[node name="Bibliotecario" parent="Biblioteca" node_paths=PackedStringArray("Patrol", "Lamps") instance=ExtResource("librarian")]
+[node name="Bibliotecario" parent="Biblioteca" node_paths=PackedStringArray("Patrol", "Shelves") instance=ExtResource("librarian")]
 position = Vector2(1024, 1152)
 Config = ExtResource("bib")
 Patrol = NodePath("../Patrulha")
-Lamps = NodePath("../Luminarias")
+Shelves = NodePath("../Estantes")
 
 [node name="Canhao" parent="." instance=ExtResource("pickup")]
 position = Vector2(896, 1344)
@@ -968,13 +986,29 @@ Behavior = 2
 Seed = 116
 texture = ExtResource("light_tubo")
 
+[node name="LuminariaSala1" parent="Luzes" instance=ExtResource("flicker_light")]
+position = Vector2(8, 360)
+color = Color(1, 0.88, 0.55, 1)
+texture_scale = 1.5
+BaseEnergy = 0.9
+Behavior = 1
+Seed = 117
+
+[node name="LuminariaSala3" parent="Luzes" instance=ExtResource("flicker_light")]
+position = Vector2(712, 360)
+color = Color(1, 0.88, 0.55, 1)
+texture_scale = 1.5
+BaseEnergy = 0.9
+Behavior = 1
+Seed = 118
+
 [node name="EmergenciaBib" parent="Luzes" instance=ExtResource("flicker_light")]
 position = Vector2(1120, 1344)
 color = Color(1, 0.15, 0.1, 1)
 texture_scale = 1.4
 BaseEnergy = 0.9
 Behavior = 3
-Seed = 117
+Seed = 119
 
 [node name="ElevadorQuebrado" parent="Luzes" instance=ExtResource("flicker_light")]
 position = Vector2(1584, -384)
@@ -982,7 +1016,7 @@ color = Color(1, 0.15, 0.1, 1)
 texture_scale = 1.6
 BaseEnergy = 1
 Behavior = 3
-Seed = 118
+Seed = 120
 
 [node name="PlacaEscada" parent="Luzes" instance=ExtResource("flicker_light")]
 position = Vector2(1584, -192)
@@ -990,29 +1024,13 @@ color = Color(0.2, 1, 0.45, 1)
 texture_scale = 0.8
 BaseEnergy = 0.8
 Behavior = 0
-Seed = 119
+Seed = 121
 
 [node name="BotaoElevador" parent="Luzes" instance=ExtResource("flicker_light")]
 position = Vector2(1576, 2944)
 color = Color(1, 0.5, 0.25, 1)
 texture_scale = 0.6
 BaseEnergy = 0.7
-Behavior = 0
-Seed = 120
-
-[node name="Saida1" parent="Luzes" instance=ExtResource("flicker_light")]
-position = Vector2(672, 2184)
-color = Color(0.2, 1, 0.45, 1)
-texture_scale = 0.7
-BaseEnergy = 0.8
-Behavior = 0
-Seed = 121
-
-[node name="Saida2" parent="Luzes" instance=ExtResource("flicker_light")]
-position = Vector2(800, 2184)
-color = Color(0.2, 1, 0.45, 1)
-texture_scale = 0.7
-BaseEnergy = 0.8
 Behavior = 0
 Seed = 122
 
