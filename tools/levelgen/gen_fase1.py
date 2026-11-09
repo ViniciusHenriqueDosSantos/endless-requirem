@@ -603,3 +603,7 @@ with open(OUT, "w") as f:
         f.write(f'[ext_resource type="{t}" path="{p}" id="{i}"]\n')
     f.write("\n" + "\n\n".join(nodes) + "\n")
 print("floor", len(floor), "walls", len(walls))
+
+# nenhuma parede atravessável: para com erro se algum tile de parede ficou sem colisão
+from check_walls import check_or_fail
+check_or_fail(OUT)
