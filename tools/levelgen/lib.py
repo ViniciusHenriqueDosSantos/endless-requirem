@@ -109,6 +109,8 @@ class Level:
             for kind, p, rid in self.ext:
                 f.write(f'[ext_resource type="{kind}" path="{p}" id="{rid}"]\n')
             f.write("\n" + header_node + "\n\n" + "\n\n".join(self.nodes) + "\n")
+        from check_walls import check_or_fail
+        check_or_fail(path)  # nenhuma parede atravessável
 
 
 def v(x, y):
