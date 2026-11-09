@@ -40,6 +40,7 @@ As cores e os objetos vieram das fotos do tour 360° da UNIFESP São José dos C
 | `palette.py` | todas as cores, com o nome de onde vieram |
 | `tiles_fase1.py` | `sprites/tiles/fase1_tiles.png`, `tilesets/fase1_tileset*.tres` e `tools/levelgen/tiles_fase1.json` |
 | `props_fase1.py` | `sprites/props/fase1/` (prédio, guarita, jardins, balcões, mesas, sinuca...) |
+| `props_fase2.py` | `sprites/props/fase2/` (estantes, mesas, xadrez gigante, elevadores, armários, caixas, luminária), a Bibliotecária, os livros que ela joga, o livro e as chaves (com a arte de inspeção) |
 | `characters.py` | `sprites/characters/` (estudante, 3 fantasmas, Tia da Cantina) |
 | `lights.py` | `sprites/lights/` (texturas das luzes) |
 | `items.py` | `sprites/items/`, `weapons/`, `fx/`, `objects/` (crachá, marmita, armas, tiros, salgados, portas, catraca, pilhas de papel, alvos) |
@@ -95,9 +96,31 @@ O jogo se passa em 2061, à noite, com o campus abandonado há décadas.
   gotas sintetizadas, precisa de numpy, scipy e ffmpeg). Tocam no bus `Chuva`, criado pelo script, que abafa o som com um
   filtro passa-baixa quando o jogador entra numa sala.
 
+## Fase 2: o andar da biblioteca
+
+Referência: as fotos da biblioteca e do corredor da frente dela no tour 360°. A Fase 2 usa o mesmo tileset da Fase 1
+(linhas 22 a 24 do atlas) e o gerador `tools/levelgen/gen_fase2.py` monta a arte por cima da planta do time
+(`L.tiled_layers` em `lib.py`). A planta, as salas e o roteiro não mudaram.
+
+| Lugar no jogo | O que veio do campus de verdade |
+|---|---|
+| Corredor e Hall das Caronas | granito branco polido; paredes cobertas de mãos pintadas com tinta e nomes dos formandos; painel de venezianas, extintor e placas de SAÍDA; o fundo do corredor é um janelão (com a chuva escorrendo) |
+| Entrada da biblioteca | quadro verde de avisos com a plaquinha BIBLIOTECA, guarda-volumes azuis, caixa de devolução de madeira |
+| Biblioteca | piso vinílico bege; estantes de aço bege com livros coloridos; mesas brancas com cadeiras pretas; mesas redondas; balcão de atendimento com os computadores; o mural colorido de rostos na parede de cima; o xadrez gigante com o tapete azul e branco; placas amarelas de piso molhado |
+| Salas de estudo | janelões para fora e a luminária verde de mesa (é a luz de verdade que a Bibliotecária usa para enxergar) |
+| Achados e Perdidos | lousa verde, armário de madeira, caixas de papelão (fechada, amassada, aberta) |
+
+- **Noite e chuva**: a mesma escuridão da Fase 1, fluorescentes falhando, luzes de emergência vermelhas (elevador quebrado,
+  porta da biblioteca) e a placa verde da escada. A chuva fica do lado de fora: só se ouve abafada (`Rain.AlwaysInside`)
+  e os relâmpagos clareiam o andar inteiro.
+- **Bibliotecária**: fantasma de coque e óculos que brilham, cardigã roxo e a saia que vira névoa. Quadros: andando
+  (fazendo "shhh"), jogando livro e caçando (cabelo solto e olhos vermelhos). Ela e o cone da lanterna dela aparecem no
+  escuro. Os livros que ela joga são `sprites/fx/livros.png`.
+- **Abandono**: livros caídos das estantes, papéis, poças das goteiras, forro caído, peças do xadrez tombadas.
+
 ## Inspeção de itens
 
-Ao pegar um item com `InspectTexture` (crachá, marmita, escopeta), `objects/inspect/item_inspect.tscn` pausa o jogo e mostra
+Ao pegar um item com `InspectTexture` (crachá, marmita, escopeta; na Fase 2, a chave dos Achados, o Cálculo I e a chave da escada), `objects/inspect/item_inspect.tscn` pausa o jogo e mostra
 a arte grande (`sprites/items/inspecao/`), balançando com um brilho passando, com nome e descrição ao lado, como no
 Resident Evil. O crachá segue o modelo real da UNIFESP SJC (cordão verde, logo, faixa "SÃO JOSÉ DOS CAMPOS"), com foto
 apagada e nome fictício.

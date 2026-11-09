@@ -15,6 +15,8 @@ public partial class Rain : Node2D
 	[Export] public AudioStream[] ThunderSounds = System.Array.Empty<AudioStream>();
 	[Export] public float RainVolumeOutside = -6f;
 	[Export] public float RainVolumeInside = -15f;
+	// Fase toda dentro do prédio: não desenha pingos, o som fica sempre abafado e o relâmpago entra pelas janelas.
+	[Export] public bool AlwaysInside;
 
 	private const string Bus = "Chuva";
 	private static readonly Color Flash = new(0.78f, 0.82f, 0.98f);
@@ -35,6 +37,7 @@ public partial class Rain : Node2D
 	{
 		_rng.Randomize();
 		_toLightning = FirstLightning;
+		if (AlwaysInside) _inside = 1f;
 		_mask = Mask?.GetImage();
 		BuildChunks();
 		SetupAudio();
@@ -109,7 +112,7 @@ public partial class Rain : Node2D
 		if (!IsInstanceValid(_player)) _player = GetTree().GetFirstNodeInGroup("player") as Node2D;
 
 		// dentro das salas: chuva abafada
-		float target = _player != null && IsDry(_player.GlobalPosition) ? 1f : 0f;
+		float target = AlwaysInside || (_player != null && IsDry(_player.GlobalPosition)) ? 1f : 0f;
 		_inside = Mathf.MoveToward(_inside, target, dt * 2.5f);
 		if (_lowPass != null) _lowPass.CutoffHz = Mathf.Exp(Mathf.Lerp(Mathf.Log(18000f), Mathf.Log(650f), _inside));
 		_rain.VolumeDb = Mathf.Lerp(RainVolumeOutside, RainVolumeInside, _inside);

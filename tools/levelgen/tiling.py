@@ -5,7 +5,7 @@ from zlib import crc32
 
 HERE = os.path.dirname(__file__)
 
-INTERIOR = {"granito", "ceramica", "aco"}
+INTERIOR = {"granito", "ceramica", "aco", "vinil", "xadrez"}  # pisos de dentro do prédio
 
 
 def load_atlas(name):

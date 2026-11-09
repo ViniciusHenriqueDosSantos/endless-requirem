@@ -12,6 +12,12 @@ public partial class ShieldLamp : Area2D
 
 	[Export] public float DisableTime = 2f;
 
+	// Pixel art (opcional): luminária acesa e apagada. Sem elas, o desenho provisório.
+	[Export] public Texture2D LampOn;
+	[Export] public Texture2D LampOff;
+	// Luz de verdade no chão (em fase noturna é ela que clareia a sala de estudo).
+	[Export] public Texture2D LightTexture;
+
 	private const float Radius = 80f;
 	public const float LightRadius = 170f;
 	private const float BulbHeight = 70f;
@@ -20,6 +26,7 @@ public partial class ShieldLamp : Area2D
 	private float _progress;
 	private bool _off;
 	private float _time;
+	private PointLight2D _light;
 
 	// Quem libera mexer na luminária (a Bibliotecária, durante a patrulha).
 	public bool Armed;
@@ -33,6 +40,18 @@ public partial class ShieldLamp : Area2D
 	{
 		QueueRedraw();
 		if (Engine.IsEditorHint()) return;
+
+		// O contorno da luz e a barrinha precisam aparecer no escuro.
+		Material = SharedMaterials.Unshaded;
+		if (LightTexture != null)
+		{
+			_light = new PointLight2D
+			{
+				Texture = LightTexture, Color = new Color(1f, 0.9f, 0.6f), Energy = 1.1f,
+				TextureScale = LightRadius * 2.6f / LightTexture.GetWidth(), Position = new Vector2(0, -BulbHeight * 0.5f),
+			};
+			AddChild(_light);
+		}
 
 		Monitorable = false;
 		AddChild(new CollisionShape2D { Shape = new CircleShape2D { Radius = Radius } });
@@ -53,6 +72,7 @@ public partial class ShieldLamp : Area2D
 
 		float dt = (float)delta;
 		_time += dt;
+		if (_light != null && !_off) _light.Energy = 1.05f + 0.08f * Mathf.Sin(_time * 6f);
 
 		if (!_off && Armed)
 		{
@@ -63,6 +83,7 @@ public partial class ShieldLamp : Area2D
 				{
 					_off = true;
 					_progress = 1f;
+					if (_light != null) _light.Enabled = false;
 					EmitSignal(SignalName.SwitchedOff);
 				}
 			}
@@ -78,23 +99,32 @@ public partial class ShieldLamp : Area2D
 	public override void _Draw()
 	{
 		Vector2 bulb = new(0, -BulbHeight);
+		Texture2D sprite = _off ? LampOff : LampOn;
 
-		DrawRect(new Rect2(-4, -BulbHeight, 8, BulbHeight), new Color(0.25f, 0.25f, 0.28f));
-		DrawRect(new Rect2(-22, -10, 44, 10), new Color(0.25f, 0.25f, 0.28f));
+		if (sprite != null)
+		{
+			Vector2 size = sprite.GetSize() * 4f;
+			DrawTextureRect(sprite, new Rect2(-size.X / 2, -size.Y + 6, size.X, size.Y), false);
+		}
+		else
+		{
+			DrawRect(new Rect2(-4, -BulbHeight, 8, BulbHeight), new Color(0.25f, 0.25f, 0.28f));
+			DrawRect(new Rect2(-22, -10, 44, 10), new Color(0.25f, 0.25f, 0.28f));
+		}
 
 		if (_off)
 		{
-			DrawCircle(bulb, 16, new Color(0.3f, 0.3f, 0.32f));
+			if (sprite == null) DrawCircle(bulb, 16, new Color(0.3f, 0.3f, 0.32f));
 			return;
 		}
 
 		// Luz no chão: a área onde ela enxerga você.
-		DrawCircle(Vector2.Zero, LightRadius, new Color(1f, 0.92f, 0.5f, 0.08f));
+		DrawCircle(Vector2.Zero, LightRadius, new Color(1f, 0.92f, 0.5f, 0.06f));
 		DrawArc(Vector2.Zero, LightRadius, 0, Mathf.Tau, 48, new Color(1f, 0.92f, 0.5f, 0.25f), 2f);
 
 		float glow = 1f + Mathf.Sin(_time * 6f) * 0.08f;
-		DrawCircle(bulb, 42 * glow, new Color(1f, 0.9f, 0.4f, 0.18f));
-		DrawCircle(bulb, 16, new Color(1f, 0.92f, 0.5f));
+		DrawCircle(bulb, 34 * glow, new Color(1f, 0.9f, 0.4f, 0.14f));
+		if (sprite == null) DrawCircle(bulb, 16, new Color(1f, 0.92f, 0.5f));
 
 		if (_progress > 0)
 			DrawArc(bulb, 26, -Mathf.Pi / 2, -Mathf.Pi / 2 + Mathf.Tau * _progress, 32, new Color(0.4f, 1f, 0.6f), 5f);

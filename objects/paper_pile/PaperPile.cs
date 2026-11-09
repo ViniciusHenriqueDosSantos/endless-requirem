@@ -19,6 +19,10 @@ public partial class PaperPile : StaticBody2D
 	[Export] public Texture2D FullSprite;
 	[Export] public Texture2D DamagedSprite;
 	[Export] public Texture2D ScatteredSprite;
+	// Pixel art da caixa de papelão (Box): fechada, amassada (metade da vida) e aberta.
+	[Export] public Texture2D BoxSprite;
+	[Export] public Texture2D BoxDamagedSprite;
+	[Export] public Texture2D BoxOpenSprite;
 
 	// Ligados pelo roteiro da fase.
 	public bool HidesItem;
@@ -100,6 +104,13 @@ public partial class PaperPile : StaticBody2D
 
 	public override void _Draw()
 	{
+		if (Box && BoxSprite != null)
+		{
+			bool hurt = !Engine.IsEditorHint() && Health <= _maxHealth / 2;
+			DrawSprite(_destroyed && BoxOpenSprite != null ? BoxOpenSprite : hurt && BoxDamagedSprite != null ? BoxDamagedSprite : BoxSprite);
+			return;
+		}
+
 		if (!Box && FullSprite != null)
 		{
 			bool hurt = !Engine.IsEditorHint() && Health <= _maxHealth / 2;
