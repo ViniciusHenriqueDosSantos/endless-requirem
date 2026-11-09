@@ -104,7 +104,8 @@ Referência: as fotos da biblioteca e do corredor da frente dela no tour 360°. 
 
 | Lugar no jogo | O que veio do campus de verdade |
 |---|---|
-| Corredor e Hall das Caronas | granito branco polido; paredes cobertas do começo ao fim de mãos pintadas com tinta, cada uma com o nome do formando embaixo (`objects/decor/Signatures.cs` nas paredes laterais, tiles `maos` nas de frente); extintor, venezianas e placas de SAÍDA; o fundo do corredor é um janelão (com a chuva escorrendo) |
+| Corredor | granito branco polido; paredes cobertas do começo ao fim de mãos pintadas com tinta, cada uma com o nome do formando embaixo (`objects/decor/Signatures.cs`); o fundo do corredor é um janelão (com a chuva escorrendo), sem mãos |
+| Hall das Caronas | granito branco e paredes brancas (sem as mãos), cadeiras pretas de espera, extintor, venezianas e placas de SAÍDA |
 | Entrada da biblioteca | quadro verde de avisos com a plaquinha BIBLIOTECA, guarda-volumes azuis, caixa de devolução de madeira |
 | Biblioteca | piso vinílico bege; estantes de aço bege com livros coloridos; mesas brancas com cadeiras pretas; mesas redondas; balcão de atendimento com os computadores; o mural colorido de rostos na parede de cima; o xadrez gigante com o tapete azul e branco; placas amarelas de piso molhado |
 | Salas de estudo | janelões para fora e a luminária verde de mesa |
@@ -117,9 +118,10 @@ Referência: as fotos da biblioteca e do corredor da frente dela no tour 360°. 
   (fazendo "shhh"), jogando livro, caçando (cabelo solto e olhos vermelhos) e tonta (óculos tortos, livro na cabeça).
   Ela e o cone da lanterna dela aparecem no escuro. Os livros que ela joga são `sprites/fx/livros.png`.
 - **A luta (furtividade com barulho)**: ela enxerga pouco mas ouve tudo (`objects/noise/Noise.cs`, com a onda do som
-  desenhada no chão). Um tiro na estante bamba (`objects/librarian/ToppleShelf.cs`) faz ela balançar e derrubar livros:
-  a Bibliotecária vem ver. Quando ela parar na frente, outro tiro derruba a estante em cima dela (`estante_caida.png`).
-  Três estantes e ela cai; tonta, ela também leva tiro. Se te vê, caça e joga livros até você sumir da vista dela.
+  desenhada no chão). Um tiro na estante (`objects/librarian/ToppleShelf.cs`) derruba livros lá de cima: a
+  Bibliotecária vem ver. Dê a volta por trás da estante e, quando ela parar na frente, empurre com [Espaço]: a estante
+  tomba em cima dela (`estante_caida.png`). Tiro não machuca, só estante; três vezes e ela cai, e a cada vez ela volta
+  mais rápida. Tonta, ela acorda furiosa e te caça (hora de se esconder). As estantes voltam a ficar de pé sozinhas.
   Não tem fantasma na biblioteca.
 - **Abandono**: livros caídos das estantes, papéis, poças das goteiras, forro caído, peças do xadrez tombadas.
 

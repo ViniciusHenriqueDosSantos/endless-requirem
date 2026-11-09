@@ -9,7 +9,7 @@ using System.Collections.Generic;
 //   -> Hall das Caronas (as cadeiras bloqueiam a saída, 3 ondas, o zelador solta a chave)
 //   -> Achados e Perdidos (caixas: uma tem o livro, algumas têm fantasma)
 //   -> devolução do livro -> biblioteca abre
-//   -> Bibliotecária (furtividade: barulho atrai, estante bamba esmaga) -> Canhão + chave da escada
+//   -> Bibliotecária (furtividade: barulho atrai, empurrar a estante esmaga) -> Canhão + chave da escada
 //   -> porta da escada -> escada até o 4º andar (levels/escada.tscn).
 public partial class Fase2 : LevelBase
 {
@@ -282,7 +282,7 @@ public partial class Fase2 : LevelBase
 
 		if (Bibliotecario.IsStunned)
 		{
-			Hud.SetObjective("Ela está tonta! Atire nela agora");
+			Hud.SetObjective("Ela está tonta! Fuja e se esconda antes que ela acorde");
 			Hud.SetBoss(Bibliotecario.DisplayName, Bibliotecario.HealthRatio, false);
 			Hud.PointTo(Bibliotecario.GlobalPosition + BossPointerOffset, "BIBLIOTECÁRIA");
 			return;
@@ -291,8 +291,8 @@ public partial class Fase2 : LevelBase
 		if (Bibliotecario.InStealth)
 		{
 			Hud.SetObjective(Bibliotecario.IsInvestigating
-				? $"Ela ouviu! Quando ela parar na frente da estante, atire de novo para derrubar ({Bibliotecario.CrashesLeft} restantes)"
-				: $"Silêncio... Atire numa estante bamba para fazer barulho e atraí-la ({Bibliotecario.CrashesLeft} restantes)");
+				? $"Ela ouviu! Dê a volta por trás da estante e, quando ela parar na frente, empurre com [Espaço] ({Bibliotecario.CrashesLeft} restantes)"
+				: $"Silêncio... Atire numa estante para os livros caírem e atraí-la ({Bibliotecario.CrashesLeft} restantes)");
 			Hud.SetBoss(Bibliotecario.DisplayName, Bibliotecario.HealthRatio, false);
 			ToppleShelf shelf = Bibliotecario.NearestShelf(Player.GlobalPosition);
 			if (shelf != null)

@@ -73,11 +73,18 @@ def deco_rule(c, style, below):
     if y in (-9, 2): return "janelao_quebrado" if r < 0.3 else "janelao"
     if y == 8 and below == "vinil": return MURAL.get(x)
     if y == 17 and 20 <= x <= 23: return "quadro_bib" if x == 21 else "maos1"
-    if below == "granito":  # como nas fotos: as mãos e os nomes dos formandos cobrem as paredes do começo ao fim
+    if below == "granito" and 24 <= x <= 29:  # corredor, como nas fotos: mãos e nomes do começo ao fim
         if r < 0.86: return f"maos{int(r * 1000) % 3}"
         if r < 0.90: return "saida"
         if r < 0.94: return "extintor"
         return "persiana"
+    if below == "granito":  # Hall das Caronas e entradas: parede branca, sem as mãos
+        if r < 0.10: return "saida"
+        if r < 0.18: return "extintor"
+        if r < 0.32: return "persiana"
+        if r < 0.50: return "rachada"
+        if r < 0.66: return "mofo"
+        return None
     if r < 0.2: return "rachada"
     if r < 0.4: return "mofo"
     return None
@@ -114,8 +121,6 @@ for x, facing in ((23, "1"), (30, "2")):       # 1 = parede da esquerda, 2 = par
         n += 1
         L.node(f"Assinaturas{n}", type="Node2D", props={"z_index": "1", "position": v(x * T, a * T),
                "script": 'ExtResource("sig")', "Size": v(T, (b - a + 1) * T), "Seed": str(n * 7919), "Facing": facing})
-L.node("AssinaturasTopo", type="Node2D", props={"z_index": "1", "position": v(24 * T, -9 * T),
-       "script": 'ExtResource("sig")', "Size": v(6 * T, T), "Seed": "4242", "Facing": "0"})
 
 # ---------- Hall das Caronas ----------
 hall = (2 * T, 34 * T)
