@@ -230,6 +230,8 @@ public partial class Player : CharacterBody2D
 		Health--;
 		_invulnerableTimer = InvulnerabilityTime;
 		TriggerShake(DamageShake);
+		GetNode<AudioStreamPlayer>("Dor").Play();
+		GetNode<AudioStreamPlayer>("Soco").Play();
 		StatsChanged?.Invoke();
 
 		if (Health <= 0)
@@ -327,6 +329,8 @@ public partial class Player : CharacterBody2D
 			{
 				_walkTimer = WalkFrameTime;
 				_walkFrame = (_walkFrame + 1) % 4;
+				if (_walkFrame % 2 == 1)
+					GetNode<AudioStreamPlayer>("Passos").Play();
 			}
 		}
 		else
@@ -470,10 +474,14 @@ public partial class Player : CharacterBody2D
 
 		_ammo[Weapon]--;
 		if (_ammo[Weapon] <= 0)
+		{
 			_reloadTimer = Weapon.ReloadTime;
+			GetNode<AudioStreamPlayer>("Recarga").Play();
+		}
 		StatsChanged?.Invoke();
 
 		TriggerShake(Weapon.Shake);
+		GetNode<AudioStreamPlayer>("Tiro").Play();
 		Fired?.Invoke();
 	}
 
@@ -520,6 +528,7 @@ public partial class Player : CharacterBody2D
 		_rollBufferTimer = 0;
 		_knockback = Vector2.Zero;
 		Velocity = _rollDirection * RollSpeed;
+		GetNode<AudioStreamPlayer>("Rolar").Play();
 		SpawnDust();
 	}
 
