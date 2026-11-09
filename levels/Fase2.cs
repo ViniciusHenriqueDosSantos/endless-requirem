@@ -25,8 +25,9 @@ public partial class Fase2 : LevelBase
 	[Export] public Librarian Bibliotecario;
 	[Export] public Pickup Canhao;
 	[Export] public Pickup ChaveEscada;
-	[Export] public Door PortaEscada;
-	[Export] public AreaTrigger Escada;
+
+	// A escada fica encostada na parede do corredor: encostar com a chave leva à cena da escada.
+	[Export] public ItemSlot Escada;
 	[Export] public Marker2D CentroHall;
 
 	// Cadeiras de espera perto da saída do Hall: somem quando se arrastam para bloquear a passagem.
@@ -98,7 +99,7 @@ public partial class Fase2 : LevelBase
 		Biblioteca.Started += () => Bibliotecario.StartFight();
 		Bibliotecario.Defeated += OnLibrarianDefeated;
 
-		Escada.PlayerEntered += () => GoToScene(EscadaScene);
+		Escada.Used += () => GoToScene(EscadaScene);
 
 		Hud.ShowMessage("2º andar. Até os fantasmas falam baixo aqui.", 4f);
 	}
