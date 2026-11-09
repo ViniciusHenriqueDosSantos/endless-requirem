@@ -5,14 +5,15 @@ using System.Collections.Generic;
 //
 // Ela enxerga pouco (só o cone da lanterninha dela) mas OUVE TUDO. A luta é de furtividade:
 //   - Patrulha: anda pelos corredores das estantes. Estantes e paredes tapam a visão dela.
-//   - Barulho: qualquer barulho perto (tiro do jogador, estante balançando) faz ela ir até lá ver o que foi.
-//     Tiro faz pouco barulho (só quem está perto ouve); estante balançando se ouve na biblioteca inteira.
-//   - Armadilha: atire numa estante bamba (ela balança e faz barulho), espere a Bibliotecária chegar para ver
-//     e atire de novo: a estante tomba em cima dela. Três estantes e ela cai.
+//   - Barulho: qualquer barulho perto (tiro do jogador, livros caindo de uma estante) faz ela ir até lá ver.
+//     Tiro faz pouco barulho (só quem está perto ouve); livros caindo se ouvem na biblioteca inteira.
+//   - Armadilha: atire numa estante (os livros caem e fazem barulho), dê a volta por trás dela sem ser vista e,
+//     quando a Bibliotecária parar na frente para olhar, empurre ([Espaço]): a estante tomba em cima dela.
+//   - Tiro não machuca: só estante na cabeça. Três vezes e ela cai. A cada vez ela volta mais rápida.
 //   - Caçada: se ela te vê, corre atrás e joga livros. Suma da vista dela por alguns segundos e ela vai
 //     procurar onde te viu por último.
-//   - Esmagada, fica tonta uns segundos (aí os tiros machucam) e depois volta furiosa, te caçando.
-//   - Se as estantes acabarem antes, ela parte para cima de vez e leva dano normal (Ato final).
+//   - Esmagada, fica tonta uns segundos e depois acorda furiosa, já te caçando: hora de fugir e se esconder.
+//   - As estantes caídas voltam a ficar de pé depois de um tempo.
 // Não chama fantasmas: na biblioteca são só vocês dois.
 [Tool]
 public partial class Librarian : CharacterBody2D, IHittable
@@ -100,24 +101,15 @@ public partial class Librarian : CharacterBody2D, IHittable
 	public float HealthRatio => Config == null ? 0f : (float)_health / Config.Health;
 	public string DisplayName => Config?.Name ?? "Bibliotecária";
 	public int CrashesLeft => Mathf.Max(0, CrashesToWin - _crashes);
-
-	public int ShelvesLeft
-	{
-		get
-		{
-			int count = 0;
-			foreach (ToppleShelf shelf in _shelves)
-				if (shelf.CanFall) count++;
-			return count;
-		}
-	}
+	// A cada estante na cabeça ela volta mais rápida.
+	private float Speed => Config.MoveSpeed * (1f + 0.15f * _crashes);
 
 	// Estante de pé mais perto de um ponto (para a seta de objetivo).
 	public ToppleShelf NearestShelf(Vector2 from)
 	{
 		ToppleShelf best = null;
 		foreach (ToppleShelf shelf in _shelves)
-			if (shelf.CanFall && (best == null || shelf.GlobalPosition.DistanceTo(from) < best.GlobalPosition.DistanceTo(from)))
+			if (shelf.IsStanding && (best == null || shelf.GlobalPosition.DistanceTo(from) < best.GlobalPosition.DistanceTo(from)))
 				best = shelf;
 		return best;
 	}
@@ -129,6 +121,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 
 		// Fantasma: aparece no escuro (o cone da lanterna também).
 		Material = SharedMaterials.Unshaded;
+		AddToGroup("librarian");
 		_health = Config.Health;
 		_home = GlobalPosition;
 
@@ -183,23 +176,8 @@ public partial class Librarian : CharacterBody2D, IHittable
 
 		FindPlayer();
 		_patrolIndex = 0;
-		if (ShelvesLeft < CrashesLeft)
-		{
-			StartAttack();
-			return;
-		}
 		StartPatrol();
-		ShowMessage("Ela quase não enxerga, mas ouve TUDO. Faça barulho numa estante bamba... e derrube a estante nela.", 5f);
-	}
-
-	// Ato final: sem estantes para derrubar, ela parte para cima de vez.
-	private void StartAttack()
-	{
-		_phase = Phase.Attack;
-		_fireTimer = 1.0f;
-		_player?.TriggerShake(12f);
-		ShowMessage("Acabaram as estantes... e ela partiu para cima! \"SILÊNCIO!\"", 3.5f);
-		QueueRedraw();
+		ShowMessage("Ela quase não enxerga, mas ouve TUDO. Atire numa estante para atraí-la... e empurre a estante em cima dela.", 5f);
 	}
 
 	private void StartPatrol()
@@ -264,11 +242,8 @@ public partial class Librarian : CharacterBody2D, IHittable
 			}
 			_phase = Phase.Stunned;
 			_stunTimer = StunTime;
-			ShowMessage(CrashesLeft == 1 ? "CRASH! Só mais uma estante!" : $"CRASH! Ela ficou tonta... faltam {CrashesLeft}.", 3f);
-			return;
+			ShowMessage(CrashesLeft == 1 ? "CRASH! Só mais uma! Fuja antes que ela acorde!" : $"CRASH! Ela ficou tonta... fuja e se esconda! Faltam {CrashesLeft}.", 3f);
 		}
-		if (ShelvesLeft < CrashesLeft)
-			StartAttack();
 	}
 
 	public void TakeHit(int damage, Vector2 direction)
@@ -282,13 +257,8 @@ public partial class Librarian : CharacterBody2D, IHittable
 			return;
 		}
 
-		// Machuca quando está tonta (estante na cabeça) ou no ataque final.
-		if (_phase is not (Phase.Stunned or Phase.Attack)) return;
-
-		_health -= damage;
+		// Tiro não machuca: só estante na cabeça. Mas ela sente e fica mais brava.
 		_flash = HitFlashTime;
-		if (_health <= 0)
-			Die();
 	}
 
 	private void Die()
@@ -393,7 +363,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 			return;
 		}
 
-		MoveTowards(target, Config.MoveSpeed * PatrolSpeedFactor, dt);
+		MoveTowards(target, Speed * PatrolSpeedFactor, dt);
 	}
 
 	// ---------- Indo ver o barulho ----------
@@ -415,7 +385,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 				_arrived = true;
 				return;
 			}
-			MoveTowards(_investigateAt, Config.MoveSpeed * InvestigateSpeedFactor, dt);
+			MoveTowards(_investigateAt, Speed * InvestigateSpeedFactor, dt);
 			return;
 		}
 
@@ -506,7 +476,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 		if (seen)
 			Chase(dt, distance, toPlayer, true);
 		else
-			MoveTowards(_investigateAt, Config.MoveSpeed * HuntSpeedFactor, dt);
+			MoveTowards(_investigateAt, Speed * HuntSpeedFactor, dt);
 	}
 
 	// ---------- Tonta (estante na cabeça) ----------
@@ -549,7 +519,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 		if (GetSlideCollisionCount() > 0)
 			_strafeSign = -_strafeSign;
 
-		MoveTowards(target, Config.MoveSpeed * HuntSpeedFactor, dt, faceMovement: false);
+		MoveTowards(target, Speed * HuntSpeedFactor, dt, faceMovement: false);
 
 		_fireTimer -= dt;
 		if (_fireTimer <= 0 && canShoot)

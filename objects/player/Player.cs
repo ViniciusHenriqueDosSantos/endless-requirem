@@ -490,7 +490,8 @@ public partial class Player : CharacterBody2D
 		if (_rollCooldownTimer > 0) _rollCooldownTimer -= dt;
 		if (_rollGraceTimer > 0) _rollGraceTimer -= dt;
 		if (_rollBufferTimer > 0) _rollBufferTimer -= dt;
-		if (Input.IsActionJustPressed("dash")) _rollBufferTimer = RollInputBuffer;
+		// Atrás de uma estante bamba (biblioteca), [Espaço] empurra a estante em vez de rolar.
+		if (Input.IsActionJustPressed("dash") && !ToppleShelf.TryPush(this)) _rollBufferTimer = RollInputBuffer;
 
 		if (_rollTimer > 0)
 		{
