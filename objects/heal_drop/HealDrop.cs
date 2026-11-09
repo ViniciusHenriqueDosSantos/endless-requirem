@@ -11,6 +11,7 @@ public partial class HealDrop : Area2D
 		{
 			if (body is not Player player) return;
 
+			player.GetNode<AudioStreamPlayer>("Cura").Play();
 			if (player.TryHeal())
 				(GetTree().GetFirstNodeInGroup("hud") as Hud)?.ShowMessage("+1 de vida", 1.2f);
 			QueueFree();
