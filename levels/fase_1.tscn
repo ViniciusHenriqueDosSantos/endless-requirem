@@ -14,6 +14,8 @@
 [ext_resource type="PackedScene" path="res://objects/hud/hud.tscn" id="hud"]
 [ext_resource type="PackedScene" path="res://objects/message_screen/message_screen.tscn" id="message_screen"]
 [ext_resource type="PackedScene" path="res://objects/night/night_overlay.tscn" id="night_overlay"]
+[ext_resource type="PackedScene" path="res://objects/weather/rain.tscn" id="rain"]
+[ext_resource type="Texture2D" path="res://levels/fase_1_chuva.png" id="chuva_mask"]
 [ext_resource type="PackedScene" path="res://objects/inspect/item_inspect.tscn" id="item_inspect"]
 [ext_resource type="PackedScene" path="res://objects/night/flicker_light.tscn" id="flicker_light"]
 [ext_resource type="Texture2D" path="res://sprites/lights/tubo.png" id="light_tubo"]
@@ -954,6 +956,10 @@ Solid = false
 color = Color(0.12, 0.13, 0.21, 1)
 
 [node name="NightOverlay" parent="." instance=ExtResource("night_overlay")]
+
+[node name="Chuva" parent="." instance=ExtResource("rain")]
+Mask = ExtResource("chuva_mask")
+MaskOrigin = Vector2(-6, -5)
 
 [node name="Luzes" type="Node2D" parent="."]
 

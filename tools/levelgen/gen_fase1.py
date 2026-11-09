@@ -1,5 +1,6 @@
 # Gera levels/fase_1.tscn a partir da planta (tiles de 16px mostrados 4x = 64px).
 import base64, struct, sys, os
+from PIL import Image
 sys.path.insert(0, os.path.dirname(__file__))
 from tiling import Tiler, load_atlas, tile_data as atlas_tile_data, h
 T = 64
@@ -258,6 +259,7 @@ DECAL_RULES = {
             ("poca", 2, 0.015)],
 }
 decal_cells = {}
+pocas = set()  # a chuva faz anéis nelas
 for (x, y), m in floor_mat.items():
     base = m.split("_")[0]
     if base == "aco": continue
@@ -268,6 +270,7 @@ for (x, y), m in floor_mat.items():
         acc += p_
         if roll < acc:
             decal_cells[(x, y)] = tiler.at(f"decal_{kind}{int(h('dv', x, y) * n)}")
+            if kind == "poca": pocas.add((x, y))
             break
 node("Abandono", type="TileMapLayer", props={"z_index": "-8", "texture_filter": "1", "scale": v(4, 4),
      "tile_map_data": f'PackedByteArray("{tile_data(decal_cells)}")', "tile_set": 'ExtResource("tiles")'})
@@ -468,6 +471,37 @@ prop("CaixaDagua", ".", 28 * T, 4 * T, 80, 288, col(0, 0, 0, 0), solid=False, sp
 # Escuro azulado (CanvasModulate no grupo "night": o jogador acende a lanterna quando acha este grupo).
 node("Noite", type="CanvasModulate", groups=["night"], props={"color": col(0.12, 0.13, 0.21, 1)})
 node("NightOverlay", inst="night_overlay")
+
+# ===== CHUVA =====
+# Máscara de 1 pixel por tile (objects/weather/rain.gdshader): R = chove, G = respinga no chão, B = poça.
+# Dentro das salas não chove (só pinga nas poças, do teto furado); na laje, na grama e na mata chove, mas respinga menos.
+HARD = 255
+SPLASH_BG = {"laje": 170, "grama": 90, "mata": 35, "baixo": 255, "asfalto": 255, "bloquete": 255}
+_name_of = {tuple(a): n for n, a in tiler.names.items()}
+_mw, _mh = _bx1 - _bx0 + 1, _by1 - _by0 + 1
+mask = Image.new("RGB", (_mw, _mh))
+for y in range(_by0, _by1 + 1):
+    for x in range(_bx0, _bx1 + 1):
+        c = (x, y)
+        r = g = b = 0
+        if c in floor_mat:
+            base = floor_mat[c].split("_")[0]
+            if base not in ("granito", "ceramica", "aco"):
+                r, g = 255, 90 if base == "grama" else HARD
+                b = 255 if c in pocas else 0
+            else:
+                b = 110 if c in pocas else 0
+        elif c in walls:
+            below = floor_mat.get((x, y + 1))
+            r = 0 if below and below.split("_")[0] in ("granito", "ceramica", "aco") else 255
+        else:
+            r = 255
+            n = _name_of.get(background.get(c), "grama")
+            g = next((v_ for k, v_ in SPLASH_BG.items() if n.startswith(k)), 90)
+        mask.putpixel((x - _bx0, y - _by0), (r, g, b))
+_mask_path = os.path.join(os.path.dirname(OUT), "fase_1_chuva.png")
+mask.save(_mask_path)
+node("Chuva", inst="rain", props={"Mask": 'ExtResource("chuva_mask")', "MaskOrigin": v(_bx0, _by0)})
 STEADY, FLICKER, BROKEN, PULSE = 0, 1, 2, 3
 SODIO, FRIA, TUBO, QUENTE = col(1, 0.6, 0.28), col(0.8, 0.88, 1), col(0.82, 0.92, 1), col(1, 0.84, 0.6)
 lights = []
@@ -544,6 +578,8 @@ ext = [
     ('PackedScene', 'res://objects/hud/hud.tscn', 'hud'),
     ('PackedScene', 'res://objects/message_screen/message_screen.tscn', 'message_screen'),
     ('PackedScene', 'res://objects/night/night_overlay.tscn', 'night_overlay'),
+    ('PackedScene', 'res://objects/weather/rain.tscn', 'rain'),
+    ('Texture2D', 'res://levels/fase_1_chuva.png', 'chuva_mask'),
     ('PackedScene', 'res://objects/inspect/item_inspect.tscn', 'item_inspect'),
     ('PackedScene', 'res://objects/night/flicker_light.tscn', 'flicker_light'),
     ('Texture2D', 'res://sprites/lights/tubo.png', 'light_tubo'),
