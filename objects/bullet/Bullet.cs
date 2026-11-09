@@ -53,6 +53,14 @@ public partial class Bullet : Area2D
 	// Pilhas de papel levam dano.
 	private void OnBodyEntered(Node2D body)
 	{
+		// Estante bamba da biblioteca: o tiro balança (e depois derruba) a estante.
+		if (body is ToppleShelf shelf && shelf.CanFall)
+		{
+			shelf.TakeHit(Weapon.Damage, Direction);
+			QueueFree();
+			return;
+		}
+
 		// Móveis baixos: o tiro passa por cima.
 		if (body is Prop prop && !prop.Tall)
 			return;

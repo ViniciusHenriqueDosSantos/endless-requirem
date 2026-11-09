@@ -1,8 +1,9 @@
 using Godot;
 
-// Assinaturas dos alunos rabiscadas na parede (decoração do corredor da Fase 2).
-// Desenha nomes curtos e coloridos dentro do retângulo Size (a partir da origem, para baixo e à direita),
-// em duas fileiras, um nome depois do outro, sem encostar.
+// Mãos pintadas e nomes dos formandos na parede (decoração do corredor da Fase 2, como nas fotos do ICT:
+// as paredes do corredor ficam cobertas, do começo ao fim, por mãos de tinta colorida com o nome embaixo).
+// Desenha dentro do retângulo Size (a partir da origem, para baixo e à direita): cada marca é uma mão em pixel art
+// e o nome do dono na mesma cor, uma depois da outra, em duas fileiras desencontradas.
 // Facing diz de que lado está o corredor, para o texto ficar de frente para quem passa:
 //   Down = parede de cima (corredor embaixo), Right = parede da esquerda, Left = parede da direita.
 // O Seed faz cada trecho de parede ficar sempre igual (não muda a cada partida).
@@ -20,17 +21,29 @@ public partial class Signatures : Node2D
 	[Export] public Side Facing { get => _facing; set { _facing = value; QueueRedraw(); } }
 
 	// Espaço livre entre um nome e o próximo na mesma fileira (pixels).
-	[Export] public float Gap = 14f;
+	[Export] public float Gap = 4f;
 
 	private const int Rows = 2;
-	private const int MinFont = 10;
-	private const int MaxFont = 12;
+	private const int MinFont = 8;
+	private const int MaxFont = 9;
+	private const float HandPixel = 3f;
+
+	// Mão aberta (6x5), como as das fotos: quatro dedos, o polegar de lado e a palma.
+	private static readonly string[] Hand =
+	{
+		".1.1.1",
+		".1.1.1",
+		"111111",
+		".11111",
+		"..111.",
+	};
 
 	private static readonly string[] Names =
 	{
 		"Ana", "João P.", "Vini", "Rafa", "Bia", "Lucas", "Mari", "Gabi", "Pedro", "Júlia", "Caio", "Lari",
 		"Thi", "Duda", "Léo", "Nina", "Igor", "Malu", "Davi", "Sofia", "Enzo", "Lívia", "Gui", "Manu",
-		"CC 2039", "BCT 41", "Formei!", "<3", "Fui!", "T. 2040", "Biomed", "Eng. 38", "Valeu SJC",
+		"CC 2039", "BCT 41", "Formei!", "Fui!", "T. 2040", "Biomed", "Eng. 38", "Valeu SJC", "Kobe", "Netes",
+		"Silva", "Hans", "Joy", "Edu", "Alan", "Pedrão", "Isa", "Manu Z.", "Vitor F.", "Lais", "Jenifer", "Tetsu",
 	};
 
 	private static readonly Color[] Inks =
@@ -60,23 +73,30 @@ public partial class Signatures : Node2D
 		float rowHeight = thickness / Rows;
 		for (int row = 0; row < Rows; row++)
 		{
-			float cursor = rng.RandfRange(2f, Gap * 2);
+			float cursor = rng.RandfRange(2f, Gap) + row * 14f;   // fileiras desencontradas
 			while (true)
 			{
 				string name = Names[rng.RandiRange(0, Names.Length - 1)];
 				int fontSize = rng.RandiRange(MinFont, MaxFont);
-				float width = font.GetStringSize(name, HorizontalAlignment.Left, -1, fontSize).X;
+				float nameWidth = font.GetStringSize(name, HorizontalAlignment.Left, -1, fontSize).X;
+				float width = Mathf.Max(nameWidth, HandPixel * 6);
 				if (cursor + width > length - 2f) break;
 
 				Color ink = Inks[rng.RandiRange(0, Inks.Length - 1)];
-				float baseline = rowHeight * row + rowHeight / 2 + fontSize / 3f + rng.RandfRange(-2f, 2f);
-				float tilt = rng.RandfRange(-0.06f, 0.06f);
-				Vector2 center = new(cursor + width / 2, baseline);
+				float top = rowHeight * row + 1f;
+				float tilt = rng.RandfRange(-0.12f, 0.12f);
+				Vector2 center = new(cursor + width / 2, top + rowHeight / 2);
 
 				DrawSetTransformMatrix(turn * new Transform2D(tilt, center));
-				DrawString(font, new Vector2(-width / 2, 0), name, HorizontalAlignment.Left, -1, fontSize, ink);
-				if (rng.Randf() < 0.4f)
-					DrawLine(new Vector2(-width / 2, 3), new Vector2(width / 2 + 3, 2), ink, 1.2f);
+				// a mão (dedos para longe do corredor), com falhas de tinta
+				Vector2 origin = new(-HandPixel * 3, -rowHeight / 2 + 1);
+				for (int y = 0; y < Hand.Length; y++)
+					for (int x = 0; x < Hand[y].Length; x++)
+						if (Hand[y][x] == '1' && rng.Randf() > 0.08f)
+							DrawRect(new Rect2(origin + new Vector2(x, y) * HandPixel, Vector2.One * HandPixel), ink);
+				// o nome embaixo da mão
+				float baseline = -rowHeight / 2 + Hand.Length * HandPixel + fontSize * 0.75f;
+				DrawString(font, new Vector2(-nameWidth / 2, baseline), name, HorizontalAlignment.Left, -1, fontSize, ink);
 
 				cursor += width + Gap + rng.RandfRange(0f, Gap);
 			}

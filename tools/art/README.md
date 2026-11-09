@@ -104,18 +104,23 @@ Referência: as fotos da biblioteca e do corredor da frente dela no tour 360°. 
 
 | Lugar no jogo | O que veio do campus de verdade |
 |---|---|
-| Corredor e Hall das Caronas | granito branco polido; paredes cobertas de mãos pintadas com tinta e nomes dos formandos; painel de venezianas, extintor e placas de SAÍDA; o fundo do corredor é um janelão (com a chuva escorrendo) |
+| Corredor e Hall das Caronas | granito branco polido; paredes cobertas do começo ao fim de mãos pintadas com tinta, cada uma com o nome do formando embaixo (`objects/decor/Signatures.cs` nas paredes laterais, tiles `maos` nas de frente); extintor, venezianas e placas de SAÍDA; o fundo do corredor é um janelão (com a chuva escorrendo) |
 | Entrada da biblioteca | quadro verde de avisos com a plaquinha BIBLIOTECA, guarda-volumes azuis, caixa de devolução de madeira |
 | Biblioteca | piso vinílico bege; estantes de aço bege com livros coloridos; mesas brancas com cadeiras pretas; mesas redondas; balcão de atendimento com os computadores; o mural colorido de rostos na parede de cima; o xadrez gigante com o tapete azul e branco; placas amarelas de piso molhado |
-| Salas de estudo | janelões para fora e a luminária verde de mesa (é a luz de verdade que a Bibliotecária usa para enxergar) |
+| Salas de estudo | janelões para fora e a luminária verde de mesa |
 | Achados e Perdidos | lousa verde, armário de madeira, caixas de papelão (fechada, amassada, aberta) |
 
 - **Noite e chuva**: a mesma escuridão da Fase 1, fluorescentes falhando, luzes de emergência vermelhas (elevador quebrado,
   porta da biblioteca) e a placa verde da escada. A chuva fica do lado de fora: só se ouve abafada (`Rain.AlwaysInside`)
   e os relâmpagos clareiam o andar inteiro.
 - **Bibliotecária**: fantasma de coque e óculos que brilham, cardigã roxo e a saia que vira névoa. Quadros: andando
-  (fazendo "shhh"), jogando livro e caçando (cabelo solto e olhos vermelhos). Ela e o cone da lanterna dela aparecem no
-  escuro. Os livros que ela joga são `sprites/fx/livros.png`.
+  (fazendo "shhh"), jogando livro, caçando (cabelo solto e olhos vermelhos) e tonta (óculos tortos, livro na cabeça).
+  Ela e o cone da lanterna dela aparecem no escuro. Os livros que ela joga são `sprites/fx/livros.png`.
+- **A luta (furtividade com barulho)**: ela enxerga pouco mas ouve tudo (`objects/noise/Noise.cs`, com a onda do som
+  desenhada no chão). Um tiro na estante bamba (`objects/librarian/ToppleShelf.cs`) faz ela balançar e derrubar livros:
+  a Bibliotecária vem ver. Quando ela parar na frente, outro tiro derruba a estante em cima dela (`estante_caida.png`).
+  Três estantes e ela cai; tonta, ela também leva tiro. Se te vê, caça e joga livros até você sumir da vista dela.
+  Não tem fantasma na biblioteca.
 - **Abandono**: livros caídos das estantes, papéis, poças das goteiras, forro caído, peças do xadrez tombadas.
 
 ## Inspeção de itens
