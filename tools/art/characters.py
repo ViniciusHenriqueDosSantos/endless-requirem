@@ -139,9 +139,16 @@ def ghost(w, h, frame, body, body_m, body_d, eye_glow, extras):
     cv.put(int(cx - rx * 0.5), int(top + 2), hexc("ffffff")); cv.put(int(cx - rx * 0.5) + 1, int(top + 2), hexc("ffffff"))
     # olhos ocos com brilho
     ey = int(top + rx + extras.get("eye_dy", 0))
-    for ex in (int(cx - rx * 0.45), int(cx + rx * 0.25)):
-        cv.rect(ex, ey - 1, 2, 3, hexc("1b1724")); cv.put(ex + 1, ey, eye_glow)
-    if extras.get("mouth"):
+    hurt = extras.get("hurt")
+    for i, ex in enumerate((int(cx - rx * 0.45), int(cx + rx * 0.25))):
+        if hurt:
+            a, b = (ex, ex + 1) if i == 0 else (ex + 1, ex)
+            cv.put(a, ey - 1, hexc("1b1724")); cv.put(b, ey, hexc("1b1724")); cv.put(a, ey + 1, hexc("1b1724"))
+        else:
+            cv.rect(ex, ey - 1, 2, 3, hexc("1b1724")); cv.put(ex + 1, ey, eye_glow)
+    if hurt:
+        cv.rect(int(cx - 2), ey + 3, 4, 2, hexc("1b1724"))
+    elif extras.get("mouth"):
         cv.rect(int(cx - 1), ey + 3, 2, 1 + (frame % 2), hexc("1b1724"))
     for fn in extras.get("draw", []):
         fn(cv, frame, bob, cx, top)
@@ -184,17 +191,22 @@ def livros(cv, frame, bob, cx, top):
     cv.rect(4, y - 1, 3, 4, C["ghost_m"]); cv.rect(17, y - 1, 3, 4, C["ghost_m"])  # mãos
 
 
-def ghost_sheet(kind):
+def ghost_frames(kind, hurt=False):
     if kind == "normal":
         body, m, d = hexc("eef4f8"), hexc("c7d4e0"), hexc("93a4b9")
-        frames = [ghost(16, 20, f, body, m, d, hexc("ff4b5c"), {"draw": [capelo], "top": 2, "mouth": True}) for f in range(4)]
+        frames = [ghost(16, 20, f, body, m, d, hexc("ff4b5c"), {"draw": [capelo], "top": 2, "mouth": True, "hurt": hurt}) for f in range(4)]
     elif kind == "fast":
         body, m, d = hexc("fde9d7"), hexc("f1c39c"), hexc("cf905f")
-        frames = [ghost(12, 15, f, body, m, d, hexc("ffb21a"), {"draw": [mochila_laranja]}) for f in range(4)]
+        frames = [ghost(12, 15, f, body, m, d, hexc("ffb21a"), {"draw": [mochila_laranja], "hurt": hurt}) for f in range(4)]
     else:
         body, m, d = hexc("e4d8f4"), hexc("c0aee0"), hexc("8e74bd")
-        frames = [ghost(24, 28, f, body, m, d, hexc("c26bff"), {"draw": [capelo, livros], "top": 2, "eye_dy": -4, "mouth": True}) for f in range(4)]
-    return sheet(frames, 4)
+        frames = [ghost(24, 28, f, body, m, d, hexc("c26bff"), {"draw": [capelo, livros], "top": 2, "eye_dy": -4, "mouth": True, "hurt": hurt}) for f in range(4)]
+    return frames
+
+
+def ghost_sheet(kind):
+    """4 quadros flutuando + 1 quadro de careta (quando leva tiro)."""
+    return sheet(ghost_frames(kind) + ghost_frames(kind, hurt=True)[:1], 5)
 
 
 # ======================================================================== TIA DA CANTINA (32x40)
