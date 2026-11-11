@@ -9,13 +9,16 @@
 #   9..11  topo de parede (16 combinações de vizinhos) nos estilos interno, fachada e externo
 #   12..14 frente de parede nos mesmos estilos (4 combinações + variações decoradas)
 #   15 sombras de contato no chão (camada por cima do piso)
+#   22..24 Fase 2 (andar da biblioteca): piso vinílico, tapete do xadrez gigante, paredes com as mãos pintadas,
+#          quadro verde, mural, janelões na chuva, armários; livros caídos no chão
+# O mesmo atlas serve às duas fases (as paredes e o granito do corredor são os mesmos do prédio).
 import json, os
 from pix import Canvas, ROOT, rng, mix, shade, hexc
 from palette import C
 
 T = 16
 COLS = 16
-atlas = Canvas(T * COLS, T * 22)
+atlas = Canvas(T * COLS, T * 25)
 names = {}
 
 
@@ -642,6 +645,134 @@ for j, (name, fn) in enumerate([("topo_via_meiofio0", lambda: floor_bricks(2, cu
                                 ("topo_via_asfalto_meiofio", lambda: floor_asphalt(1, under_curb=True)),
                                 ("topo_via_asfalto_faixa", lambda: floor_asphalt(0, line=True)), ("topo_via_asfalto", lambda: floor_asphalt(2))]):
     tile(name, 8 + j, 20); place(age(fn(), "asfalto", 900 + j), name)
+
+# ================================================================ FASE 2: o andar da biblioteca
+# Referência: fotos do tour 360° (biblioteca e corredor da frente dela).
+VINIL, VINIL_L, VINIL_D = hexc("e2d9c6"), hexc("ece5d6"), hexc("cdc2ac")
+
+
+def floor_vinil(variant):
+    """Piso vinílico bege da biblioteca: placas grandes, quase lisas, com pintinhas."""
+    cv = Canvas(T, T, VINIL)
+    r = rng(2200 + variant)
+    cv.noise(0, 0, T, T, [VINIL_L], 0.10, r)
+    cv.noise(0, 0, T, T, [VINIL_D], 0.05, r)
+    cv.hline(0, 0, T, hexc("d8cfba")); cv.vline(0, 0, T, hexc("d8cfba"))
+    if variant == 2:  # marca de arrasto de cadeira
+        for x in range(4, 11): cv.put(x, 9 + (x // 6), hexc("c6baa2"))
+    if variant == 3:  # risco fino
+        for x in range(3, 9): cv.put(x, 4 + x // 3, hexc("c9bea6"))
+    return cv
+
+
+def floor_xadrez(dark):
+    """Tapete do xadrez gigante (azul e branco, de borracha)."""
+    base = hexc("33508a") if dark else hexc("e4e7ea")
+    cv = Canvas(T, T, base)
+    r = rng(2300 + dark)
+    cv.noise(0, 0, T, T, [shade(base, 0.08), shade(base, -0.08)], 0.25, r)
+    cv.frame(0, 0, T, T, shade(base, -0.18))
+    return cv
+
+
+for v in range(4):
+    tile(f"vinil{v}", v, 22); place(floor_vinil(v) if v % 2 else age(floor_vinil(v), "vinil", 2210 + v), f"vinil{v}")
+tile("xadrez_a", 4, 22); place(age(floor_xadrez(0), "vinil", 2301), "xadrez_a")
+tile("xadrez_b", 5, 22); place(age(floor_xadrez(1), "vinil", 2302), "xadrez_b")
+
+HAND = ["1.1.1", "11111", "11111", ".111."]
+INKS = [hexc("e0413a"), hexc("f08a24"), hexc("e8c62a"), hexc("3fae4d"), hexc("2f7fd6"), hexc("8e4fc9"), hexc("e05aa8"),
+        hexc("23a9a0")]
+
+
+def wall_f2(deco, seed):
+    """Frente de parede da Fase 2: começa da parede interna branca e põe a decoração por cima."""
+    cv = wall_front("interno", 3, seed=seed)
+    r = rng(2400 + seed)
+    if deco.startswith("maos"):  # as mãos pintadas com tinta e os nomes dos formandos (foto do corredor)
+        spots = [(1, 4), (7, 4), (11, 5), (3, 8), (9, 8)]
+        r.shuffle(spots)
+        for (x0, y0) in spots[:4 + (seed % 2)]:
+            c = r.choice(INKS)
+            for dy, row in enumerate(HAND):
+                for dx, ch in enumerate(row):
+                    if ch == "1" and r.random() > 0.12: cv.put(x0 + dx, y0 + dy, c)
+            cv.hline(x0, y0 + 4, r.randrange(2, 5), shade(c, -0.2))   # o nome, rabiscado embaixo
+        for _ in range(6):  # tinta descascando
+            cv.put(r.randrange(T), r.randrange(4, 12), C["wall_m"])
+    elif deco == "quadro_bib":  # quadro verde de avisos com a plaquinha BIBLIOTECA em cima
+        cv.rect(1, 5, 14, 8, hexc("2c6a48")); cv.frame(1, 5, 14, 8, hexc("9aa1a8"))
+        cv.rect(4, 3, 8, 2, hexc("f2f2ee")); cv.hline(5, 4, 6, hexc("3a3f48"))
+        for (x, y, c) in [(2, 6, "f2d24b"), (5, 7, "ffffff"), (9, 6, "e05aa8"), (12, 8, "ffffff"), (3, 10, "8fd0ff"),
+                          (8, 10, "ffffff")]:
+            cv.rect(x, y, 2, 2, hexc(c))
+        cv.put(13, 10, hexc("5a3a28")); cv.put(12, 11, hexc("5a3a28"))  # papel arrancado
+    elif deco.startswith("mural_b"):  # o mural colorido da biblioteca (rostos, peixes e plantas)
+        v = int(deco[-1])
+        blocks = [hexc("e64a2e"), hexc("f2b632"), hexc("2f6fd0"), hexc("f0743c"), hexc("3a9a52"), hexc("d94e8f")]
+        r2 = rng(2500 + v)
+        for x0 in range(0, T, 4):
+            for y0 in (3, 8):
+                cv.rect(x0, y0, 4, 5, blocks[(v * 3 + x0 // 4 + y0) % len(blocks)])
+        # um rosto grande por placa (pele, cabelo preto, olhos)
+        fx = r2.randrange(2, 9)
+        skin = r2.choice([hexc("8a5a3c"), hexc("b07a52"), hexc("6e4630")])
+        cv.rect(fx, 3, 5, 3, hexc("1d1a1c")); cv.rect(fx, 5, 5, 6, skin); cv.put(fx + 1, 7, hexc("1d1a1c")); cv.put(fx + 3, 7, hexc("1d1a1c"))
+        cv.hline(fx + 1, 9, 3, shade(skin, -0.3))
+        if v % 2: cv.rect(12, 9, 3, 2, hexc("3a9a52")); cv.put(13, 8, hexc("3a9a52"))
+        else: cv.rect(11, 5, 3, 1, hexc("2f6fd0")); cv.put(14, 5, hexc("2f6fd0"))
+        for _ in range(12):  # tinta desbotada e descascando
+            x, y = r2.randrange(T), r2.randrange(3, 13)
+            cv.put(x, y, mix(cv.get(x, y), C["wall"], 0.6))
+        cv.rect(0, 13, T, 3, C["base"]); cv.hline(0, 13, T, C["wall_d"])
+    elif deco == "persiana":  # painel branco de venezianas (shafts do hall da secretaria)
+        cv.rect(1, 3, 14, 10, hexc("e9ebec")); cv.frame(1, 3, 14, 10, hexc("aeb3b8"))
+        for y in range(4, 13, 2): cv.hline(2, y, 12, hexc("c4c8cc"))
+        cv.rect(10, 5, 3, 2, hexc("f2c230")); cv.put(11, 5, hexc("2a2b30"))  # placa de perigo
+    elif deco in ("janelao", "janelao_quebrado"):  # janela grande para fora: noite e chuva
+        cv.rect(0, 3, T, 10, hexc("aeb5bc"))
+        cv.rect(1, 4, 14, 8, hexc("0d1626"))
+        for x0 in range(1, 15, 3):  # chuva escorrendo no vidro
+            for y in range(4, 12):
+                if (y + x0 * 3) % 5 < 2: cv.put(x0 + (y // 4), y, hexc("3b5577"))
+        cv.vline(8, 4, 8, hexc("aeb5bc")); cv.hline(1, 8, 14, hexc("8e959d"))
+        cv.put(3, 5, hexc("8fb3cf")); cv.put(11, 6, hexc("8fb3cf"))
+        if deco == "janelao_quebrado":
+            cv.rect(9, 4, 6, 4, hexc("05070a"))
+            for (x, y) in [(9, 4), (10, 6), (12, 4), (14, 7), (11, 5)]: cv.put(x, y, hexc("9fb6cc"))
+    elif deco == "armarios":  # guarda-volumes azuis (em frente à biblioteca)
+        cv.rect(1, 3, 14, 10, hexc("2b4f9c"))
+        for x in (1, 5, 9, 13): cv.vline(x, 3, 10, hexc("1b3466"))
+        for y in (3, 8, 12): cv.hline(1, y, 14, hexc("1b3466"))
+        for x in (3, 7, 11):
+            for y in (5, 10): cv.put(x, y, hexc("c9ced3"))
+        cv.rect(9, 9, 4, 3, hexc("0c1220"))  # uma portinha arrombada
+    return cv
+
+
+DECOS_F2 = ["maos0", "maos1", "maos2", "quadro_bib", "mural_b0", "mural_b1", "mural_b2", "mural_b3", "persiana",
+            "janelao", "janelao_quebrado", "armarios"]
+for j, d in enumerate(DECOS_F2):
+    tile(f"frente_interno_{d}", j, 23); place(wall_f2(d, 60 + j), f"frente_interno_{d}")
+DECOS["interno"] += DECOS_F2
+
+
+def decal_livros(v):
+    """Livros caídos das estantes (abertos, de capa colorida)."""
+    cv = Canvas(T, T)
+    r = rng(2600 + v)
+    for _ in range(2 + v):
+        x, y = r.randrange(1, 10), r.randrange(2, 12)
+        c = r.choice([hexc("b33a2e"), hexc("2f5fa8"), hexc("3f8a4a"), hexc("d9a62e"), hexc("6a3f8f")])
+        if r.random() < 0.4:  # aberto: as páginas brancas
+            cv.rect(x, y, 5, 3, hexc("efeadd")); cv.vline(x + 2, y, 3, hexc("b9b2a0")); cv.hline(x, y + 3, 5, c)
+        else:
+            cv.rect(x, y, 4, 3, c); cv.hline(x, y + 2, 4, shade(c, -0.3)); cv.vline(x + 3, y, 3, hexc("efeadd"))
+    return cv
+
+
+for v in range(3):
+    tile(f"decal_livros{v}", v, 24); place(decal_livros(v), f"decal_livros{v}")
 
 # linha 0: compatibilidade com o atlas provisório (0/1 piso, 2 topo, 3 frente)
 for n, c in [("granito0", 0), ("granito1", 1), ("topo_interno_15", 2), ("frente_interno_3", 3)]:

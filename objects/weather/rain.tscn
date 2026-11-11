@@ -1,0 +1,13 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://objects/weather/Rain.cs" id="1_script"]
+[ext_resource type="AudioStream" path="res://sounds/clima/chuva.ogg" id="2_chuva"]
+[ext_resource type="AudioStream" path="res://sounds/clima/trovao1.ogg" id="3_t1"]
+[ext_resource type="AudioStream" path="res://sounds/clima/trovao2.ogg" id="4_t2"]
+[ext_resource type="AudioStream" path="res://sounds/clima/trovao3.ogg" id="5_t3"]
+
+[node name="Chuva" type="Node2D"]
+z_index = 40
+script = ExtResource("1_script")
+RainSound = ExtResource("2_chuva")
+ThunderSounds = [ExtResource("3_t1"), ExtResource("4_t2"), ExtResource("5_t3")]

@@ -40,6 +40,7 @@ As cores e os objetos vieram das fotos do tour 360° da UNIFESP São José dos C
 | `palette.py` | todas as cores, com o nome de onde vieram |
 | `tiles_fase1.py` | `sprites/tiles/fase1_tiles.png`, `tilesets/fase1_tileset*.tres` e `tools/levelgen/tiles_fase1.json` |
 | `props_fase1.py` | `sprites/props/fase1/` (prédio, guarita, jardins, balcões, mesas, sinuca...) |
+| `props_fase2.py` | `sprites/props/fase2/` (estantes, mesas, xadrez gigante, elevadores, armários, caixas, luminária), a Bibliotecária, os livros que ela joga, o livro e as chaves (com a arte de inspeção) |
 | `characters.py` | `sprites/characters/` (estudante, 3 fantasmas, Tia da Cantina) |
 | `lights.py` | `sprites/lights/` (texturas das luzes) |
 | `items.py` | `sprites/items/`, `weapons/`, `fx/`, `objects/` (crachá, marmita, armas, tiros, salgados, portas, catraca, pilhas de papel, alvos) |
@@ -80,9 +81,53 @@ O jogo se passa em 2061, à noite, com o campus abandonado há décadas.
   caído; paredes com vidro quebrado, mofo, rachaduras, pichações e trepadeira; carros abandonados, cadeiras caídas, entulho.
 - Texturas de luz: `lights.py` gera `sprites/lights/` (radial, cone da lanterna, tubo fluorescente).
 
+## Chuva (Fase 1)
+
+`objects/weather/rain.tscn` (`Rain`): chove a noite toda.
+
+- **Pingos**: `rain.gdshader` desenha no mundo, em pixel art, três camadas de riscos inclinados, respingos no chão e anéis
+  nas poças. Escurecem com a noite e brilham na lanterna e perto dos postes. A chuva é dividida em pedaços de 6x6 tiles para
+  cada pedaço receber só as luzes de perto.
+- **Onde chove**: o gerador da fase grava `levels/fase_1_chuva.png` (1 pixel por tile: R = chove, G = respinga, B = poça).
+  Dentro do RU, da cantina e do elevador não chove; só pinga nas poças, do teto furado.
+- **Relâmpagos**: a cada 14 a 32 s o `CanvasModulate` da noite clareia de repente (às vezes duas vezes) e o trovão vem
+  depois: quase junto quando o raio cai perto, segundos depois quando é longe. Dentro das salas o clarão é mais fraco.
+- **Som**: `sounds/clima/` (`chuva.ogg` em loop e três trovões), gerados por `tools/audio/gen_chuva.py` (ruído filtrado e
+  gotas sintetizadas, precisa de numpy, scipy e ffmpeg). Tocam no bus `Chuva`, criado pelo script, que abafa o som com um
+  filtro passa-baixa quando o jogador entra numa sala.
+
+## Fase 2: o andar da biblioteca
+
+Referência: as fotos da biblioteca e do corredor da frente dela no tour 360°. A Fase 2 usa o mesmo tileset da Fase 1
+(linhas 22 a 24 do atlas) e o gerador `tools/levelgen/gen_fase2.py` monta a arte por cima da planta do time
+(`L.tiled_layers` em `lib.py`). A planta, as salas e o roteiro não mudaram.
+
+| Lugar no jogo | O que veio do campus de verdade |
+|---|---|
+| Corredor | granito branco polido; paredes cobertas do começo ao fim de mãos pintadas com tinta, cada uma com o nome do formando embaixo (`objects/decor/Signatures.cs`); o fundo do corredor é um janelão (com a chuva escorrendo), sem mãos |
+| Hall das Caronas | granito branco e paredes brancas (sem as mãos), cadeiras pretas de espera, extintor, venezianas e placas de SAÍDA |
+| Entrada da biblioteca | quadro verde de avisos com a plaquinha BIBLIOTECA, guarda-volumes azuis, caixa de devolução de madeira |
+| Biblioteca | piso vinílico bege; estantes de aço bege com livros coloridos; mesas brancas com cadeiras pretas; mesas redondas; balcão de atendimento com os computadores; o mural colorido de rostos na parede de cima; o xadrez gigante com o tapete azul e branco; placas amarelas de piso molhado |
+| Salas de estudo | janelões para fora e a luminária verde de mesa |
+| Achados e Perdidos | lousa verde, armário de madeira, caixas de papelão (fechada, amassada, aberta) |
+
+- **Noite e chuva**: a mesma escuridão da Fase 1, fluorescentes falhando, luzes de emergência vermelhas (elevador quebrado,
+  porta da biblioteca) e a placa verde da escada. A chuva fica do lado de fora: só se ouve abafada (`Rain.AlwaysInside`)
+  e os relâmpagos clareiam o andar inteiro.
+- **Bibliotecária**: fantasma de coque e óculos que brilham, cardigã roxo e a saia que vira névoa. Quadros: andando
+  (fazendo "shhh"), jogando livro, caçando (cabelo solto e olhos vermelhos) e tonta (óculos tortos, livro na cabeça).
+  Ela e o cone da lanterna dela aparecem no escuro. Os livros que ela joga são `sprites/fx/livros.png`.
+- **A luta (furtividade com barulho)**: ela enxerga pouco mas ouve tudo (`objects/noise/Noise.cs`, com a onda do som
+  desenhada no chão). Um tiro na estante (`objects/librarian/ToppleShelf.cs`) derruba livros lá de cima: a
+  Bibliotecária vem ver. Dê a volta por trás da estante e, quando ela parar na frente, empurre com [Espaço]: a estante
+  tomba em cima dela (`estante_caida.png`). Tiro não machuca, só estante; três vezes e ela cai, e a cada vez ela volta
+  mais rápida. Tonta, ela acorda furiosa e te caça (hora de se esconder). As estantes voltam a ficar de pé sozinhas.
+  Não tem fantasma na biblioteca.
+- **Abandono**: livros caídos das estantes, papéis, poças das goteiras, forro caído, peças do xadrez tombadas.
+
 ## Inspeção de itens
 
-Ao pegar um item com `InspectTexture` (crachá, marmita, escopeta), `objects/inspect/item_inspect.tscn` pausa o jogo e mostra
+Ao pegar um item com `InspectTexture` (crachá, marmita, escopeta; na Fase 2, a chave dos Achados, o Cálculo I e a chave da escada), `objects/inspect/item_inspect.tscn` pausa o jogo e mostra
 a arte grande (`sprites/items/inspecao/`), balançando com um brilho passando, com nome e descrição ao lado, como no
 Resident Evil. O crachá segue o modelo real da UNIFESP SJC (cordão verde, logo, faixa "SÃO JOSÉ DOS CAMPOS"), com foto
 apagada e nome fictício.
