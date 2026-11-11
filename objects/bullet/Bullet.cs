@@ -14,7 +14,7 @@ public partial class Bullet : Area2D
 		Rotation = Direction.Angle();
 		Scale = Vector2.One * Weapon.BulletScale;
 		Modulate = Weapon.Color;
-		Material = new CanvasItemMaterial { LightMode = CanvasItemMaterial.LightModeEnum.Unshaded };  // tiro brilha no escuro
+		Material = SharedMaterials.Unshaded;  // tiro brilha no escuro
 
 		// Pixel art: o desenho fica sempre a 4 pixels por pixel da arte, seja qual for o tamanho da colisão.
 		if (Weapon.BulletSprite != null)
@@ -53,6 +53,14 @@ public partial class Bullet : Area2D
 	// Pilhas de papel levam dano.
 	private void OnBodyEntered(Node2D body)
 	{
+		// Estante bamba da biblioteca: o tiro derruba livros lá de cima (barulho).
+		if (body is ToppleShelf shelf && shelf.IsStanding)
+		{
+			shelf.TakeHit(Weapon.Damage, Direction);
+			QueueFree();
+			return;
+		}
+
 		// Móveis baixos: o tiro passa por cima.
 		if (body is Prop prop && !prop.Tall)
 			return;

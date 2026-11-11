@@ -78,6 +78,8 @@ public partial class Prop : StaticBody2D
 	public override void _Ready()
 	{
 		QueueRedraw();
+		// Só os props que somem quando o jogador passa atrás precisam rodar todo quadro.
+		SetProcess(Engine.IsEditorHint() || (FadeWhenBehind && Texture != null));
 		if (Engine.IsEditorHint() || !Solid) return;
 
 		AddToGroup("obstacles");

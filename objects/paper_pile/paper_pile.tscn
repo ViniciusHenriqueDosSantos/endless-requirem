@@ -5,12 +5,18 @@
 [ext_resource type="Texture2D" path="res://sprites/objects/pilha_1.png" id="3_hurt"]
 [ext_resource type="Texture2D" path="res://sprites/objects/pilha_2.png" id="4_scattered"]
 [ext_resource type="AudioStream" path="res://sounds/objects/pilha.wav" id="5_som"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase2/caixa0.png" id="6_box"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase2/caixa1.png" id="7_box_hurt"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase2/caixa2.png" id="8_box_open"]
 
 [node name="PaperPile" type="StaticBody2D"]
 script = ExtResource("1_script")
 FullSprite = ExtResource("2_full")
 DamagedSprite = ExtResource("3_hurt")
 ScatteredSprite = ExtResource("4_scattered")
+BoxSprite = ExtResource("6_box")
+BoxDamagedSprite = ExtResource("7_box_hurt")
+BoxOpenSprite = ExtResource("8_box_open")
 
 [node name="Som" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource("5_som")

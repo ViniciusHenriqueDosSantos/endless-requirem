@@ -1,6 +1,8 @@
 [gd_resource type="Resource" script_class="BossConfig" format=3]
 
 [ext_resource type="Script" path="res://objects/boss/BossConfig.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://sprites/characters/bibliotecaria.png" id="2_sprite"]
+[ext_resource type="Texture2D" path="res://sprites/fx/livros.png" id="3_livros"]
 
 [resource]
 script = ExtResource("1_script")
@@ -16,9 +18,13 @@ Pellets = 7
 SpreadDegrees = 12.0
 ProjectileSpeed = 220.0
 FireInterval = 1.6
-SummonInterval = 5.0
-SummonMaxAlive = 6
+SummonInterval = 0.0
+SummonMaxAlive = 0
 SummonOnLastCycle = false
 SummonCount = 0
 MoveSpeed = 200.0
 ScoreValue = 800
+Sprite = ExtResource("2_sprite")
+SpriteFrames = 5
+ProjectileSprite = ExtResource("3_livros")
+ProjectileFrames = 4

@@ -41,7 +41,7 @@ public partial class Pickup : Area2D
 		QueueRedraw();
 		if (Engine.IsEditorHint()) return;
 
-		Material = new CanvasItemMaterial { LightMode = CanvasItemMaterial.LightModeEnum.Unshaded };  // itens brilham um pouco no escuro para o jogador achar
+		Material = SharedMaterials.Unshaded;  // itens brilham um pouco no escuro para o jogador achar
 		AddChild(new CollisionShape2D
 		{
 			Shape = new CircleShape2D { Radius = Radius + 14f },
