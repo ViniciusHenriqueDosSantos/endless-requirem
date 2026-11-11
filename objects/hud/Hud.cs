@@ -1,5 +1,4 @@
 using Godot;
-using System.Linq;
 
 public partial class Hud : CanvasLayer
 {
@@ -7,7 +6,11 @@ public partial class Hud : CanvasLayer
 
 	private static readonly Color ObjectiveColor = new(0.6f, 1f, 0.75f);
 
-	private Label _label;
+	private TextureProgressBar lifeTube;
+	private Label lifeAmount;
+	private TextureRect gunIcon;
+	private Label gunName;
+	private Label gunAmmo;
 	private Label _objective;
 	private Label _message;
 	private float _messageTimer;
@@ -25,7 +28,11 @@ public partial class Hud : CanvasLayer
 	public override void _Ready()
 	{
 		AddToGroup("hud");
-		_label = GetNode<Label>("Label");
+		lifeTube = GetNode<TextureProgressBar>("Bottom/Life/Tube");
+		lifeAmount = GetNode<Label>("Bottom/Life/Amount");
+		gunIcon = GetNode<TextureRect>("Bottom/Gun/Icon");
+		gunName = GetNode<Label>("Bottom/Gun/Name");
+		gunAmmo = GetNode<Label>("Bottom/Gun/Ammo");
 
 		// Objetivo atual, no topo da tela.
 		_objective = MakeLabel(22, ObjectiveColor);
@@ -37,8 +44,8 @@ public partial class Hud : CanvasLayer
 		// Mensagens rápidas ("Você pegou: Crachá"), embaixo.
 		_message = MakeLabel(24, Colors.White);
 		_message.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.BottomWide);
-		_message.OffsetTop = -150;
-		_message.OffsetBottom = -90;
+		_message.OffsetTop = -190;
+		_message.OffsetBottom = -130;
 		AddChild(_message);
 
 		CreateBossBar();
@@ -200,13 +207,12 @@ public partial class Hud : CanvasLayer
 
 	private void Refresh()
 	{
-		string weapons = string.Join("   ", Player.OwnedWeapons.Select((weapon, i) =>
-			weapon == Player.Weapon ? $"[{i + 1}: {weapon.Name}]" : $"{i + 1}: {weapon.Name}"));
+		gunIcon.Texture = Player.Weapon.Sprite;
+		gunName.Text = Player.Weapon.Name;
+		gunAmmo.Text = Player.IsReloading ? "RECARREGANDO" : $"{Player.Ammo}/{Player.Weapon.MagazineSize}";
 
-		string ammo = Player.IsReloading ? "recarregando..." : $"{Player.Ammo}/{Player.Weapon.MagazineSize}";
-		string items = Player.ItemNames.Count > 0 ? "  |  Itens: " + string.Join(", ", Player.ItemNames) : "";
-
-		_label.Text = $"Vida: {Player.Health}/{Player.MaxHealth}  |  Armas: {weapons}  ({ammo}){items}\n" +
-					  "[WASD] Mover  |  [Mouse] Mirar e atirar  |  [Espaço] Cambalhota";
+		lifeTube.MaxValue = Player.MaxHealth;
+		lifeTube.Value = Player.Health;
+		lifeAmount.Text = $"{Player.Health}/{Player.MaxHealth}";
 	}
 }

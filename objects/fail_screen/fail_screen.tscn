@@ -1,0 +1,72 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://objects/fail_screen/FailScreen.cs" id="1_script"]
+[ext_resource type="PackedScene" path="res://objects/splash_bg/splash_bg.tscn" id="2_splash_bg"]
+[ext_resource type="PackedScene" path="res://objects/diploma/diploma.tscn" id="3_diploma"]
+[ext_resource type="PackedScene" path="res://objects/arrow_button/arrow_button.tscn" id="4_button"]
+
+[node name="FailScreen" type="CanvasLayer"]
+process_mode = 3
+layer = 20
+script = ExtResource("1_script")
+
+[node name="Content" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SplashBg" parent="Content" instance=ExtResource("2_splash_bg")]
+
+[node name="Diploma" parent="Content/SplashBg" instance=ExtResource("3_diploma")]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -384.0
+offset_top = -200.0
+offset_right = -64.0
+offset_bottom = -70.0
+scale = Vector2(2.4, 2.4)
+
+[node name="Title" parent="Content/SplashBg/Diploma" index="0"]
+offset_top = 11.0
+offset_bottom = 47.0
+theme_override_colors/font_color = Color(0.72, 0.13, 0.16, 1)
+theme_override_colors/font_shadow_color = Color(0.86, 0.6, 0.45, 1)
+theme_override_font_sizes/font_size = 30
+text = "REPROVADO"
+
+[node name="Text" parent="Content/SplashBg/Diploma" index="1"]
+offset_top = 48.0
+offset_bottom = -14.0
+theme_override_font_sizes/font_size = 13
+
+[node name="Buttons" type="VBoxContainer" parent="Content"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -124.0
+offset_right = 324.0
+offset_bottom = -16.0
+grow_vertical = 0
+theme_override_constants/separation = 0
+
+[node name="Retry" parent="Content/Buttons" instance=ExtResource("4_button")]
+layout_mode = 2
+text = "Tentar de novo"
+
+[node name="Menu" parent="Content/Buttons" instance=ExtResource("4_button")]
+layout_mode = 2
+text = "Menu"
+
+[connection signal="pressed" from="Content/Buttons/Retry" to="." method="OnRetryPressed"]
+[connection signal="pressed" from="Content/Buttons/Menu" to="." method="OnMenuPressed"]
+
+[editable path="Content/SplashBg/Diploma"]

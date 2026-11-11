@@ -182,7 +182,7 @@ public partial class Fase1 : Node2D
 
 	private void OnPlayerDied()
 	{
-		Screen.Open("REPROVADO", "Os fantasmas venceram desta vez.\nVocê volta para o começo deste trecho.");
+		Screen.OpenFail("Os fantasmas venceram desta vez.\nVocê volta para o começo deste trecho.");
 	}
 
 	private void OnScreenClosed()

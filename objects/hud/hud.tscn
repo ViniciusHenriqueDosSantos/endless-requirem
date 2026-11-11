@@ -1,14 +1,86 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://objects/hud/Hud.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://sprites/ui/hud/tubo_fundo.png" id="2_under"]
+[ext_resource type="Texture2D" path="res://sprites/ui/hud/tubo_liquido.png" id="3_progress"]
+[ext_resource type="Texture2D" path="res://sprites/ui/hud/tubo_vidro.png" id="4_over"]
+[ext_resource type="FontFile" path="res://fonts/PressStart2P.ttf" id="5_digits"]
 
 [node name="Hud" type="CanvasLayer"]
 layer = 3
 script = ExtResource("1_script")
 
-[node name="Label" type="Label" parent="."]
+[node name="Bottom" type="HBoxContainer" parent="."]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
 offset_left = 20.0
-offset_top = 20.0
+offset_top = -76.0
+offset_right = 320.0
+offset_bottom = -16.0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="Life" type="Control" parent="Bottom"]
+custom_minimum_size = Vector2(186, 48)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+
+[node name="Tube" type="TextureProgressBar" parent="Bottom/Life"]
+layout_mode = 0
+offset_right = 62.0
+offset_bottom = 16.0
+scale = Vector2(3, 3)
+mouse_filter = 2
+max_value = 5.0
+value = 5.0
+texture_under = ExtResource("2_under")
+texture_over = ExtResource("4_over")
+texture_progress = ExtResource("3_progress")
+
+[node name="Amount" type="Label" parent="Bottom/Life"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 20
+theme_override_fonts/font = ExtResource("5_digits")
+theme_override_font_sizes/font_size = 16
+text = "5/5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Gun" type="VBoxContainer" parent="Bottom"]
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="Icon" type="TextureRect" parent="Bottom/Gun"]
+custom_minimum_size = Vector2(60, 30)
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Name" type="Label" parent="Bottom/Gun"]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 14
+text = "Laser"
+horizontal_alignment = 1
+
+[node name="Ammo" type="Label" parent="Bottom/Gun"]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("5_digits")
+theme_override_font_sizes/font_size = 8
+text = "30/30"
+horizontal_alignment = 1

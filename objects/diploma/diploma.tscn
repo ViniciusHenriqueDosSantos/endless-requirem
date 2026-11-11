@@ -1,0 +1,47 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://sprites/ui/menu/diploma.png" id="1_diploma"]
+
+[node name="Diploma" type="NinePatchRect"]
+offset_right = 166.0
+offset_bottom = 60.0
+mouse_filter = 2
+texture = ExtResource("1_diploma")
+patch_margin_left = 16
+patch_margin_top = 12
+patch_margin_right = 16
+patch_margin_bottom = 12
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 1
+anchor_right = 1.0
+offset_left = 16.0
+offset_top = 3.0
+offset_right = -16.0
+offset_bottom = 31.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.35, 0.2, 0.09, 1)
+theme_override_colors/font_shadow_color = Color(0.86, 0.65, 0.42, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 21
+text = "Nome do Jogo"
+horizontal_alignment = 1
+
+[node name="Text" type="Label" parent="."]
+layout_mode = 1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 22.0
+offset_top = 30.0
+offset_right = -22.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.16, 0.08, 0.03, 1)
+theme_override_colors/font_outline_color = Color(0.88, 0.8, 0.62, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
