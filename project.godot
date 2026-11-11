@@ -11,9 +11,14 @@ config_version=5
 [application]
 
 config/name="endless_requirem"
-run/main_scene="res://levels/fase_1.tscn"
+run/main_scene="res://objects/main_menu/main_menu.tscn"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 config/icon="res://sprites/icon.svg"
+
+[autoload]
+
+SceneTransition="*res://objects/scene_transition/scene_transition.tscn"
+PauseMenu="*res://objects/pause_menu/pause_menu.tscn"
 
 [display]
 

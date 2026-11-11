@@ -481,7 +481,10 @@ public partial class Player : CharacterBody2D
 		StatsChanged?.Invoke();
 
 		TriggerShake(Weapon.Shake);
-		GetNode<AudioStreamPlayer>("Tiro").Play();
+		AudioStreamPlayer shot = GetNode<AudioStreamPlayer>("Tiro");
+		shot.Stream = Weapon.ShotSound;
+		shot.VolumeDb = Weapon.ShotVolumeDb;
+		shot.Play();
 		Fired?.Invoke();
 	}
 

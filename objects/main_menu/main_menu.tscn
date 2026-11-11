@@ -1,0 +1,55 @@
+[gd_scene format=3 uid="uid://b48ypa4jx4biv"]
+
+[ext_resource type="Script" path="res://objects/main_menu/MainMenu.cs" id="1_script"]
+[ext_resource type="PackedScene" path="res://objects/splash_bg/splash_bg.tscn" id="2_splash_bg"]
+[ext_resource type="PackedScene" path="res://objects/diploma/diploma.tscn" id="3_diploma"]
+[ext_resource type="PackedScene" path="res://objects/arrow_button/arrow_button.tscn" id="4_button"]
+[ext_resource type="AudioStream" path="res://sounds/ambiente.ogg" id="5_ambience"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="SplashBg" parent="." instance=ExtResource("2_splash_bg")]
+
+[node name="Diploma" parent="SplashBg" instance=ExtResource("3_diploma")]
+layout_mode = 0
+offset_left = 376.8
+offset_top = 105.6
+offset_right = 542.8
+offset_bottom = 145.6
+scale = Vector2(2.4, 2.4)
+
+[node name="Buttons" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -124.0
+offset_right = 184.0
+offset_bottom = -16.0
+grow_vertical = 0
+theme_override_constants/separation = 0
+
+[node name="Play" parent="Buttons" instance=ExtResource("4_button")]
+layout_mode = 2
+text = "Jogar"
+
+[node name="Quit" parent="Buttons" instance=ExtResource("4_button")]
+layout_mode = 2
+text = "Sair"
+
+[node name="Ambience" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("5_ambience")
+volume_db = -8.0
+autoplay = true
+
+[connection signal="pressed" from="Buttons/Play" to="." method="OnPlayPressed"]
+[connection signal="pressed" from="Buttons/Quit" to="." method="OnQuitPressed"]
+[connection signal="finished" from="Ambience" to="Ambience" method="play"]
