@@ -55,7 +55,7 @@ public partial class LevelBase : Node2D
 
 	private void OnPlayerDied()
 	{
-		Screen.Open("REPROVADO", "Os fantasmas venceram desta vez.\nVocê volta para o começo deste trecho.");
+		Screen.OpenFail("Os fantasmas venceram desta vez.\nVocê volta para o começo deste trecho.");
 	}
 
 	private void OnScreenClosed()
@@ -98,7 +98,7 @@ public partial class LevelBase : Node2D
 	protected void Fail(string reason)
 	{
 		if (_finished) return;
-		Screen.Open("REPROVADO", reason);
+		Screen.OpenFail(reason);
 	}
 
 	// Para a fase desfazer o que é dela quando uma sala recomeça (ex.: chefe volta ao início).

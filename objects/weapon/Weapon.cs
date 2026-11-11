@@ -21,4 +21,8 @@ public partial class Weapon : Resource
 	// Sprite: a arma na mão do jogador, apontando para a direita. BulletSprite: o tiro, em branco (a cor vem de Color).
 	[Export] public Texture2D Sprite;
 	[Export] public Texture2D BulletSprite;
+
+	// Som do tiro desta arma e o volume dele.
+	[Export] public AudioStream ShotSound;
+	[Export] public float ShotVolumeDb = -22f;
 }

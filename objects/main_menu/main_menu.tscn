@@ -1,22 +1,12 @@
 [gd_scene format=3 uid="uid://b48ypa4jx4biv"]
 
-[ext_resource type="Script" uid="uid://d0q2ona1nfwdf" path="res://objects/main_menu/MainMenu.cs" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://bw3dw0kqyhfy" path="res://sprites/ui/menu/ceu.png" id="2_sky"]
-[ext_resource type="Texture2D" uid="uid://b71jfwvwgjfy1" path="res://sprites/ui/menu/nuvens_longe.png" id="3_far"]
-[ext_resource type="Texture2D" uid="uid://tswbd6snsijk" path="res://sprites/ui/menu/nuvens_perto.png" id="4_near"]
-[ext_resource type="Texture2D" uid="uid://bij38gy64i1av" path="res://sprites/ui/menu/raios.png" id="5_bolts"]
-[ext_resource type="Texture2D" uid="uid://54p40dk2bxn8" path="res://sprites/ui/menu/cena.png" id="6_scene"]
-[ext_resource type="Texture2D" uid="uid://b7n6w00h7jag5" path="res://sprites/ui/menu/diploma.png" id="7_diploma"]
-[ext_resource type="Texture2D" path="res://sprites/ui/menu/moldura.png" id="8_frame"]
-[ext_resource type="AudioStream" uid="uid://cting5l8w6vn5" path="res://sounds/ambiente.ogg" id="9_ambience"]
-[ext_resource type="AudioStream" uid="uid://c8v60owcdd38r" path="res://sounds/trovao.ogg" id="10_thunder"]
+[ext_resource type="Script" path="res://objects/main_menu/MainMenu.cs" id="1_script"]
+[ext_resource type="PackedScene" path="res://objects/splash_bg/splash_bg.tscn" id="2_splash_bg"]
+[ext_resource type="PackedScene" path="res://objects/diploma/diploma.tscn" id="3_diploma"]
+[ext_resource type="PackedScene" path="res://objects/arrow_button/arrow_button.tscn" id="4_button"]
+[ext_resource type="AudioStream" path="res://sounds/ambiente.ogg" id="5_ambience"]
 
-[sub_resource type="CanvasItemMaterial" id="Material_flash"]
-blend_mode = 1
-
-[sub_resource type="StyleBoxEmpty" id="StyleBox_focus"]
-
-[node name="MainMenu" type="Control" unique_id=1258122136]
+[node name="MainMenu" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -25,79 +15,17 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Art" type="Node2D" parent="." unique_id=2111822964]
+[node name="SplashBg" parent="." instance=ExtResource("2_splash_bg")]
+
+[node name="Diploma" parent="SplashBg" instance=ExtResource("3_diploma")]
+layout_mode = 0
+offset_left = 376.8
+offset_top = 105.6
+offset_right = 542.8
+offset_bottom = 145.6
 scale = Vector2(2.4, 2.4)
 
-[node name="Sky" type="Sprite2D" parent="Art" unique_id=2054992260]
-texture = ExtResource("2_sky")
-centered = false
-
-[node name="FarClouds" type="Sprite2D" parent="Art" unique_id=1503713008]
-texture_repeat = 2
-texture = ExtResource("3_far")
-centered = false
-region_enabled = true
-region_rect = Rect2(0, 0, 480, 120)
-
-[node name="NearClouds" type="Sprite2D" parent="Art" unique_id=760421598]
-texture_repeat = 2
-texture = ExtResource("4_near")
-centered = false
-region_enabled = true
-region_rect = Rect2(0, 0, 480, 110)
-
-[node name="Bolt" type="Sprite2D" parent="Art" unique_id=1431179600]
-visible = false
-position = Vector2(20, 10)
-texture = ExtResource("5_bolts")
-centered = false
-hframes = 3
-
-[node name="Scene" type="Sprite2D" parent="Art" unique_id=917327550]
-texture = ExtResource("6_scene")
-centered = false
-
-[node name="Diploma" type="Sprite2D" parent="Art" unique_id=457250940]
-position = Vector2(157, 44)
-texture = ExtResource("7_diploma")
-centered = false
-
-[node name="Title" type="Label" parent="Art/Diploma" unique_id=1405645571]
-offset_left = 16.0
-offset_top = 3.0
-offset_right = 150.0
-offset_bottom = 31.0
-theme_override_colors/font_color = Color(0.35, 0.2, 0.09, 1)
-theme_override_colors/font_shadow_color = Color(0.86, 0.65, 0.42, 1)
-theme_override_constants/shadow_offset_x = 1
-theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 21
-text = "Nome do Jogo"
-horizontal_alignment = 1
-
-[node name="Flash" type="ColorRect" parent="." unique_id=2040493364]
-material = SubResource("Material_flash")
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.55, 0.6, 0.85, 0)
-
-[node name="Frame" type="TextureRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("8_frame")
-expand_mode = 1
-
-[node name="Buttons" type="VBoxContainer" parent="." unique_id=1740138541]
+[node name="Buttons" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
@@ -109,41 +37,18 @@ offset_bottom = -16.0
 grow_vertical = 0
 theme_override_constants/separation = 0
 
-[node name="Play" type="Button" parent="Buttons" unique_id=1757018007]
+[node name="Play" parent="Buttons" instance=ExtResource("4_button")]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.88, 0.9, 1)
-theme_override_colors/font_focus_color = Color(1, 0.29, 0.36, 1)
-theme_override_colors/font_pressed_color = Color(1, 0.7, 0.1, 1)
-theme_override_colors/font_hover_color = Color(1, 0.29, 0.36, 1)
-theme_override_colors/font_outline_color = Color(0.05, 0.04, 0.08, 1)
-theme_override_constants/outline_size = 10
-theme_override_font_sizes/font_size = 36
-theme_override_styles/focus = SubResource("StyleBox_focus")
-text = "  Jogar"
-flat = true
-alignment = 0
+text = "Jogar"
 
-[node name="Quit" type="Button" parent="Buttons" unique_id=1187236292]
+[node name="Quit" parent="Buttons" instance=ExtResource("4_button")]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.88, 0.9, 1)
-theme_override_colors/font_focus_color = Color(1, 0.29, 0.36, 1)
-theme_override_colors/font_pressed_color = Color(1, 0.7, 0.1, 1)
-theme_override_colors/font_hover_color = Color(1, 0.29, 0.36, 1)
-theme_override_colors/font_outline_color = Color(0.05, 0.04, 0.08, 1)
-theme_override_constants/outline_size = 10
-theme_override_font_sizes/font_size = 36
-theme_override_styles/focus = SubResource("StyleBox_focus")
-text = "  Sair"
-flat = true
-alignment = 0
+text = "Sair"
 
-[node name="Ambience" type="AudioStreamPlayer" parent="." unique_id=1306284656]
-stream = ExtResource("9_ambience")
+[node name="Ambience" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("5_ambience")
 volume_db = -8.0
 autoplay = true
-
-[node name="Thunder" type="AudioStreamPlayer" parent="." unique_id=665725111]
-stream = ExtResource("10_thunder")
 
 [connection signal="pressed" from="Buttons/Play" to="." method="OnPlayPressed"]
 [connection signal="pressed" from="Buttons/Quit" to="." method="OnQuitPressed"]
