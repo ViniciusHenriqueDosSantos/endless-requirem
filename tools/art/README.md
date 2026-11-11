@@ -43,6 +43,7 @@ As cores e os objetos vieram das fotos do tour 360° da UNIFESP São José dos C
 | `characters.py` | `sprites/characters/` (estudante, 3 fantasmas, Tia da Cantina) |
 | `lights.py` | `sprites/lights/` (texturas das luzes) |
 | `items.py` | `sprites/items/`, `weapons/`, `fx/`, `objects/` (crachá, marmita, armas, tiros, salgados, portas, catraca, pilhas de papel, alvos) |
+| `splash.py` | `sprites/ui/menu/` (arte do menu principal em camadas: céu, nuvens, raios, cena, moldura (cantos escuros) e o diploma do título; montadas em `objects/main_menu/main_menu.tscn`; o `MainMenu.cs` anima as nuvens e os relâmpagos) |
 | `preview.py`, `sheet_preview.py` | pranchas ampliadas para revisar a arte fora do jogo |
 
 ## Como o tileset funciona
