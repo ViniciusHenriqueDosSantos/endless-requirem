@@ -14,13 +14,22 @@ public partial class MessageScreen : CanvasLayer
 	private Label _hint;
 	private ulong _shownAt;
 
-	public bool IsOpen => Visible;
+	public bool IsOpen => Visible || fail.Visible;
+
+	private FailScreen fail;
 
 	public override void _Ready()
 	{
 		Layer = 10;
 		ProcessMode = ProcessModeEnum.Always;
 		Visible = false;
+
+		fail = GetNode<FailScreen>("FailScreen");
+		fail.Retry += () =>
+		{
+			GetTree().Paused = false;
+			EmitSignal(SignalName.Closed);
+		};
 
 		ColorRect background = new() { Color = new Color(0.02f, 0.04f, 0.03f, 0.9f) };
 		background.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
@@ -60,6 +69,12 @@ public partial class MessageScreen : CanvasLayer
 		_hint.Text = hint;
 		_shownAt = Time.GetTicksMsec();
 		Visible = true;
+		GetTree().Paused = true;
+	}
+
+	public void OpenFail(string reason)
+	{
+		fail.Open(reason);
 		GetTree().Paused = true;
 	}
 

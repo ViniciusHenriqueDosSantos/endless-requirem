@@ -67,10 +67,12 @@ stream = ExtResource("11_tiro")
 volume_db = -22.0
 
 [node name="Dor" type="AudioStreamPlayer" parent="."]
+process_mode = 3
 stream = ExtResource("12_dor")
 volume_db = -4.0
 
 [node name="Soco" type="AudioStreamPlayer" parent="."]
+process_mode = 3
 stream = ExtResource("13_soco")
 volume_db = -8.0
 

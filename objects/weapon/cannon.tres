@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://objects/weapon/Weapon.cs" id="1_script"]
 [ext_resource type="Texture2D" path="res://sprites/weapons/canhao.png" id="2_sprite"]
 [ext_resource type="Texture2D" path="res://sprites/fx/orb.png" id="3_bullet"]
+[ext_resource type="AudioStream" path="res://sounds/player/tiro_canhao.ogg" id="4_sound"]
 
 [resource]
 script = ExtResource("1_script")
@@ -21,3 +22,5 @@ ReloadTime = 2.0
 SpreadDegrees = 0.0
 Sprite = ExtResource("2_sprite")
 BulletSprite = ExtResource("3_bullet")
+ShotSound = ExtResource("4_sound")
+ShotVolumeDb = -15.0

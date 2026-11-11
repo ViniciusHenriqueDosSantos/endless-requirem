@@ -1,0 +1,78 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://objects/splash_bg/SplashBg.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://sprites/ui/menu/ceu.png" id="2_sky"]
+[ext_resource type="Texture2D" path="res://sprites/ui/menu/nuvens_longe.png" id="3_far"]
+[ext_resource type="Texture2D" path="res://sprites/ui/menu/nuvens_perto.png" id="4_near"]
+[ext_resource type="Texture2D" path="res://sprites/ui/menu/raios.png" id="5_bolts"]
+[ext_resource type="Texture2D" path="res://sprites/ui/menu/cena.png" id="6_scene"]
+[ext_resource type="Texture2D" path="res://sprites/ui/menu/moldura.png" id="7_frame"]
+[ext_resource type="AudioStream" path="res://sounds/trovao.ogg" id="8_thunder"]
+
+[sub_resource type="CanvasItemMaterial" id="Material_flash"]
+blend_mode = 1
+
+[node name="SplashBg" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1152.0
+offset_bottom = 648.0
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="Art" type="Node2D" parent="."]
+scale = Vector2(2.4, 2.4)
+
+[node name="Sky" type="Sprite2D" parent="Art"]
+texture = ExtResource("2_sky")
+centered = false
+
+[node name="FarClouds" type="Sprite2D" parent="Art"]
+texture_repeat = 2
+texture = ExtResource("3_far")
+centered = false
+region_enabled = true
+region_rect = Rect2(0, 0, 480, 120)
+
+[node name="NearClouds" type="Sprite2D" parent="Art"]
+texture_repeat = 2
+texture = ExtResource("4_near")
+centered = false
+region_enabled = true
+region_rect = Rect2(0, 0, 480, 110)
+
+[node name="Bolt" type="Sprite2D" parent="Art"]
+visible = false
+position = Vector2(20, 10)
+texture = ExtResource("5_bolts")
+centered = false
+hframes = 3
+
+[node name="Scene" type="Sprite2D" parent="Art"]
+texture = ExtResource("6_scene")
+centered = false
+
+[node name="Flash" type="ColorRect" parent="."]
+material = SubResource("Material_flash")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.55, 0.6, 0.85, 0)
+
+[node name="Frame" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_frame")
+expand_mode = 1
+
+[node name="Thunder" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("8_thunder")
