@@ -5,7 +5,7 @@
 # Lendo de baixo para cima:
 #   entrada (escada e elevador desligado, embaixo à direita) -> corredor comprido para cima
 #   -> Laboratório 1 (esquerda) -> Laboratório 2 (direita) -> hall estreito com dois elevadores (não usados)
-#   -> área de convivência no alto (onde será a luta final): tatame, mesas, ping-pong, bancos e o pallet.
+#   -> área de convivência no alto (onde será a luta final): tatame, mesas, ping-pong, cadeiras e o pallet.
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 from lib import Level, T, v, col, px, root_node, CONCRETE, WHITE, WOOD
@@ -13,20 +13,26 @@ from lib import Level, T, v, col, px, root_node, CONCRETE, WHITE, WOOD
 L = Level()
 
 # ---------- planta (tiles, retângulos inclusivos) ----------
-CONV = (0, 0, 27, 17)          # área de convivência (x0, y0, x1, y1): a luta final
-TATAME = (0, 0, 8, 4)          # canto de cima à esquerda, onde os alunos descansam
-CORR = (4, 18, 7, 60)          # corredor (4 de largura), sai de baixo da convivência
-HALL = (9, 20, 11, 27)         # hall estreito dos elevadores (direita)
-LAB2 = (9, 32, 20, 42)         # laboratório 2 (direita)
-LAB1 = (-9, 44, 2, 54)         # laboratório 1 (esquerda)
-ENTRADA = (9, 53, 15, 60)      # chegada: escada e elevador (embaixo à direita)
+# Convivência (a luta final), no formato do desenho AREA_BOSS_FINAL: um bloco principal com o tatame no canto de
+# cima à esquerda, um recorte vazio no meio do lado esquerdo, um pedaço embaixo à esquerda e um avanço à direita.
+CONV_PARTES = [(7, 0, 27, 28),      # bloco principal
+               (0, 0, 6, 9),        # parte de cima à esquerda (o tatame)
+               (0, 22, 6, 28),      # pedaço de baixo à esquerda
+               (28, 10, 36, 18)]    # avanço à direita
+CONV = (0, 0, 36, 28)          # retângulo que contém a convivência inteira
+TATAME = (0, 0, 13, 9)         # canto de cima à esquerda, onde os alunos descansam
+CORR = (4, 29, 7, 71)          # corredor (4 de largura), sai de baixo da convivência
+HALL = (9, 31, 11, 38)         # hall estreito dos elevadores (direita)
+LAB2 = (9, 43, 20, 53)         # laboratório 2 (direita)
+LAB1 = (-9, 55, 2, 65)         # laboratório 1 (esquerda)
+ENTRADA = (9, 64, 11, 71)      # chegada: escada e elevador (mesma largura do hall)
 
-for r in (CONV, CORR, HALL, LAB2, LAB1, ENTRADA):
+for r in CONV_PARTES + [CORR, HALL, LAB2, LAB1, ENTRADA]:
     L.add_floor(*r)
-L.add_floor(8, 21, 8, 26)      # hall aberto para o corredor
-L.add_floor(8, 36, 8, 38)      # porta do laboratório 2
-L.add_floor(3, 48, 3, 50)      # porta do laboratório 1
-L.add_floor(8, 54, 8, 59)      # entrada aberta para o corredor
+L.add_floor(8, 32, 8, 37)      # hall aberto para o corredor
+L.add_floor(8, 44, 8, 45)      # porta do laboratório 2 (pequena, no alto da sala)
+L.add_floor(3, 56, 3, 57)      # porta do laboratório 1 (pequena, no alto da sala)
+L.add_floor(8, 65, 8, 70)      # entrada aberta para o corredor
 L.build_walls()
 
 # ---------- recursos ----------
@@ -49,7 +55,7 @@ def inside(r, x, y):
 
 def material(x, y):
     if inside(LAB1, x, y) or inside(LAB2, x, y): return "ceramica"   # laboratórios: piso de cerâmica
-    if inside(CONV, x, y): return "vinil"                              # convivência: vinílico
+    if any(inside(p, x, y) for p in CONV_PARTES): return "vinil"                              # convivência: vinílico
     return "granito"                                                   # corredor, hall e entrada
 
 
@@ -110,27 +116,28 @@ for i, (tx, chairs) in enumerate([(15, "NSO"), (20, "NSOL"), (25, "NSOL")]):
         L.prop(f"Mesa{i+1}Cadeira{side}", ".", x, y, 36, 46, CHAIR, depth=22, sprite="cadeira_espera")
 
 # duas mesas de ping-pong: mais para baixo e para a direita (sem encostar na parede de baixo)
-for i, ty in enumerate([10, 13]):
-    L.prop(f"PingPong{i+1}", ".", 19 * T, ty * T + 16, 200, 104, col(0.1, 0.38, 0.28), "PING-PONG", depth=64,
+for i, ty in enumerate([19, 22]):
+    L.prop(f"PingPong{i+1}", ".", 20 * T, ty * T + 16, 200, 104, col(0.1, 0.38, 0.28), "PING-PONG", depth=64,
            font=11, text_color=col(0.9, 0.95, 0.9), inner=col(0.95, 0.95, 0.95))
 
-# parede de baixo: o pallet com almofadas à esquerda do corredor; à direita, a fileira de bancos virados para as
-# mesas de ping-pong e, mais para a direita, as lixeiras
+# parede de baixo: o pallet com almofadas à esquerda do corredor; à direita, uma fileira de cadeiras (iguais às das
+# mesas) todas coladas, viradas para o ping-pong e, mais para a direita, as lixeiras
 L.prop("Pallet", ".", 2 * T, BOTTOM - 4, 3 * T + 16, 64, col(0.55, 0.42, 0.26), depth=40,
        inner=col(0.75, 0.35, 0.3))
-for i, tx in enumerate(range(10, 23, 3)):
-    L.prop(f"Banco{i+1}", ".", tx * T + 32, BOTTOM - 4, 160, 44, col(0.45, 0.33, 0.22), depth=28)
-L.prop("LixeirasConv", ".", 25 * T + 32, BOTTOM - 4, 84, 48, col(0, 0, 0, 0), solid=False, sprite="lixeiras",
+for i in range(22):
+    L.prop(f"CadeiraFileira{i+1}", ".", 10 * T + 20 + i * 40, BOTTOM - 4, 36, 46, CHAIR, depth=22,
+           sprite="cadeira_espera")
+L.prop("LixeirasConv", ".", 26 * T + 16, BOTTOM - 4, 84, 48, col(0, 0, 0, 0), solid=False, sprite="lixeiras",
        folder="props/fase1")
 
 # ---------- corredor ----------
-L.prop("LixeirasCorredor", ".", 7 * T + 24, 30 * T, 84, 48, col(0, 0, 0, 0), solid=False, sprite="lixeiras",
+L.prop("LixeirasCorredor", ".", 7 * T + 24, 41 * T, 84, 48, col(0, 0, 0, 0), solid=False, sprite="lixeiras",
        folder="props/fase1")
-L.prop("Bebedouro", ".", 4 * T + 20, 40 * T, 32, 64, col(0.7, 0.72, 0.75), depth=24, sprite="bebedouro",
+L.prop("Bebedouro", ".", 4 * T + 20, 51 * T, 32, 64, col(0.7, 0.72, 0.75), depth=24, sprite="bebedouro",
        folder="props/fase1")
 
 # ---------- hall estreito: dois elevadores na parede da direita (não são usados) ----------
-for i, feet in enumerate([23, 27]):
+for i, feet in enumerate([34, 38]):
     L.prop(f"ElevadorHall{i+1}", ".", HALL[2] * T + 40, (feet + 1) * T, 48, 3 * T, CONCRETE, depth=3 * T, solid=False,
            sprite="elevador", flip=True)
     L.node(f"AvisoElevadorHall{i+1}", inst="item_slot", props={"position": v(HALL[2] * T, (feet - 0.5) * T),
@@ -157,23 +164,27 @@ def laboratorio(name, r, door_x, door_y, label_x):
                 if (j + (0 if side == "E" else 1)) % 3 == 2: continue   # algumas cadeiras faltando (abandono)
                 L.prop(f"Cadeira{i+1}{side}{j+1}", name, bx + dx - ox, ty * T + 56 - oy, 36, 46, CHAIR, depth=22,
                        sprite="cadeira_espera")
-    L.prop(f"Placa{name}", ".", label_x * T, r[1] * T + 24, 240, 26, col(0, 0, 0, 0), "LABORATÓRIO " + name[-1],
+    # lousas coladas na parede de cima
+    for i, frac in enumerate([0.27, 0.73]):
+        L.prop(f"Lousa{i+1}", name, r[0] * T + width * T * frac - ox, r[1] * T + 4 - oy, 2 * T + 48, 52,
+               col(0.12, 0.3, 0.22), solid=False, sprite="lousa")
+    L.prop(f"Placa{name}", ".", label_x * T, r[1] * T - 40, 240, 26, col(0, 0, 0, 0), "LABORATÓRIO " + name[-1],
            font=13, text_color=col(0.7, 0.95, 1), solid=False, z=1)
-    L.node(f"Porta{name}", inst="door", props={"position": v(door_x * T + 32, (door_y + 3) * T), "Size": v(64, 3 * T),
+    L.node(f"Porta{name}", inst="door", props={"position": v(door_x * T + 32, (door_y + 2) * T), "Size": v(64, 2 * T),
            "Color": col(0.4, 0.8, 1, 1)})
 
 
-laboratorio("Lab1", LAB1, 3, 48, -3.5)
-laboratorio("Lab2", LAB2, 8, 36, 15)
+laboratorio("Lab1", LAB1, 3, 56, -3.5)
+laboratorio("Lab2", LAB2, 8, 44, 15)
 
 # ---------- entrada: escada e o elevador ao lado (desligado), na parede da direita ----------
-L.prop("ElevadorEntrada", ".", ENTRADA[2] * T + 40, 56 * T, 48, 3 * T, CONCRETE, depth=3 * T, solid=False,
+L.prop("ElevadorEntrada", ".", ENTRADA[2] * T + 40, 67 * T, 48, 3 * T, CONCRETE, depth=3 * T, solid=False,
        sprite="elevador_quebrado", flip=True)
-L.node("AvisoElevadorEntrada", inst="item_slot", props={"position": v(ENTRADA[2] * T, 54.5 * T), "Size": v(140, 200),
+L.node("AvisoElevadorEntrada", inst="item_slot", props={"position": v(ENTRADA[2] * T, 65.5 * T), "Size": v(140, 200),
        "RequiredItem": '"nunca"', "MissingMessage": '"ELEVADOR - fora de serviço. Pelo menos a escada chegou aqui."'})
-L.prop("PortaEscada", ".", ENTRADA[2] * T + 40, 60 * T, 48, 3 * T, col(0.5, 0.42, 0.3), depth=3 * T, solid=False,
+L.prop("PortaEscada", ".", ENTRADA[2] * T + 40, 71 * T, 48, 3 * T, col(0.5, 0.42, 0.3), depth=3 * T, solid=False,
        sprite="porta_escada", flip=True)
-L.prop("Placa4Andar", ".", 12 * T, ENTRADA[1] * T + 24, 160, 26, col(0, 0, 0, 0), "4º ANDAR", font=14,
+L.prop("Placa4Andar", ".", 10 * T + 32, ENTRADA[1] * T + 24, 160, 26, col(0, 0, 0, 0), "4º ANDAR", font=14,
        text_color=col(0.95, 0.9, 0.6), solid=False, z=1)
 
 # ---------- noite e chuva (igual à Fase 2: tudo dentro do prédio) ----------
@@ -194,22 +205,22 @@ def light(name, x, y, color, scale, energy, mode, tube=True):
     L.node(name, "Luzes", inst="flicker_light", props=p)
 
 
-for i, (ty, mode) in enumerate([(21, FLICKER), (27, BROKEN), (33, STEADY), (39, FLICKER), (45, BROKEN), (51, FLICKER),
-                                (57, STEADY)]):
+for i, (ty, mode) in enumerate([(32, FLICKER), (38, BROKEN), (44, STEADY), (50, FLICKER), (56, BROKEN), (62, FLICKER),
+                                (68, STEADY)]):
     light(f"Corredor{i+1}", 6 * T, ty * T, TUBO, 2.0, 0.8, mode)
-for i, (tx, ty, mode) in enumerate([(4, 3, STEADY), (19, 11, FLICKER), (20, 4, BROKEN), (5, 12, FLICKER),
-                                    (12, 8, BROKEN), (25, 12, STEADY)]):
+for i, (tx, ty, mode) in enumerate([(5, 4, STEADY), (20, 4, BROKEN), (12, 13, FLICKER), (22, 14, STEADY),
+                                    (32, 14, FLICKER), (20, 21, BROKEN), (12, 24, FLICKER), (3, 25, STEADY)]):
     light(f"Convivencia{i+1}", tx * T, ty * T, TUBO, 2.2, 0.85, mode)
-light("Hall", 10 * T + 32, 24 * T, TUBO, 1.6, 0.8, BROKEN)
+light("Hall", 10 * T + 32, 35 * T, TUBO, 1.6, 0.8, BROKEN)
 for name, r in (("Lab1", LAB1), ("Lab2", LAB2)):
     for i, ty in enumerate([r[1] + 3, r[3] - 3]):
         light(f"{name}_{i+1}", (r[0] + r[2] + 1) * T / 2, ty * T, col(0.6, 0.85, 1), 2.0, 0.8, FLICKER if i else BROKEN)
-light("Entrada", 12 * T, 57 * T, TUBO, 1.8, 0.8, STEADY)
-light("ElevadorEntrada", ENTRADA[2] * T + 16, 54 * T, col(1, 0.15, 0.1), 1.2, 0.9, PULSE, tube=False)
-light("PlacaEscada", ENTRADA[2] * T + 16, 58 * T, col(0.2, 1, 0.45), 0.8, 0.8, STEADY, tube=False)
+light("Entrada", 10 * T + 32, 68 * T, TUBO, 1.8, 0.8, STEADY)
+light("ElevadorEntrada", ENTRADA[2] * T + 16, 65 * T, col(1, 0.15, 0.1), 1.2, 0.9, PULSE, tube=False)
+light("PlacaEscada", ENTRADA[2] * T + 16, 69 * T, col(0.2, 1, 0.45), 0.8, 0.8, STEADY, tube=False)
 
 # ---------- jogador / interface ----------
-L.node("Player", inst="player", props={"position": v(13 * T + 32, 58 * T + 32), "StartWithAllWeapons": "false"})
+L.node("Player", inst="player", props={"position": v(10 * T + 32, 69 * T + 32), "StartWithAllWeapons": "false"})
 L.node("Hud", inst="hud", props={"Player": 'NodePath("../Player")'}, node_paths=["Player"])
 L.node("MessageScreen", inst="message_screen")
 L.node("ItemInspect", inst="item_inspect")
