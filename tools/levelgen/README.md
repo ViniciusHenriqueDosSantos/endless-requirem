@@ -8,6 +8,7 @@ gerador de novo, a edição manual se perde — combine antes.
 python3 tools/levelgen/gen_fase1.py  levels/fase_1.tscn
 python3 tools/levelgen/gen_fase2.py  levels/fase_2.tscn
 python3 tools/levelgen/gen_escada.py levels/escada.tscn
+python3 tools/levelgen/gen_fase3.py  levels/fase_3.tscn
 python3 tools/levelgen/render_map.py levels/fase_2.tscn planta.png   # imagem da planta vista de cima (precisa de Pillow)
 python3 tools/levelgen/check_walls.py levels/fase_1.tscn levels/fase_2.tscn levels/escada.tscn   # confere as paredes
 ```
