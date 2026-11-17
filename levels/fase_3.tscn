@@ -20,7 +20,6 @@
 [ext_resource type="Texture2D" path="res://sprites/props/fase1/lixeiras.png" id="tex_props_fase1_lixeiras"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase1/bebedouro.png" id="tex_props_fase1_bebedouro"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/elevador.png" id="tex_props_fase2_elevador"]
-[ext_resource type="Texture2D" path="res://sprites/props/fase2/lousa.png" id="tex_props_fase2_lousa"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/elevador_quebrado.png" id="tex_props_fase2_elevador_quebrado"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/porta_escada.png" id="tex_props_fase2_porta_escada"]
 
@@ -409,106 +408,176 @@ TextColor = Color(0.75, 0.9, 1, 1)
 Solid = false
 
 [node name="Mesa1" parent="." instance=ExtResource("prop")]
-position = Vector2(992, 240)
+position = Vector2(1120, 432)
 Size = Vector2(96, 64)
 Color = Color(0.48, 0.34, 0.22, 1)
 Texture = ExtResource("tex_props_fase1_mesa_cantina")
 Depth = 40
 
 [node name="Mesa1CadeiraN" parent="." instance=ExtResource("prop")]
-position = Vector2(992, 168)
+position = Vector2(1120, 360)
 Size = Vector2(36, 46)
 Color = Color(0.2, 0.2, 0.22, 1)
 Texture = ExtResource("tex_props_fase2_cadeira_espera")
 Depth = 22
 
 [node name="Mesa1CadeiraS" parent="." instance=ExtResource("prop")]
-position = Vector2(992, 300)
+position = Vector2(1120, 492)
 Size = Vector2(36, 46)
 Color = Color(0.2, 0.2, 0.22, 1)
 Texture = ExtResource("tex_props_fase2_cadeira_espera")
 Depth = 22
 
 [node name="Mesa1CadeiraO" parent="." instance=ExtResource("prop")]
-position = Vector2(916, 248)
+position = Vector2(1044, 440)
 Size = Vector2(36, 46)
 Color = Color(0.2, 0.2, 0.22, 1)
 Texture = ExtResource("tex_props_fase2_cadeira_espera")
 Depth = 22
 
 [node name="Mesa2" parent="." instance=ExtResource("prop")]
-position = Vector2(1312, 240)
+position = Vector2(1504, 432)
 Size = Vector2(96, 64)
 Color = Color(0.48, 0.34, 0.22, 1)
 Texture = ExtResource("tex_props_fase1_mesa_cantina")
 Depth = 40
 
 [node name="Mesa2CadeiraN" parent="." instance=ExtResource("prop")]
-position = Vector2(1312, 168)
+position = Vector2(1504, 360)
 Size = Vector2(36, 46)
 Color = Color(0.2, 0.2, 0.22, 1)
 Texture = ExtResource("tex_props_fase2_cadeira_espera")
 Depth = 22
 
 [node name="Mesa2CadeiraS" parent="." instance=ExtResource("prop")]
-position = Vector2(1312, 300)
+position = Vector2(1504, 492)
 Size = Vector2(36, 46)
 Color = Color(0.2, 0.2, 0.22, 1)
 Texture = ExtResource("tex_props_fase2_cadeira_espera")
 Depth = 22
 
 [node name="Mesa2CadeiraO" parent="." instance=ExtResource("prop")]
-position = Vector2(1236, 248)
+position = Vector2(1428, 440)
 Size = Vector2(36, 46)
 Color = Color(0.2, 0.2, 0.22, 1)
 Texture = ExtResource("tex_props_fase2_cadeira_espera")
 Depth = 22
 
 [node name="Mesa2CadeiraL" parent="." instance=ExtResource("prop")]
-position = Vector2(1388, 248)
+position = Vector2(1580, 440)
 Size = Vector2(36, 46)
 Color = Color(0.2, 0.2, 0.22, 1)
 Texture = ExtResource("tex_props_fase2_cadeira_espera")
 Depth = 22
 
 [node name="Mesa3" parent="." instance=ExtResource("prop")]
-position = Vector2(1632, 240)
+position = Vector2(736, 944)
 Size = Vector2(96, 64)
 Color = Color(0.48, 0.34, 0.22, 1)
 Texture = ExtResource("tex_props_fase1_mesa_cantina")
 Depth = 40
 
 [node name="Mesa3CadeiraN" parent="." instance=ExtResource("prop")]
-position = Vector2(1632, 168)
+position = Vector2(736, 872)
 Size = Vector2(36, 46)
 Color = Color(0.2, 0.2, 0.22, 1)
 Texture = ExtResource("tex_props_fase2_cadeira_espera")
 Depth = 22
 
 [node name="Mesa3CadeiraS" parent="." instance=ExtResource("prop")]
-position = Vector2(1632, 300)
+position = Vector2(736, 1004)
 Size = Vector2(36, 46)
 Color = Color(0.2, 0.2, 0.22, 1)
 Texture = ExtResource("tex_props_fase2_cadeira_espera")
 Depth = 22
 
 [node name="Mesa3CadeiraO" parent="." instance=ExtResource("prop")]
-position = Vector2(1556, 248)
+position = Vector2(660, 952)
 Size = Vector2(36, 46)
 Color = Color(0.2, 0.2, 0.22, 1)
 Texture = ExtResource("tex_props_fase2_cadeira_espera")
 Depth = 22
 
 [node name="Mesa3CadeiraL" parent="." instance=ExtResource("prop")]
-position = Vector2(1708, 248)
+position = Vector2(812, 952)
+Size = Vector2(36, 46)
+Color = Color(0.2, 0.2, 0.22, 1)
+Texture = ExtResource("tex_props_fase2_cadeira_espera")
+Depth = 22
+
+[node name="Mesa4" parent="." instance=ExtResource("prop")]
+position = Vector2(1056, 1008)
+Size = Vector2(96, 64)
+Color = Color(0.48, 0.34, 0.22, 1)
+Texture = ExtResource("tex_props_fase1_mesa_cantina")
+Depth = 40
+
+[node name="Mesa4CadeiraN" parent="." instance=ExtResource("prop")]
+position = Vector2(1056, 936)
+Size = Vector2(36, 46)
+Color = Color(0.2, 0.2, 0.22, 1)
+Texture = ExtResource("tex_props_fase2_cadeira_espera")
+Depth = 22
+
+[node name="Mesa4CadeiraS" parent="." instance=ExtResource("prop")]
+position = Vector2(1056, 1068)
+Size = Vector2(36, 46)
+Color = Color(0.2, 0.2, 0.22, 1)
+Texture = ExtResource("tex_props_fase2_cadeira_espera")
+Depth = 22
+
+[node name="Mesa4CadeiraO" parent="." instance=ExtResource("prop")]
+position = Vector2(980, 1016)
+Size = Vector2(36, 46)
+Color = Color(0.2, 0.2, 0.22, 1)
+Texture = ExtResource("tex_props_fase2_cadeira_espera")
+Depth = 22
+
+[node name="Mesa4CadeiraL" parent="." instance=ExtResource("prop")]
+position = Vector2(1132, 1016)
+Size = Vector2(36, 46)
+Color = Color(0.2, 0.2, 0.22, 1)
+Texture = ExtResource("tex_props_fase2_cadeira_espera")
+Depth = 22
+
+[node name="Mesa5" parent="." instance=ExtResource("prop")]
+position = Vector2(2080, 944)
+Size = Vector2(96, 64)
+Color = Color(0.48, 0.34, 0.22, 1)
+Texture = ExtResource("tex_props_fase1_mesa_cantina")
+Depth = 40
+
+[node name="Mesa5CadeiraN" parent="." instance=ExtResource("prop")]
+position = Vector2(2080, 872)
+Size = Vector2(36, 46)
+Color = Color(0.2, 0.2, 0.22, 1)
+Texture = ExtResource("tex_props_fase2_cadeira_espera")
+Depth = 22
+
+[node name="Mesa5CadeiraS" parent="." instance=ExtResource("prop")]
+position = Vector2(2080, 1004)
+Size = Vector2(36, 46)
+Color = Color(0.2, 0.2, 0.22, 1)
+Texture = ExtResource("tex_props_fase2_cadeira_espera")
+Depth = 22
+
+[node name="Mesa5CadeiraO" parent="." instance=ExtResource("prop")]
+position = Vector2(2004, 952)
+Size = Vector2(36, 46)
+Color = Color(0.2, 0.2, 0.22, 1)
+Texture = ExtResource("tex_props_fase2_cadeira_espera")
+Depth = 22
+
+[node name="Mesa5CadeiraL" parent="." instance=ExtResource("prop")]
+position = Vector2(2156, 952)
 Size = Vector2(36, 46)
 Color = Color(0.2, 0.2, 0.22, 1)
 Texture = ExtResource("tex_props_fase2_cadeira_espera")
 Depth = 22
 
 [node name="PingPong1" parent="." instance=ExtResource("prop")]
-position = Vector2(1280, 1232)
-Size = Vector2(200, 104)
+position = Vector2(1376, 1352)
+Size = Vector2(240, 124)
 Color = Color(0.1, 0.38, 0.28, 1)
 InnerColor = Color(0.95, 0.95, 0.95, 1)
 Depth = 64
@@ -517,8 +586,8 @@ FontSize = 11
 TextColor = Color(0.9, 0.95, 0.9, 1)
 
 [node name="PingPong2" parent="." instance=ExtResource("prop")]
-position = Vector2(1280, 1424)
-Size = Vector2(200, 104)
+position = Vector2(1376, 1544)
+Size = Vector2(240, 124)
 Color = Color(0.1, 0.38, 0.28, 1)
 InnerColor = Color(0.95, 0.95, 0.95, 1)
 Depth = 64
@@ -701,8 +770,48 @@ Color = Color(0, 0, 0, 0)
 Texture = ExtResource("tex_props_fase1_lixeiras")
 Solid = false
 
+[node name="Armario1" parent="." instance=ExtResource("prop")]
+position = Vector2(278, 2940)
+Size = Vector2(44, 120)
+Color = Color(0.25, 0.4, 0.6, 1)
+Tall = true
+InnerColor = Color(0.3, 0.47, 0.68, 1)
+Depth = 120
+
+[node name="Armario2" parent="." instance=ExtResource("prop")]
+position = Vector2(278, 3068)
+Size = Vector2(44, 120)
+Color = Color(0.25, 0.4, 0.6, 1)
+Tall = true
+InnerColor = Color(0.3, 0.47, 0.68, 1)
+Depth = 120
+
+[node name="Armario3" parent="." instance=ExtResource("prop")]
+position = Vector2(278, 3196)
+Size = Vector2(44, 120)
+Color = Color(0.25, 0.4, 0.6, 1)
+Tall = true
+InnerColor = Color(0.3, 0.47, 0.68, 1)
+Depth = 120
+
+[node name="Armario4" parent="." instance=ExtResource("prop")]
+position = Vector2(278, 3324)
+Size = Vector2(44, 120)
+Color = Color(0.25, 0.4, 0.6, 1)
+Tall = true
+InnerColor = Color(0.3, 0.47, 0.68, 1)
+Depth = 120
+
+[node name="Armario5" parent="." instance=ExtResource("prop")]
+position = Vector2(278, 3452)
+Size = Vector2(44, 120)
+Color = Color(0.25, 0.4, 0.6, 1)
+Tall = true
+InnerColor = Color(0.3, 0.47, 0.68, 1)
+Depth = 120
+
 [node name="Bebedouro" parent="." instance=ExtResource("prop")]
-position = Vector2(276, 3264)
+position = Vector2(492, 3264)
 Size = Vector2(32, 64)
 Color = Color(0.7, 0.72, 0.75, 1)
 Texture = ExtResource("tex_props_fase1_bebedouro")
@@ -849,18 +958,38 @@ Color = Color(0.2, 0.2, 0.22, 1)
 Texture = ExtResource("tex_props_fase2_cadeira_espera")
 Depth = 22
 
-[node name="Lousa1" parent="Lab1" instance=ExtResource("prop")]
-position = Vector2(207.36, 4)
-Size = Vector2(176, 52)
-Color = Color(0.12, 0.3, 0.22, 1)
-Texture = ExtResource("tex_props_fase2_lousa")
-Solid = false
+[node name="Bancada3" parent="Lab1" instance=ExtResource("prop")]
+position = Vector2(36, 576)
+Size = Vector2(72, 448)
+Color = Color(0.75, 0.75, 0.72, 1)
+Depth = 448
 
-[node name="Lousa2" parent="Lab1" instance=ExtResource("prop")]
-position = Vector2(560.64, 4)
-Size = Vector2(176, 52)
-Color = Color(0.12, 0.3, 0.22, 1)
-Texture = ExtResource("tex_props_fase2_lousa")
+[node name="Cadeira3D1" parent="Lab1" instance=ExtResource("prop")]
+position = Vector2(100, 184)
+Size = Vector2(36, 46)
+Color = Color(0.2, 0.2, 0.22, 1)
+Texture = ExtResource("tex_props_fase2_cadeira_espera")
+Depth = 22
+
+[node name="Cadeira3D3" parent="Lab1" instance=ExtResource("prop")]
+position = Vector2(100, 440)
+Size = Vector2(36, 46)
+Color = Color(0.2, 0.2, 0.22, 1)
+Texture = ExtResource("tex_props_fase2_cadeira_espera")
+Depth = 22
+
+[node name="Cadeira3D4" parent="Lab1" instance=ExtResource("prop")]
+position = Vector2(100, 568)
+Size = Vector2(36, 46)
+Color = Color(0.2, 0.2, 0.22, 1)
+Texture = ExtResource("tex_props_fase2_cadeira_espera")
+Depth = 22
+
+[node name="Lousa" parent="Lab1" instance=ExtResource("prop")]
+position = Vector2(384, 4)
+Size = Vector2(640, 52)
+Color = Color(0.93, 0.94, 0.95, 1)
+InnerColor = Color(0.97, 0.98, 1, 1)
 Solid = false
 
 [node name="PlacaLab1" parent="." instance=ExtResource("prop")]
@@ -979,18 +1108,38 @@ Color = Color(0.2, 0.2, 0.22, 1)
 Texture = ExtResource("tex_props_fase2_cadeira_espera")
 Depth = 22
 
-[node name="Lousa1" parent="Lab2" instance=ExtResource("prop")]
-position = Vector2(207.36, 4)
-Size = Vector2(176, 52)
-Color = Color(0.12, 0.3, 0.22, 1)
-Texture = ExtResource("tex_props_fase2_lousa")
-Solid = false
+[node name="Bancada3" parent="Lab2" instance=ExtResource("prop")]
+position = Vector2(732, 576)
+Size = Vector2(72, 448)
+Color = Color(0.75, 0.75, 0.72, 1)
+Depth = 448
 
-[node name="Lousa2" parent="Lab2" instance=ExtResource("prop")]
-position = Vector2(560.64, 4)
-Size = Vector2(176, 52)
-Color = Color(0.12, 0.3, 0.22, 1)
-Texture = ExtResource("tex_props_fase2_lousa")
+[node name="Cadeira3E1" parent="Lab2" instance=ExtResource("prop")]
+position = Vector2(668, 184)
+Size = Vector2(36, 46)
+Color = Color(0.2, 0.2, 0.22, 1)
+Texture = ExtResource("tex_props_fase2_cadeira_espera")
+Depth = 22
+
+[node name="Cadeira3E2" parent="Lab2" instance=ExtResource("prop")]
+position = Vector2(668, 312)
+Size = Vector2(36, 46)
+Color = Color(0.2, 0.2, 0.22, 1)
+Texture = ExtResource("tex_props_fase2_cadeira_espera")
+Depth = 22
+
+[node name="Cadeira3E4" parent="Lab2" instance=ExtResource("prop")]
+position = Vector2(668, 568)
+Size = Vector2(36, 46)
+Color = Color(0.2, 0.2, 0.22, 1)
+Texture = ExtResource("tex_props_fase2_cadeira_espera")
+Depth = 22
+
+[node name="Lousa" parent="Lab2" instance=ExtResource("prop")]
+position = Vector2(384, 4)
+Size = Vector2(640, 52)
+Color = Color(0.93, 0.94, 0.95, 1)
+InnerColor = Color(0.97, 0.98, 1, 1)
 Solid = false
 
 [node name="PlacaLab2" parent="." instance=ExtResource("prop")]
@@ -1009,7 +1158,7 @@ Size = Vector2(64, 128)
 Color = Color(0.4, 0.8, 1, 1)
 
 [node name="ElevadorEntrada" parent="." instance=ExtResource("prop")]
-position = Vector2(744, 4288)
+position = Vector2(744, 4544)
 Size = Vector2(48, 192)
 Color = Color(0.62, 0.62, 0.6, 1)
 scale = Vector2(-1, 1)
@@ -1018,13 +1167,13 @@ Depth = 192
 Solid = false
 
 [node name="AvisoElevadorEntrada" parent="." instance=ExtResource("item_slot")]
-position = Vector2(704, 4192)
+position = Vector2(704, 4448)
 Size = Vector2(140, 200)
 RequiredItem = "nunca"
 MissingMessage = "ELEVADOR - fora de serviço. Pelo menos a escada chegou aqui."
 
 [node name="PortaEscada" parent="." instance=ExtResource("prop")]
-position = Vector2(744, 4544)
+position = Vector2(744, 4288)
 Size = Vector2(48, 192)
 Color = Color(0.5, 0.42, 0.3, 1)
 scale = Vector2(-1, 1)
@@ -1242,24 +1391,24 @@ Behavior = 0
 Seed = 321
 texture = ExtResource("light_tubo")
 
-[node name="ElevadorEntrada" parent="Luzes" instance=ExtResource("flicker_light")]
-position = Vector2(720, 4160)
-color = Color(1, 0.15, 0.1, 1)
-texture_scale = 1.2
-BaseEnergy = 0.9
-Behavior = 3
-Seed = 322
-
 [node name="PlacaEscada" parent="Luzes" instance=ExtResource("flicker_light")]
-position = Vector2(720, 4416)
+position = Vector2(720, 4160)
 color = Color(0.2, 1, 0.45, 1)
 texture_scale = 0.8
 BaseEnergy = 0.8
 Behavior = 0
+Seed = 322
+
+[node name="ElevadorEntrada" parent="Luzes" instance=ExtResource("flicker_light")]
+position = Vector2(720, 4416)
+color = Color(1, 0.15, 0.1, 1)
+texture_scale = 1.2
+BaseEnergy = 0.9
+Behavior = 3
 Seed = 323
 
 [node name="Player" parent="." instance=ExtResource("player")]
-position = Vector2(672, 4448)
+position = Vector2(672, 4192)
 StartWithAllWeapons = false
 
 [node name="Hud" parent="." node_paths=PackedStringArray("Player") instance=ExtResource("hud")]
