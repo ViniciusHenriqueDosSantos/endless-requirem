@@ -8,7 +8,7 @@ Jogo de ação e tiro top-down feito em **Godot 4.7.2 (.NET / C#)** para a disci
 > - Fase 1: Entrada → Portaria → RU → Corredor → Cantina (Tia da Cantina) → Elevador.
 > - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (chave) → caixas (livro) → devolução → Bibliotecária (surda, enxerga pela luz: furtividade e caçada) → escada contra o relógio (voltas em torno do vão, fantasmas pesados parados nos degraus) até o 4º andar.
 > - Arte: a **Fase 1 já tem pixel art** baseada no campus de verdade (tour 360° da UNIFESP SJC), à noite e abandonada, com lanterna e luzes piscando. Veja `tools/art/README.md`.
-> - A Fase 3 e a arte da Fase 2 vêm depois. Salas de teste (`levels/test_rooms*.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
+> - Fase 3 (4º andar, laboratórios): esboço da planta (`levels/fase_3.tscn`, atalho F4); lutas e roteiro vêm depois. Salas de teste (`levels/test_rooms*.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
 
 ---
 
@@ -55,6 +55,8 @@ levels/Fase1.cs         roteiro da Fase 1: objetivos e o que destranca o quê
 levels/fase_2.tscn      Fase 2 (Biblioteca); para testar direto, abra a cena e aperte F6
 levels/Fase2.cs         roteiro da Fase 2
 levels/escada.tscn      escada (fim da Fase 2): uma volta em torno do vão; cada volta = 1 andar; tempo limite
+levels/fase_3.tscn      Fase 3 (4º andar): corredor, laboratórios, hall do elevador e convivência
+levels/Fase3.cs         roteiro da Fase 3
 levels/Escada.cs        roteiro da escada
 levels/LevelBase.cs     o que toda fase faz igual (REPROVADO, fim de fase, levar armas)
 levels/test_rooms.tscn  sala de teste da MVP 1
