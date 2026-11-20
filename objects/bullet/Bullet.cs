@@ -61,6 +61,14 @@ public partial class Bullet : Area2D
 			return;
 		}
 
+		// Barricada da escada: o Canhão derruba; a Escopeta e o Laser quase não fazem nada.
+		if (body is Barricade barricade && !barricade.IsDestroyed)
+		{
+			barricade.TakeHit(Weapon, Direction);
+			QueueFree();
+			return;
+		}
+
 		// Móveis baixos: o tiro passa por cima.
 		if (body is Prop prop && !prop.Tall)
 			return;

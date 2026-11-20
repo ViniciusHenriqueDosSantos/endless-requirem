@@ -17,6 +17,9 @@ public partial class Weapon : Resource
 	[Export] public int Pellets = 1;
 	[Export] public float SpreadDegrees;
 
+	// Quanto do dano vale contra as barricadas da escada (1 = dano cheio). Só o Canhão derruba de verdade.
+	[Export] public float BarricadeDamage = 0.25f;
+
 	// Pixel art (1 pixel da arte = 4 do jogo). Vazios = desenho provisório.
 	// Sprite: a arma na mão do jogador, apontando para a direita. BulletSprite: o tiro, em branco (a cor vem de Color).
 	[Export] public Texture2D Sprite;
