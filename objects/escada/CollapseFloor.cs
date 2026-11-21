@@ -1,12 +1,12 @@
 using Godot;
 
 // Desenha o pedaço da escada que está desabando atrás do jogador: um buraco escuro com a beirada rachada
-// e pedrinhas caindo, do ponto "Front" para trás (Span pixels). Quem controla Front é o roteiro (Escada.cs).
+// e pedrinhas caindo, do ponto "Front" para trás. Quem controla Front é o roteiro (Escada.cs).
 public partial class CollapseFloor : Node2D
 {
-	public RingPath Path;
+	public PolyPath Path;
 	public float Front;          // até onde já caiu (s do caminho)
-	public float Span = 640f;    // quanto do caminho aparece caído atrás da frente
+	public float Span = 2400f;   // quanto do caminho aparece caído atrás da frente
 	public bool Active;
 
 	private const float Step = 16f;
@@ -30,7 +30,7 @@ public partial class CollapseFloor : Node2D
 
 		float lane = Path.Lane;
 		Color hole = new(0.02f, 0.02f, 0.03f, 0.96f);
-		for (float s = Front - Span; s <= Front; s += Step)
+		for (float s = Mathf.Max(Front - Span, -256f); s <= Front; s += Step)
 		{
 			Vector2 p = Path.PointAt(s, out Vector2 fwd);
 			Vector2 side = fwd.Orthogonal();
