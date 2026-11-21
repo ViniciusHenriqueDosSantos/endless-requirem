@@ -112,11 +112,20 @@ public partial class FallingLamp : Node2D
 		if (_slowTimer > 0 && IsInstanceValid(_player)) _player.Speed = _playerSpeed;
 	}
 
+	// O lance ficou para trás: se ainda não caiu, não cai mais; se estava caindo, vira cacos (sem dano).
+	public void Deactivate()
+	{
+		if (_state is State.Warning or State.Falling) SetState(State.Broken);
+		else if (_state == State.Hanging) SetProcess(false);
+		QueueRedraw();
+	}
+
 	public void Reset()
 	{
 		if (_slowTimer > 0 && _player != null) _player.Speed = _playerSpeed;
 		_slowTimer = 0;
 		SetState(State.Hanging);
+		SetProcess(true);
 		QueueRedraw();
 	}
 

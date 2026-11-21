@@ -7,7 +7,7 @@
 #   continuacao    o fim do lance: degraus seguindo para cima no escuro, com seta para frente (48 x 40)
 #   extintor       extintor vermelho deitado, rolando escada abaixo (dois quadros: extintor0/1, 14 x 8)
 #   espuma         nuvem de pó quando o extintor leva um tiro (16 x 12)
-#   degrau_quebrado  buraco no meio do lance (32 x 32 = 2 x 2 tiles)
+#   degrau_quebrado  buraco no meio do lance (26 x 32: 104 px de largura, 2 tiles de altura)
 #   lance_metade   metade do lance que já caiu (32 x 80 = 2 x 5 tiles)
 #   andar0..4      número do andar pintado no chão do patamar (24 x 28)
 from pix import Canvas, rng, mix, shade, hexc
@@ -201,7 +201,7 @@ def buraco(w, h, seed, steps=True):
     return cv
 
 
-buraco(32, 32, 0).save(OUT + "degrau_quebrado.png")
+buraco(26, 32, 0).save(OUT + "degrau_quebrado.png")
 buraco(32, 80, 1).save(OUT + "lance_metade.png")
 
 
