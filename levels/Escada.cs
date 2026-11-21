@@ -1,16 +1,17 @@
 using Godot;
 using System.Collections.Generic;
 
-// Escada (fim da Fase 2): a escada de verdade do prédio, em zigue-zague, vista de cima.
-// São 8 lances, 2 por andar, do térreo (0) ao 4º andar. Estilo "Temple Run": quando você começa a subir,
-// os degraus desabam ATRÁS de você e o buraco vem seguindo. Se alcançar, você cai (REPROVADO) e recomeça.
-// Sem fantasmas. Os obstáculos (um por lance) estão na cena:
-//   - barricada (o Canhão derruba com 1 tiro; Escopeta e Laser demoram)  -> Barricade
-//   - degrau quebrado e lance pela metade (buracos: só dá para passar pelo lado)  -> Prop sólido
-//   - lâmpada caindo do teto (a sombra avisa)  -> FallingLamp
-//   - extintor rolando escada abaixo (desvie ou atire)  -> RollingExtinguisher
-// Quanto mais perto o buraco, mais a tela treme, mais alto o barulho de desabamento e mais vermelha a borda.
-// A porta do 4º andar só aparece quando você chega no 4º andar. A subida toda leva uns 40 segundos.
+// Escada (fim da Fase 2): a escada do prédio vista de cima, do térreo (0) ao 4º andar, em 8 lances (2 por andar).
+//
+// O vão da escada tem duas colunas de lances lado a lado (A e B). Você sobe um lance; no alto, a câmera dá um giro
+// de 180° (com um escurecido) e, quando volta, você está no pé do próximo lance, na outra coluna, de novo subindo
+// para cima da tela. A coluna do lado mostra o lance que você acabou de subir, desabando.
+//
+// Estilo "Temple Run": o chão desaba ATRÁS de você, quase na sua velocidade, e acelera se você abrir vantagem
+// (fica sempre no seu calcanhar). Se alcançar, você cai (REPROVADO) e volta ao térreo. Sem fantasmas.
+// Obstáculos por lance (tabela Lances, abaixo): barricada (1 tiro de Canhão), degrau quebrado, lance pela metade,
+// lâmpada caindo do teto e extintor rolando. Perto do buraco a tela treme, o barulho sobe e a borda fica vermelha.
+// A porta do 4º andar só aparece quando você chega lá.
 // Peças em levels/escada.tscn (gerada por tools/levelgen/gen_escada.py).
 public partial class Escada : LevelBase
 {
@@ -21,44 +22,71 @@ public partial class Escada : LevelBase
 	// Cobre o patamar do 4º andar enquanto ele ainda "não existe".
 	[Export] public CanvasItem CoberturaSaida;
 
-	// Desenho do buraco que vem atrás do jogador e o nó com os obstáculos (para pôr tudo de volta ao reprovar).
+	// Desenho do que já desabou, o nó onde nascem os obstáculos e o número do andar pintado no chão.
 	[Export] public CollapseFloor Desabamento;
 	[Export] public Node2D Obstaculos;
+	[Export] public Prop NumeroAndar;
 
-	// O meio da faixa, do começo ao fim (pixels), a largura da faixa e onde começa cada andar (s do caminho).
-	[Export] public Vector2[] Caminho = System.Array.Empty<Vector2>();
+	// Geometria (pixels): x do meio de cada coluna, largura da faixa, y do pé e do alto dos lances,
+	// e y do fundo do patamar do térreo.
+	[Export] public float ColunaA = 96f;
+	[Export] public float ColunaB = 352f;
 	[Export] public float Faixa = 192f;
-	[Export] public float[] InicioDosAndares = System.Array.Empty<float>();
+	[Export] public float PeDoLance = 1152f;
+	[Export] public float AltoDoLance = 192f;
+	[Export] public float FundoDoTerreo = 1344f;
 
 	// Som do desabamento (em loop; o volume sobe quando o buraco chega perto).
 	[Export] public AudioStream SomDesabamento;
 
-	// Velocidade do desabamento (pixels por segundo; o jogador anda a 240) e quanto ela sobe a cada andar.
-	[Export] public float VelocidadeInicial = 190f;
-	[Export] public float AumentoPorAndar = 8f;
+	// Velocidade do desabamento (pixels por segundo; o jogador anda a 240) e quanto sobe a cada andar.
+	[Export] public float VelocidadeInicial = 205f;
+	[Export] public float AumentoPorAndar = 6f;
 
-	// Vantagem inicial (pixels) e a vantagem máxima antes de o desabamento acelerar.
-	[Export] public float VantagemInicial = 256f;
-	[Export] public float VantagemMaxima = 900f;
+	// Vantagem inicial e a vantagem máxima antes de o desabamento acelerar (pixels).
+	[Export] public float VantagemInicial = 128f;
+	[Export] public float VantagemMaxima = 320f;
 
-	// Próxima cena: o 4º andar (Fase 3).
 	private const string NextScene = "res://levels/fase_3.tscn";
+	private const int Flights = 8;
 	private const int LastFloor = 4;
 	private const float Tile = 64f;
-	private const float StartDelay = 1.2f;
-	private const float DangerDistance = 6 * Tile;   // a partir daqui: tremor, barulho e vermelho
+	private const float IntroTime = 1.3f;
+	private const float SpinTime = 0.4f;
+	private const float DangerDistance = 6 * Tile;
 
-	private PolyPath _path;
-	private int _floor;
-	private bool _running;
-	private float _startTimer;
-	private float _sPlayer;      // quanto o jogador já subiu (pixels ao longo do caminho)
-	private float _sCollapse;    // até onde o chão já caiu
-	private float _danger;       // 0 (longe) a 1 (encostando)
+	// Obstáculos de cada lance: tipo, faixa (0 = esquerda, 1 = meio, 2 = direita) e linha a partir do pé do lance.
+	// B = barricada, D = degrau quebrado (2x2), M = lance pela metade (2 de largura, 5 de altura),
+	// L = lâmpada caindo, E = extintor rolando (sai do alto do lance; a linha é a distância de disparo, em tiles).
+	private static readonly (char kind, int lane, float row)[][] Lances =
+	{
+		new (char, int, float)[] { },
+		new[] { ('B', 1, 7f) },
+		new[] { ('D', 0, 5f), ('L', 2, 11f) },
+		new[] { ('L', 0, 4f), ('L', 2, 9f), ('L', 1, 13f) },
+		new[] { ('E', 1, 8f), ('B', 1, 10f) },
+		new[] { ('M', 1, 3f), ('L', 0, 11f) },
+		new[] { ('D', 1, 4f), ('B', 1, 9f), ('E', 0, 6f) },
+		new[] { ('E', 0, 9f), ('E', 2, 5f), ('L', 1, 6f) },
+	};
+
+	private enum State { Waiting, Intro, Running, Spinning, Done }
+
+	private State _state = State.Waiting;
+	private int _flight;          // lance atual (0 a 7); lances pares na coluna A, ímpares na B
+	private float _sPlayer;       // quanto o jogador já subiu (pixels), somando os lances
+	private float _sCollapse;     // até onde a escada já caiu
+	private float _timer;
+	private float _danger;
+	private bool _exitShown;
+	private readonly List<Node>[] _columnObstacles = { new(), new() };
 
 	private AudioStreamPlayer _rumble;
-	private ColorRect _redEdge;
-	private ShaderMaterial _redEdgeMaterial;
+	private ShaderMaterial _redEdge;
+	private ColorRect _fade;
+	private Camera2D _camera;
+
+	private float FlightLength => PeDoLance - AltoDoLance;
 
 	protected override void SetupDefaultLoadout()
 	{
@@ -71,28 +99,22 @@ public partial class Escada : LevelBase
 	{
 		base._Ready();
 
-		_path = new PolyPath(Caminho, Faixa);
-		Desabamento.Path = _path;
 		Inicio.PlayerEntered += OnClimbStarted;
 		Saida.PlayerEntered += OnReachedTop;
+		_camera = Player.GetNodeOrNull<Camera2D>("Camera2D");
 
-		// A câmera do jogador fica um pouco à frente (para cima), para ver o que vem.
-		Camera2D camera = Player.GetNodeOrNull<Camera2D>("Camera2D");
-		if (camera != null)
-			camera.Position = new Vector2(0, -140);
-
-		CreateDangerFeedback();
+		CreateScreenEffects();
 		ResetClimb();
 		Hud.SetObjective("Suba até o 4º andar");
 		Hud.ShowMessage("O elevador quebrou. Só resta a escada... e ela não parece nada firme.", 4f);
 	}
 
-	// Borda vermelha da tela e o barulho de desabamento (os dois começam desligados).
-	private void CreateDangerFeedback()
+	// Borda vermelha, escurecido do giro e o barulho de desabamento (tudo começa desligado).
+	private void CreateScreenEffects()
 	{
 		CanvasLayer layer = new() { Layer = 5 };
 		AddChild(layer);
-		_redEdgeMaterial = new ShaderMaterial
+		_redEdge = new ShaderMaterial
 		{
 			Shader = new Shader
 			{
@@ -105,47 +127,270 @@ void fragment() {
 }"
 			}
 		};
-		_redEdge = new ColorRect { MouseFilter = Control.MouseFilterEnum.Ignore, Material = _redEdgeMaterial };
-		_redEdge.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-		layer.AddChild(_redEdge);
+		ColorRect red = new() { MouseFilter = Control.MouseFilterEnum.Ignore, Material = _redEdge };
+		red.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		layer.AddChild(red);
 
-		_rumble = new AudioStreamPlayer { Stream = SomDesabamento, VolumeDb = -40f, Bus = "Master" };
-		_rumble.Finished += () => { if (_running) _rumble.Play(); };
+		_fade = new ColorRect { MouseFilter = Control.MouseFilterEnum.Ignore, Color = new Color(0, 0, 0, 0) };
+		_fade.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		layer.AddChild(_fade);
+
+		_rumble = new AudioStreamPlayer { Stream = SomDesabamento, VolumeDb = -40f };
+		_rumble.Finished += () => { if (_state is State.Intro or State.Running or State.Spinning) _rumble.Play(); };
 		AddChild(_rumble);
 	}
 
+	// ---------- começo e reprovado ----------
+
 	private void ResetClimb()
 	{
-		_floor = 0;
-		_running = false;
+		_state = State.Waiting;
+		_flight = 0;
 		_danger = 0;
+		_exitShown = false;
 		Inicio.ResetTrigger();
 		Desabamento.Clear();
-		foreach (Node child in Obstaculos.GetChildren())
-		{
-			if (child is Barricade barricade) barricade.Reset();
-			else if (child is FallingLamp lamp) lamp.Reset();
-			else if (child is RollingExtinguisher extinguisher) extinguisher.Reset();
-		}
 		SetExitVisible(false);
+		ClearColumn(0);
+		ClearColumn(1);
+		SpawnFlight(0);
+		SetFloorPaint(0);
 		_rumble.Stop();
-		_redEdgeMaterial.SetShaderParameter("strength", 0f);
+		_redEdge.SetShaderParameter("strength", 0f);
+		_fade.Color = new Color(0, 0, 0, 0);
+		if (_camera != null)
+		{
+			_camera.IgnoreRotation = true;
+			_camera.Rotation = 0;
+		}
+		Player.SetPhysicsProcess(true);
 		Hud.SetCounter("ANDAR 0");
 	}
 
-	// Pisou no primeiro degrau: o chão começa a cair atrás.
+	// Pisou no primeiro degrau: o térreo desmorona atrás (a câmera mostra), e aí é correr.
 	private void OnClimbStarted()
 	{
-		_sPlayer = _path.Project(Player.GlobalPosition);
-		_sCollapse = _sPlayer - VantagemInicial;
-		_startTimer = StartDelay;
-		_running = true;
+		_state = State.Intro;
+		_timer = IntroTime;
+		_sPlayer = PlayerProgress();
+		_sCollapse = -(FundoDoTerreo - PeDoLance);   // fundo do patamar do térreo
+		Player.SetPhysicsProcess(false);
+		Player.TriggerShake(14f);
 		_rumble.Play();
-		Player.TriggerShake(12f);
-		Hud.ShowMessage("A escada está desabando! CORRA!  (o Canhão derruba as barricadas)", 3.5f);
+		Hud.ShowMessage("A escada está desabando! CORRA!  (o Canhão derruba as barricadas)", 3f);
 	}
 
-	// A saída só "existe" no 4º andar: antes disso é parede e o patamar fica coberto.
+	// ---------- quadro a quadro ----------
+
+	public override void _Process(double delta)
+	{
+		base._Process(delta);
+		float dt = (float)delta;
+
+		switch (_state)
+		{
+			case State.Intro:
+				// o térreo cai até logo atrás do jogador; depois ele pode correr
+				_timer -= dt;
+				float target = _sPlayer - VantagemInicial;
+				_sCollapse = Mathf.MoveToward(_sCollapse, target, (target + (FundoDoTerreo - PeDoLance)) / IntroTime * dt);
+				if (_timer <= 0)
+				{
+					_state = State.Running;
+					Player.SetPhysicsProcess(true);
+				}
+				break;
+
+			case State.Running:
+				_sPlayer = PlayerProgress();
+				AdvanceCollapse(dt);
+				if (_state != State.Running) return;
+				CheckTopOfFlight();
+				break;
+
+			case State.Spinning:
+				UpdateSpin(dt);
+				break;
+
+			default:
+				return;
+		}
+
+		UpdateCollapseDrawing();
+		UpdateDanger(dt);
+	}
+
+	// Quanto o jogador já subiu: lances completos + o quanto subiu no lance atual.
+	private float PlayerProgress() => _flight * FlightLength + (PeDoLance - Player.GlobalPosition.Y);
+
+	private void AdvanceCollapse(float dt)
+	{
+		float speed = VelocidadeInicial + AumentoPorAndar * (_flight / 2);
+		float lead = _sPlayer - _sCollapse;
+		if (lead > VantagemMaxima)
+			speed += (lead - VantagemMaxima) * 2f;   // abriu vantagem: o desabamento acelera e cola de novo
+		_sCollapse += speed * dt;
+
+		if (_sPlayer < _sCollapse)
+		{
+			_state = State.Done;
+			_rumble.Stop();
+			Player.TriggerShake(16f);
+			Fail("A escada desabou embaixo de você!\nVocê volta para o térreo.");
+		}
+	}
+
+	// ---------- fim de cada lance: o giro ----------
+
+	private void CheckTopOfFlight()
+	{
+		float y = Player.GlobalPosition.Y;
+		if (_flight == Flights - 1)
+		{
+			// último lance: chegando lá em cima, o 4º andar e a porta aparecem
+			if (!_exitShown && y < AltoDoLance + 4 * Tile)
+			{
+				_exitShown = true;
+				SetExitVisible(true);
+				Hud.SetCounter("4º ANDAR");
+				Hud.ShowMessage("4º ANDAR! A porta apareceu. Corre!", 2.5f);
+			}
+			return;
+		}
+
+		if (y > AltoDoLance + Tile) return;
+
+		_state = State.Spinning;
+		_timer = SpinTime;
+		_movedThisSpin = false;
+		Player.SetPhysicsProcess(false);
+		if (_camera != null)
+			_camera.IgnoreRotation = false;
+	}
+
+	// A câmera gira 180° escurecendo; no meio do giro, o jogador passa para o pé do próximo lance.
+	private void UpdateSpin(float dt)
+	{
+		_timer -= dt;
+		float t = 1f - Mathf.Clamp(_timer / SpinTime, 0f, 1f);
+		// meio giro (0 -> 90°), troca de lance no escuro, e o outro meio (-90° -> 0): 180° no total, sempre de pé
+		if (_camera != null)
+			_camera.Rotation = t < 0.5f ? Mathf.Pi * t : Mathf.Pi * (t - 1f);
+		_fade.Color = new Color(0, 0, 0, Mathf.Sin(t * Mathf.Pi) * 0.85f);
+
+		if (t >= 0.5f && !_movedThisSpin)
+			MoveToNextFlight();
+
+		if (_timer > 0) return;
+
+		if (_camera != null)
+		{
+			_camera.Rotation = 0;
+			_camera.IgnoreRotation = true;
+		}
+		_fade.Color = new Color(0, 0, 0, 0);
+		Player.SetPhysicsProcess(true);
+		_state = State.Running;
+	}
+
+	private bool _movedThisSpin;
+
+	private void MoveToNextFlight()
+	{
+		_movedThisSpin = true;
+
+		float lane = Player.GlobalPosition.X - (_flight % 2 == 0 ? ColunaA : ColunaB);
+		_flight++;
+		float columnX = _flight % 2 == 0 ? ColunaA : ColunaB;
+
+		// a coluna onde você entra vira o lance novo (o que estava ali, de dois lances atrás, some)
+		ClearColumn(_flight % 2);
+		SpawnFlight(_flight);
+		SetFloorPaint(_flight);
+
+		Player.GlobalPosition = new Vector2(columnX + Mathf.Clamp(lane, -Faixa / 2 + 24, Faixa / 2 - 24), PeDoLance - 24);
+		_sPlayer = PlayerProgress();
+		_camera?.ResetSmoothing();
+
+		int floor = _flight / 2;
+		Hud.SetCounter(floor == 0 ? "ANDAR 0" : $"{floor}º ANDAR");
+		if (_flight % 2 == 0)
+			Hud.ShowMessage($"{floor}º ANDAR", 1.2f);
+	}
+
+	// ---------- obstáculos ----------
+
+	private void ClearColumn(int column)
+	{
+		foreach (Node node in _columnObstacles[column])
+			if (IsInstanceValid(node))
+				node.QueueFree();
+		_columnObstacles[column].Clear();
+	}
+
+	private void SpawnFlight(int flight)
+	{
+		if (flight < 0 || flight >= Lances.Length) return;
+
+		int column = flight % 2;
+		float columnX = column == 0 ? ColunaA : ColunaB;
+		foreach ((char kind, int lane, float row) in Lances[flight])
+		{
+			float laneX = columnX + (lane - 1) * Tile;
+			Node2D node = kind switch
+			{
+				'B' => new Barricade
+				{
+					Size = new Vector2(Faixa, 56), Health = 3f, Position = new Vector2(columnX, PeDoLance - row * Tile),
+					Texture = GD.Load<Texture2D>($"res://sprites/props/escada/barricada{flight % 2}.png"),
+				},
+				'D' => MakeHole(columnX + (lane - 0.5f) * Tile, PeDoLance - row * Tile, 2, 2, "degrau_quebrado"),
+				'M' => MakeHole(columnX + (lane - 0.5f) * Tile, PeDoLance - row * Tile, 2, 5, "lance_metade"),
+				'L' => new FallingLamp
+				{
+					Position = new Vector2(laneX, PeDoLance - row * Tile),
+					LampTexture = GD.Load<Texture2D>("res://sprites/props/escada/lampada.png"),
+					BrokenTexture = GD.Load<Texture2D>("res://sprites/props/escada/lampada_quebrada.png"),
+				},
+				'E' => new RollingExtinguisher
+				{
+					Position = new Vector2(laneX, AltoDoLance + Tile / 2), TriggerDistance = row * Tile,
+					Frame0 = GD.Load<Texture2D>("res://sprites/props/escada/extintor0.png"),
+					Frame1 = GD.Load<Texture2D>("res://sprites/props/escada/extintor1.png"),
+					Puff = GD.Load<Texture2D>("res://sprites/props/escada/espuma.png"),
+					RollLength = FlightLength + Tile,
+				},
+				_ => null,
+			};
+			if (node == null) continue;
+			Obstaculos.AddChild(node);
+			_columnObstacles[column].Add(node);
+		}
+	}
+
+	// Buraco no lance (degrau quebrado ou metade do lance caída): bloqueia a passagem, você passa pelo lado.
+	private static Node2D MakeHole(float centerX, float bottomY, int widthTiles, int heightTiles, string sprite)
+	{
+		Prop hole = GD.Load<PackedScene>("res://objects/prop/prop.tscn").Instantiate<Prop>();
+		hole.Position = new Vector2(centerX, bottomY);
+		hole.Size = new Vector2(widthTiles * Tile, heightTiles * Tile);
+		hole.Depth = heightTiles * Tile;
+		hole.Color = new Color(0.02f, 0.02f, 0.03f);
+		hole.Texture = GD.Load<Texture2D>($"res://sprites/props/escada/{sprite}.png");
+		hole.ZIndex = -6;
+		return hole;
+	}
+
+	// Número do andar pintado no chão, no pé dos lances que começam um andar (0, 1, 2, 3).
+	private void SetFloorPaint(int flight)
+	{
+		bool show = flight % 2 == 0;
+		NumeroAndar.Visible = show;
+		if (!show) return;
+		NumeroAndar.Texture = GD.Load<Texture2D>($"res://sprites/props/escada/andar{flight / 2}.png");
+		NumeroAndar.Position = new Vector2(flight % 2 == 0 ? ColunaA : ColunaB, PeDoLance - Tile * 0.2f);
+	}
+
 	private void SetExitVisible(bool visible)
 	{
 		if (visible)
@@ -155,66 +400,31 @@ void fragment() {
 		CoberturaSaida.Visible = !visible;
 	}
 
-	public override void _Process(double delta)
+	// ---------- desenho do desabamento e o perigo ----------
+
+	// O que caiu: no lance atual, do pé até a frente do desabamento; no lance do lado (o anterior), também.
+	private void UpdateCollapseDrawing()
 	{
-		base._Process(delta);
-		if (!_running) return;
-
-		float dt = (float)delta;
-		// Só avança: andar para trás não "desconta" (e o buraco vem do mesmo jeito).
-		_sPlayer = _path.Project(Player.GlobalPosition);
-		UpdateCollapse(dt);
-		if (!_running) return;
-
-		UpdateFloor();
-		UpdateDanger(dt);
-		UpdateHud();
-	}
-
-	private void UpdateCollapse(float dt)
-	{
-		if (_startTimer > 0)
+		Desabamento.Holes.Clear();
+		Desabamento.HasEdge = false;
+		for (int flight = _flight - 1; flight <= _flight; flight++)
 		{
-			_startTimer -= dt;
-		}
-		else
-		{
-			float speed = VelocidadeInicial + AumentoPorAndar * _floor;
-			float lead = _sPlayer - _sCollapse;
-			if (lead > VantagemMaxima)
-				speed += (lead - VantagemMaxima) * 0.8f;   // abriu muita vantagem: o desabamento acelera
-			_sCollapse += speed * dt;
-		}
+			if (flight < 0) continue;
+			float start = flight * FlightLength;
+			if (_sCollapse <= start - (flight == 0 ? FundoDoTerreo - PeDoLance : 0)) continue;
 
-		Desabamento.Front = _sCollapse;
-		Desabamento.Active = true;
+			float columnX = flight % 2 == 0 ? ColunaA : ColunaB;
+			float bottom = flight == 0 ? FundoDoTerreo : PeDoLance;
+			float frontY = Mathf.Max(PeDoLance - (_sCollapse - start), AltoDoLance - Tile);
+			if (frontY >= bottom) continue;
 
-		if (_sPlayer < _sCollapse)
-		{
-			_running = false;
-			_rumble.Stop();
-			Player.TriggerShake(16f);
-			Fail("A escada desabou embaixo de você!\nVocê volta para o térreo.");
-		}
-	}
-
-	private void UpdateFloor()
-	{
-		int floor = 0;
-		for (int i = 0; i < InicioDosAndares.Length; i++)
-			if (_sPlayer >= InicioDosAndares[i])
-				floor = i;
-		if (floor <= _floor) return;
-
-		_floor = floor;
-		if (_floor >= LastFloor)
-		{
-			SetExitVisible(true);
-			Hud.ShowMessage("4º ANDAR! A porta apareceu. Corre!", 3f);
-		}
-		else
-		{
-			Hud.ShowMessage($"{_floor}º ANDAR", 1.5f);
+			Desabamento.Holes.Add(new Rect2(columnX - Faixa / 2, frontY, Faixa, bottom - frontY));
+			if (_sCollapse < start + FlightLength)
+			{
+				Desabamento.HasEdge = true;
+				Desabamento.EdgeFrom = new Vector2(columnX - Faixa / 2, frontY);
+				Desabamento.EdgeTo = new Vector2(columnX + Faixa / 2, frontY);
+			}
 		}
 	}
 
@@ -222,30 +432,23 @@ void fragment() {
 	private void UpdateDanger(float dt)
 	{
 		float lead = _sPlayer - _sCollapse;
-		float target = Mathf.Clamp(1f - lead / DangerDistance, 0f, 1f);
+		float target = _state == State.Spinning ? _danger : Mathf.Clamp(1f - lead / DangerDistance, 0f, 1f);
 		_danger = Mathf.MoveToward(_danger, target, dt * 3f);
 
 		if (_danger > 0.05f)
 			Player.TriggerShake(1.5f + 9f * _danger);
-		_rumble.VolumeDb = Mathf.Lerp(-22f, 2f, _danger);
+		_rumble.VolumeDb = Mathf.Lerp(-18f, 2f, _danger);
 		float pulse = 0.85f + 0.15f * Mathf.Sin(Time.GetTicksMsec() / 90f);
-		_redEdgeMaterial.SetShaderParameter("strength", _danger * 0.85f * pulse);
+		_redEdge.SetShaderParameter("strength", _danger * 0.85f * pulse);
 	}
 
-	private void UpdateHud()
-	{
-		Hud.SetCounter(_floor == 0 ? "ANDAR 0" : $"{_floor}º ANDAR");
-		if (_floor >= LastFloor)
-			Hud.PointTo(PortaSaida.GlobalPosition + new Vector2(0, -40), "SAÍDA");
-		else
-			Hud.HidePointer();
-	}
+	// ---------- fim ----------
 
 	private void OnReachedTop()
 	{
-		_running = false;
+		_state = State.Done;
 		_rumble.Stop();
-		_redEdgeMaterial.SetShaderParameter("strength", 0f);
+		_redEdge.SetShaderParameter("strength", 0f);
 		Hud.HidePointer();
 		FinishLevel(
 			"FIM DA FASE 2",
