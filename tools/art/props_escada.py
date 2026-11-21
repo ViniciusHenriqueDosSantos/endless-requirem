@@ -108,7 +108,13 @@ def lampada_quebrada():
     """A lâmpada estilhaçada no chão: a rosca caída de lado, cacos de vidro amarelinho e um filamento torto."""
     cv = Canvas(22, 12)
     r = rng(5200)
-    shadow_ellipse(cv, 11, 10, 9, 1.5, 70)
+    # mancha escura de queimado/fuligem no chão, para os cacos não sumirem no piso claro
+    burn, burn_l = hexc("2b2420"), hexc("4a3c30")
+    for y in range(12):
+        for x in range(22):
+            d = ((x - 11) / 10.5) ** 2 + ((y - 6.5) / 5.2) ** 2
+            if d < 1 - r.random() * 0.25:
+                cv.put(x, y, burn if d < 0.55 else burn_l)
     for i in range(3):                                                            # rosca deitada
         cv.vline(9 + i, 4, 4, BASE_M if i % 2 == 0 else BASE_M_D)
     cv.vline(12, 5, 2, BASE_M_D)
@@ -118,6 +124,10 @@ def lampada_quebrada():
         c = r.choice([GLASS_Y, GLASS_Y_L, GLASS_Y_D, hexc("ffffff", 200)])
         cv.put(x, y, c)
         if r.random() < 0.4: cv.put(x + 1, y, c)
+    for i in range(3):                                                            # rosca por cima dos cacos
+        cv.vline(9 + i, 4, 4, BASE_M if i % 2 == 0 else BASE_M_D)
+    cv.vline(12, 5, 2, BASE_M_D)
+    cv.outline(INK)
     return cv
 
 

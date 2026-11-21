@@ -19,6 +19,27 @@ public partial class RollingExtinguisher : Area2D, IHittable
 
 	private enum State { Waiting, Rolling, Popped, Gone }
 
+	// Extintores rolando agora (a lâmpada espera eles passarem antes de cair).
+	private static readonly System.Collections.Generic.List<RollingExtinguisher> _rolling = new();
+
+	// Tem extintor rolando na mesma coluna que ainda vai passar por este ponto?
+	public static bool AnyAbove(Vector2 point)
+	{
+		foreach (RollingExtinguisher e in _rolling)
+			if (IsInstanceValid(e) && Mathf.Abs(e.GlobalPosition.X - point.X) < 200f && e.GlobalPosition.Y < point.Y + 60f)
+				return true;
+		return false;
+	}
+
+	private void SetState(State state)
+	{
+		if (state == State.Rolling) { if (!_rolling.Contains(this)) _rolling.Add(this); }
+		else _rolling.Remove(this);
+		_state = state;
+	}
+
+	public override void _ExitTree() => _rolling.Remove(this);
+
 	private State _state = State.Waiting;
 	private Vector2 _home;
 	private float _rolled;
@@ -47,9 +68,10 @@ public partial class RollingExtinguisher : Area2D, IHittable
 			case State.Waiting:
 				if (_player != null && _player.GlobalPosition.Y > GlobalPosition.Y
 					&& _player.GlobalPosition.Y - GlobalPosition.Y < TriggerDistance
-					&& Mathf.Abs(_player.GlobalPosition.X - GlobalPosition.X) < 160f)
+					&& Mathf.Abs(_player.GlobalPosition.X - GlobalPosition.X) < 160f
+					&& !FallingLamp.AnyBusy)   // não passa enquanto uma lâmpada avisa ou cai
 				{
-					_state = State.Rolling;
+					SetState(State.Rolling);
 					Show();
 				}
 				break;
@@ -57,11 +79,11 @@ public partial class RollingExtinguisher : Area2D, IHittable
 				Position += new Vector2(0, Speed * dt);
 				_rolled += Speed * dt;
 				_timer += dt;
-				if (_rolled > RollLength) { _state = State.Gone; Hide(); }
+				if (_rolled > RollLength) { SetState(State.Gone); Hide(); }
 				break;
 			case State.Popped:
 				_timer -= dt;
-				if (_timer <= 0) { _state = State.Gone; Hide(); }
+				if (_timer <= 0) { SetState(State.Gone); Hide(); }
 				break;
 		}
 		QueueRedraw();
@@ -82,7 +104,7 @@ public partial class RollingExtinguisher : Area2D, IHittable
 		}
 		else if (body is Prop { Solid: true, ZIndex: < 0 })
 		{
-			_state = State.Gone;                // caiu no buraco
+			SetState(State.Gone);                // caiu no buraco
 			Hide();
 		}
 	}
@@ -95,14 +117,14 @@ public partial class RollingExtinguisher : Area2D, IHittable
 
 	private void Pop()
 	{
-		_state = State.Popped;
+		SetState(State.Popped);
 		_timer = PuffTime;
 		_player?.TriggerShake(4f);
 	}
 
 	public void Reset()
 	{
-		_state = State.Waiting;
+		SetState(State.Waiting);
 		Position = _home;
 		_rolled = 0;
 		_timer = 0;
