@@ -1,56 +1,46 @@
 using Godot;
 
-// Barricada da escada: uma pilha de cadeiras, mesas, caixas e entulho fechando a faixa toda.
-// Só o Canhão derruba de verdade; a Escopeta e o Laser fazem pouco dano (Weapon.BarricadeDamage).
-// O jogador e os tiros batem nela; os fantasmas passam por cima (eles atravessam o que não é parede de fora).
-// Criada pelo roteiro da escada (Escada.cs), já do tamanho da faixa.
+// Barricada da escada: carteiras tombadas, tábuas e fita zebrada fechando a faixa toda.
+// O Canhão derruba com 1 tiro; a Escopeta e o Laser fazem pouco dano (Weapon.BarricadeDamage).
+// O jogador e os tiros batem nela. Reset() põe de volta (jogador reprovado).
+[Tool]
 public partial class Barricade : StaticBody2D
 {
-	[Signal] public delegate void DestroyedEventHandler(Barricade barricade);
+	private Vector2 _size = new(192, 56);
+	private Texture2D _texture;
 
-	// Tamanho do bloqueio (pixels), centrado na posição.
-	public Vector2 Size = new(192, 48);
-	public float Health = 6f;
-	public int Seed;
+	// Tamanho do bloqueio (pixels), com a base na posição (visão 3/4, igual aos móveis).
+	[Export] public Vector2 Size { get => _size; set { _size = value; QueueRedraw(); } }
+	[Export] public Texture2D Texture { get => _texture; set { _texture = value; QueueRedraw(); } }
+	[Export] public float Health = 3f;
 
 	private const float PixelScale = 4f;
-	private const float HitFlashTime = 0.08f;
-
-	private static readonly string[] PieceSprites =
-	{
-		"res://sprites/props/fase1/cadeira_caida.png", "res://sprites/props/fase2/cadeira_espera_caida.png",
-		"res://sprites/props/fase1/entulho.png", "res://sprites/props/fase2/caixa0.png",
-		"res://sprites/props/fase2/caixa1.png", "res://sprites/props/fase2/mesa_sala.png",
-	};
+	private const float HitFlashTime = 0.1f;
+	private const float CollisionDepth = 40f;
 
 	private float _maxHealth;
 	private float _flash;
+	private float _shake;
 	private bool _destroyed;
-	private readonly System.Collections.Generic.List<(Texture2D tex, Vector2 at, float angle)> _pieces = new();
+	private CollisionShape2D _collision;
 
 	public bool IsDestroyed => _destroyed;
 
 	public override void _Ready()
 	{
+		QueueRedraw();
+		if (Engine.IsEditorHint()) return;
+
 		_maxHealth = Health;
 		AddToGroup("obstacles");
 		CollisionLayer = 1;
 		CollisionMask = 0;
-		AddChild(new CollisionShape2D { Shape = new RectangleShape2D { Size = Size } });
-
-		// Peças espalhadas ao longo do bloqueio, sempre iguais para o mesmo Seed.
-		RandomNumberGenerator rng = new() { Seed = (ulong)(Seed * 7919 + 3) };
-		bool vertical = Size.Y > Size.X;
-		float length = vertical ? Size.Y : Size.X;
-		int count = Mathf.Max(3, Mathf.RoundToInt(length / 34f));
-		for (int i = 0; i < count; i++)
+		_collision = new CollisionShape2D
 		{
-			Texture2D tex = GD.Load<Texture2D>(PieceSprites[rng.RandiRange(0, PieceSprites.Length - 1)]);
-			float t = (i + 0.5f) / count - 0.5f;
-			Vector2 along = vertical ? new Vector2(rng.RandfRange(-8, 8), t * length) : new Vector2(t * length, rng.RandfRange(-8, 8));
-			_pieces.Add((tex, along, rng.RandfRange(-0.5f, 0.5f)));
-		}
-		QueueRedraw();
+			Shape = new RectangleShape2D { Size = new Vector2(Size.X, CollisionDepth) },
+			Position = new Vector2(0, -CollisionDepth / 2),
+		};
+		AddChild(_collision);
 	}
 
 	// Tiro de uma arma: o dano vem multiplicado pelo quanto aquela arma serve contra barricada.
@@ -60,39 +50,47 @@ public partial class Barricade : StaticBody2D
 
 		Health -= weapon.Damage * weapon.BarricadeDamage;
 		_flash = HitFlashTime;
-		QueueRedraw();
+		_shake = 0.2f;
 		if (Health <= 0)
 			Break();
+		QueueRedraw();
 	}
 
 	private void Break()
 	{
 		_destroyed = true;
-		(GetTree().GetFirstNodeInGroup("player") as Player)?.TriggerShake(8f);
-		EmitSignal(SignalName.Destroyed, this);
-		QueueFree();
+		(GetTree().GetFirstNodeInGroup("player") as Player)?.TriggerShake(9f);
+		_collision.SetDeferred(CollisionShape2D.PropertyName.Disabled, true);
+		Hide();
+	}
+
+	public void Reset()
+	{
+		_destroyed = false;
+		Health = _maxHealth;
+		_collision.SetDeferred(CollisionShape2D.PropertyName.Disabled, false);
+		Show();
+		QueueRedraw();
 	}
 
 	public override void _Process(double delta)
 	{
-		if (_flash <= 0) return;
+		if (Engine.IsEditorHint() || (_flash <= 0 && _shake <= 0)) return;
 		_flash -= (float)delta;
+		_shake -= (float)delta;
 		QueueRedraw();
 	}
 
 	public override void _Draw()
 	{
-		Rect2 rect = new(-Size / 2, Size);
-		// sombra no chão
-		DrawRect(rect.Grow(6), new Color(0, 0, 0, 0.35f));
-		float damaged = _maxHealth > 0 ? 1f - Mathf.Clamp(Health / _maxHealth, 0f, 1f) : 0f;
-		foreach ((Texture2D tex, Vector2 at, float angle) in _pieces)
+		Vector2 jitter = _shake > 0 ? new Vector2((float)GD.RandRange(-3.0, 3.0), 0) : Vector2.Zero;
+		Rect2 rect = new(new Vector2(-Size.X / 2, -Size.Y) + jitter, Size);
+		if (Texture == null)
 		{
-			Vector2 size = tex.GetSize() * PixelScale;
-			// quanto mais danificada, mais tortas as peças ficam
-			DrawSetTransform(at, angle * (1f + damaged * 1.5f), Vector2.One);
-			DrawTextureRect(tex, new Rect2(-size / 2, size), false, _flash > 0 ? new Color(2f, 2f, 2f) : Colors.White);
+			DrawRect(rect, new Color(0.6f, 0.5f, 0.3f));
+			return;
 		}
-		DrawSetTransform(Vector2.Zero, 0f, Vector2.One);
+		Color tint = _flash > 0 ? new Color(2f, 2f, 2f) : Colors.White;
+		DrawTextureRect(Texture, rect, false, tint);
 	}
 }
