@@ -1,75 +1,108 @@
-# Gera levels/escada.tscn: escada circular vista de cima (fim da Fase 2).
-# É uma volta só: o jogador dá voltas no mesmo anel e cada volta completa é um andar
-# (o contador na tela mostra o andar e o tempo). Corrida contra o relógio, com fantasmas
-# pesados parados nos degraus. A porta de saída só aparece no 4º andar (antes é parede).
+# Gera levels/escada.tscn: a escada do prédio (fim da Fase 2), vista de cima, do térreo (0) ao 4º andar.
+# É o vão da escada: duas colunas de lances lado a lado (A e B), com uma parede no meio.
+# O jogador sobe um lance; no alto, a câmera gira 180° e ele aparece no pé do próximo lance, na outra coluna.
+# A coluna do lado mostra o lance de onde ele saiu, desabando. 8 lances = 2 por andar. Sem fantasmas.
+# Os obstáculos de cada lance (barricada, degrau quebrado, lance pela metade, lâmpada, extintor) são criados
+# pelo roteiro (levels/Escada.cs, tabela Lances), porque cada coluna muda de lance a cada giro.
 # Uso: python3 tools/levelgen/gen_escada.py levels/escada.tscn
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 from lib import Level, T, v, col, px, root_node, CONCRETE
 
 L = Level()
-W = 3                                   # largura do anel (tiles)
-X0, Y0, X1, Y1 = 2, 5, 20, 19           # contorno de fora do anel
-for (a, b, c, d) in [(X0, Y0, X1, Y0 + W - 1), (X0, Y1 - W + 1, X1, Y1),
-                     (X0, Y0, X0 + W - 1, Y1), (X1 - W + 1, Y0, X1, Y1)]:
-    L.add_floor(a, b, c, d)
-L.add_floor(2, 20, 4, 22)               # patamar de entrada (embaixo, à esquerda)
-L.add_floor(10, 4, 12, 4)               # porta de saída (em cima)
-L.add_floor(9, 1, 13, 3)                # patamar do 4º andar
+TOP, FOOT = 3, 17              # linhas dos lances (de cima para baixo)
+A, B = (0, 2), (4, 6)          # colunas dos lances
+L.add_floor(A[0], TOP, A[1], FOOT)            # lance da coluna A
+L.add_floor(B[0], TOP, B[1], FOOT)            # lance da coluna B
+L.add_floor(A[0], FOOT + 1, A[1], FOOT + 3)   # patamar do térreo (começo), embaixo da coluna A
+L.add_floor(B[0], TOP - 1, B[1], TOP - 1)     # porta do 4º andar (no alto da coluna B)
+EXIT = (B[0], TOP - 4, B[1], TOP - 2)         # patamar do 4º andar, atrás da porta
+L.add_floor(*EXIT)
 L.build_walls()
 
 L.res('Script', 'res://levels/Escada.cs', 'escada')
 for name, path in [('player', 'player/player'), ('hud', 'hud/hud'), ('message_screen', 'message_screen/message_screen'),
-                   ('room', 'room/room'), ('area_trigger', 'area_trigger/area_trigger'), ('door', 'door/door')]:
+                   ('area_trigger', 'area_trigger/area_trigger'), ('door', 'door/door')]:
     L.res('PackedScene', f'res://objects/{path}.tscn', name)
-L.tile_layers()
+for name, path in [('night_overlay', 'night/night_overlay'), ('flicker_light', 'night/flicker_light'),
+                   ('rain', 'weather/rain')]:
+    L.res('PackedScene', f'res://objects/{path}.tscn', name)
+L.res('Texture2D', 'res://sprites/lights/tubo.png', 'light_tubo')
+L.res('Script', 'res://objects/escada/CollapseFloor.cs', 'collapse')
+L.res('AudioStream', 'res://sounds/escada/desabamento.wav', 'som_desabamento')
 
-# vão da escada (centro): só decoração escura
-L.node("Vao", type="ColorRect", props={"z_index": "-5", "offset_left": f"{(X0 + W) * T}.0",
-       "offset_top": f"{(Y0 + W) * T}.0", "offset_right": f"{(X1 - W + 1) * T}.0",
-       "offset_bottom": f"{(Y1 - W + 1) * T}.0", "mouse_filter": "2", "color": col(0.05, 0.06, 0.07, 1)})
-L.prop("PlacaVao", ".", 11 * T + 32, 13 * T, 360, 40, col(0, 0, 0, 0), "vão da escada", font=18,
-       text_color=col(0.35, 0.4, 0.38), solid=False, z=1)
+# ---------- arte: degraus com ranhuras nos lances, granito nos patamares, parede interna ----------
+from tiling import h
+floor_mat = {c: ("rampa" if TOP <= c[1] <= FOOT else "granito") for c in L.floor}
 
-# sala única: fantasmas surgem sem parar enquanto o jogador sobe
-L.node("Subida", inst="room", props={"position": v(X0 * T, Y0 * T), "Size": v((X1 - X0 + 1) * T, (Y1 - Y0 + 1) * T),
-       "Waves": "0", "SurviveTime": "9999.0", "SurviveSpawnInterval": "1.5", "SurviveMaxAlive": "5",
-       "SpawnAnywhere": "true", "EnemyHealthScale": "0.6", "EnemySpeedScale": "1.1",
-       "RespawnPoint": 'NodePath("Respawn")'}, node_paths=["RespawnPoint"])
-L.node("Respawn", "Subida", type="Marker2D", props={"position": v(3 * T + 32 - X0 * T, 21 * T + 32 - Y0 * T)})
 
-# marcos da volta, na ordem em que se sobe: esquerda -> cima -> direita -> baixo
-L.node("Marcos", type="Node2D")
-for i, (x, y, w, h) in enumerate([(X0, 11, W, 2), (10, Y0, 3, W), (X1 - W + 1, 11, W, 2), (10, Y1 - W + 1, 3, W)]):
-    L.node(f"Marco{i}", "Marcos", inst="area_trigger", props={"position": v(x * T, y * T), "Size": v(w * T, h * T),
-           "Color": col(0.3, 1, 0.55, 0.06)})
+def deco_rule(c, style, below):
+    r = h("decoE", *c)
+    if r < 0.10: return "saida"
+    if r < 0.28: return "rachada"
+    if r < 0.48: return "mofo"
+    return None
 
-# setas pintadas no chão indicando o sentido da subida
-for i, (x, y, t) in enumerate([(3, 15, "↑"), (3, 9, "↑"), (6, 6, "→"), (16, 6, "→"), (19, 9, "↓"), (19, 15, "↓"),
-                               (16, 18, "←"), (6, 18, "←")]):
-    L.prop(f"Seta{i}", ".", x * T + 32, y * T + 48, 64, 64, col(0, 0, 0, 0), t, font=40,
-           text_color=col(0.55, 0.5, 0.42, 0.8), solid=False, z=-4)
 
-# fantasmas pesados parados nos degraus (um por lado, na faixa do meio)
-L.node("Bloqueios", type="Node2D")
-for i, (x, y) in enumerate([(3.5, 8.5), (15.5, 6.5), (19.5, 15.5), (7.5, 18.5)]):
-    L.node(f"Bloqueio{i}", "Bloqueios", type="Marker2D", props={"position": v(x * T, y * T + 32)})
+DECALS = [(lambda m: True, [("rachadura", 3, 0.08), ("poca", 2, 0.04), ("papel", 2, 0.03), ("mancha", 2, 0.03)])]
+L.tiled_layers("fase1", floor_mat, deco_rule, style_rule=lambda c: "interno", decal_rules=DECALS)
+L.node("Fundo", type="ColorRect", props={"z_index": "-12", "offset_left": f"{-14 * T}.0", "offset_top": f"{-14 * T}.0",
+       "offset_right": f"{21 * T}.0", "offset_bottom": f"{35 * T}.0", "mouse_filter": "2",
+       "color": col(0.03, 0.035, 0.045, 1)})
 
-# saída do 4º andar: parece parede até chegar lá; o patamar fica coberto
-L.node("PortaSaida", inst="door", props={"position": v(11 * T + 32, 5 * T), "Size": v(3 * T, 64), "StartsLocked": "true",
+# número do andar pintado no chão (o roteiro troca a figura e a coluna a cada andar) e o "4" no patamar final
+L.prop("NumeroAndar", ".", 1.5 * T, (FOOT + 1) * T - 12, 96, 112, col(0, 0, 0, 0), solid=False, sprite="andar0",
+       folder="props/escada", z=-7)
+L.prop("Andar4", ".", 5.5 * T, (EXIT[3] + 1) * T - 8, 96, 112, col(0, 0, 0, 0), solid=False, sprite="andar4",
+       folder="props/escada", z=-7)
+
+# no alto de cada coluna, no lugar da parede: os degraus seguem para cima no escuro (sensação de seguir em frente)
+for name, cx in (("ContinuacaoA", 1.5), ("ContinuacaoB", 5.5)):
+    L.prop(name, ".", cx * T, TOP * T + 8, 3 * T, 160, col(0, 0, 0, 0), solid=False, sprite="continuacao",
+           folder="props/escada")
+
+# ---------- o que desaba, os obstáculos (criados pelo roteiro), começo e saída ----------
+L.node("Desabamento", type="Node2D", props={"z_index": "-6", "script": 'ExtResource("collapse")'})
+L.node("Obstaculos", type="Node2D", props={"y_sort_enabled": "true"})
+L.node("Inicio", inst="area_trigger", props={"position": v(A[0] * T, FOOT * T), "Size": v(3 * T, T),
+       "Color": col(0, 0, 0, 0)})
+L.prop("PortaEscadaEntrada", ".", (A[1] + 1) * T - 24, (FOOT + 4) * T, 48, 3 * T, col(0.5, 0.42, 0.3), depth=3 * T,
+       solid=False, sprite="porta_escada", flip=True)
+L.node("PortaSaida", inst="door", props={"position": v(5.5 * T, TOP * T), "Size": v(3 * T, 64), "StartsLocked": "true",
        "WallStyle": "true", "Color": col(0.9, 0.75, 0.3, 1)})
-L.node("CoberturaSaida", type="ColorRect", props={"z_index": "20", "offset_left": f"{8 * T}.0", "offset_top": "0.0",
-       "offset_right": f"{15 * T}.0", "offset_bottom": f"{4 * T}.0", "mouse_filter": "2",
-       "color": col(0.149, 0.161, 0.188, 1)})
-L.node("Saida", inst="area_trigger", props={"position": v(9 * T, 1 * T), "Size": v(5 * T, 3 * T), "Text": '"4º ANDAR"'})
-L.prop("PlacaEntrada", ".", 3 * T + 32, 20 * T + 8, 220, 30, col(0, 0, 0, 0), "ESCADA", font=16,
-       text_color=col(0.95, 0.9, 0.6), solid=False, z=1)
+L.node("CoberturaSaida", type="ColorRect", props={"z_index": "20", "offset_left": f"{(EXIT[0] - 1) * T}.0",
+       "offset_top": f"{(EXIT[1] - 1) * T}.0", "offset_right": f"{(EXIT[2] + 2) * T}.0",
+       "offset_bottom": f"{(TOP - 1) * T}.0", "mouse_filter": "2", "color": col(0.03, 0.035, 0.045, 1)})
+L.node("Saida", inst="area_trigger", props={"position": v(EXIT[0] * T, EXIT[1] * T),
+       "Size": v((EXIT[2] - EXIT[0] + 1) * T, (EXIT[3] - EXIT[1] + 1) * T), "Text": '"4º ANDAR"'})
 
-L.node("Player", inst="player", props={"position": v(3 * T + 32, 21 * T + 48), "StartWithAllWeapons": "false"})
+# ---------- noite: luzes de emergência ao longo dos lances e a chuva lá fora ----------
+L.node("Noite", type="CanvasModulate", groups=["night"], props={"color": col(0.11, 0.12, 0.2, 1)})
+L.node("NightOverlay", inst="night_overlay")
+L.node("Chuva", inst="rain", props={"AlwaysInside": "true", "LightningInterval": v(12, 26)})
+L.node("Luzes", type="Node2D")
+n = 0
+for cx in (1.5, 5.5):
+    for ty in (5, 10, 15):
+        n += 1
+        L.node(f"Emergencia{n}", "Luzes", inst="flicker_light", props={
+            "position": v(cx * T, ty * T), "color": col(1, 0.82, 0.55), "texture_scale": "1.9", "BaseEnergy": "0.8",
+            "Behavior": str(1 if n % 2 else 2), "Seed": str(500 + n), "texture": 'ExtResource("light_tubo")'})
+L.node("Terreo", "Luzes", inst="flicker_light", props={"position": v(1.5 * T, 19.5 * T), "color": col(1, 0.82, 0.55),
+       "texture_scale": "1.6", "BaseEnergy": "0.8", "Behavior": "0", "Seed": "520", "texture": 'ExtResource("light_tubo")'})
+L.node("LuzSaida", "Luzes", inst="flicker_light", props={"position": v(5.5 * T, (TOP - 2) * T),
+       "color": col(0.2, 1, 0.45), "texture_scale": "1.2", "BaseEnergy": "0.8", "Behavior": "0", "Seed": "540"})
+
+L.node("Player", inst="player", props={"position": v(1.5 * T, 19.5 * T + 16), "StartWithAllWeapons": "false"})
 L.node("Hud", inst="hud", props={"Player": 'NodePath("../Player")'}, node_paths=["Player"])
 L.node("MessageScreen", inst="message_screen")
 
-paths = {"Player": "Player", "Hud": "Hud", "Screen": "MessageScreen", "Subida": "Subida", "Marcos": "Marcos",
-         "Bloqueios": "Bloqueios", "PortaSaida": "PortaSaida", "Saida": "Saida", "CoberturaSaida": "CoberturaSaida"}
-L.write(sys.argv[1], root_node("Escada", "escada", paths))
-print("chão", len(L.floor))
+paths = {"Player": "Player", "Hud": "Hud", "Screen": "MessageScreen", "PortaSaida": "PortaSaida", "Saida": "Saida",
+         "Inicio": "Inicio", "CoberturaSaida": "CoberturaSaida", "Desabamento": "Desabamento", "Obstaculos": "Obstaculos",
+         "NumeroAndar": "NumeroAndar", "ContinuacaoB": "ContinuacaoB"}
+root = root_node("Escada", "escada", paths)
+root += f"\nColunaA = {1.5 * T:g}\nColunaB = {5.5 * T:g}\nFaixa = {3 * T:g}\nPeDoLance = {(FOOT + 1) * T:g}"
+root += f"\nAltoDoLance = {TOP * T:g}\nFundoDoTerreo = {(FOOT + 4) * T:g}"
+root += '\nSomDesabamento = ExtResource("som_desabamento")'
+L.write(sys.argv[1], root)
+print("chão", len(L.floor), "lance", FOOT - TOP + 1, "tiles")

@@ -6,7 +6,7 @@ Jogo de ação e tiro top-down feito em **Godot 4.7.2 (.NET / C#)** para a disci
 
 > Estado atual: **Fases 1 e 2 completas em cinza**.
 > - Fase 1: Entrada → Portaria → RU → Corredor → Cantina (Tia da Cantina) → Elevador.
-> - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (chave) → caixas (livro) → devolução → Bibliotecária (surda, enxerga pela luz: furtividade e caçada) → escada contra o relógio (voltas em torno do vão, fantasmas pesados parados nos degraus) até o 4º andar.
+> - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (chave) → caixas (livro) → devolução → Bibliotecária (surda, enxerga pela luz: furtividade e caçada) → escada desabando atrás de você (8 lances do térreo ao 4º andar, com giro de câmera a cada lance; barricadas, degraus quebrados, lâmpadas caindo e extintores rolando).
 > - Arte: a **Fase 1 já tem pixel art** baseada no campus de verdade (tour 360° da UNIFESP SJC), à noite e abandonada, com lanterna e luzes piscando. Veja `tools/art/README.md`.
 > - Fase 3 (4º andar, laboratórios): esboço da planta (`levels/fase_3.tscn`, atalho F4); lutas e roteiro vêm depois. Salas de teste (`levels/test_rooms*.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
 
@@ -54,7 +54,7 @@ levels/fase_1.tscn      Fase 1 (é a que abre com F5)
 levels/Fase1.cs         roteiro da Fase 1: objetivos e o que destranca o quê
 levels/fase_2.tscn      Fase 2 (Biblioteca); para testar direto, abra a cena e aperte F6
 levels/Fase2.cs         roteiro da Fase 2
-levels/escada.tscn      escada (fim da Fase 2): uma volta em torno do vão; cada volta = 1 andar; tempo limite
+levels/escada.tscn      escada (fim da Fase 2): vão com 2 colunas de lances, 8 lances (2 por andar), o chão desaba atrás
 levels/fase_3.tscn      Fase 3 (4º andar): corredor, laboratórios, hall do elevador e convivência
 levels/Fase3.cs         roteiro da Fase 3
 levels/Escada.cs        roteiro da escada
@@ -80,6 +80,7 @@ objects/                uma pasta por objeto do jogo
   boss/                 chefe (um código só; cada chefe é um .tres, ex.: tia_cantina.tres)
   librarian/            Bibliotecária (lanterna, caçada) e as luminárias das salas de estudo
   decor/                assinaturas dos alunos nas paredes (Fase 2)
+  escada/               escada: desabamento, barricada, lâmpada caindo e extintor rolando
   game_state/           o que passa de uma fase para a outra (armas, pontos, tempo)
   night/                noite: luzes que piscam e a camada de tela (vinheta, granulado, neblina)
 tools/levelgen/         geradores das plantas (Python). As cenas levels/*.tscn são geradas por eles;

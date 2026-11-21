@@ -4,199 +4,141 @@
 [ext_resource type="PackedScene" path="res://objects/player/player.tscn" id="player"]
 [ext_resource type="PackedScene" path="res://objects/hud/hud.tscn" id="hud"]
 [ext_resource type="PackedScene" path="res://objects/message_screen/message_screen.tscn" id="message_screen"]
-[ext_resource type="PackedScene" path="res://objects/room/room.tscn" id="room"]
 [ext_resource type="PackedScene" path="res://objects/area_trigger/area_trigger.tscn" id="area_trigger"]
 [ext_resource type="PackedScene" path="res://objects/door/door.tscn" id="door"]
-[ext_resource type="TileSet" path="res://tilesets/placeholder_tileset.tres" id="tiles"]
-[ext_resource type="TileSet" path="res://tilesets/placeholder_tileset_outer.tres" id="tiles_outer"]
+[ext_resource type="PackedScene" path="res://objects/night/night_overlay.tscn" id="night_overlay"]
+[ext_resource type="PackedScene" path="res://objects/night/flicker_light.tscn" id="flicker_light"]
+[ext_resource type="PackedScene" path="res://objects/weather/rain.tscn" id="rain"]
+[ext_resource type="Texture2D" path="res://sprites/lights/tubo.png" id="light_tubo"]
+[ext_resource type="Script" path="res://objects/escada/CollapseFloor.cs" id="collapse"]
+[ext_resource type="AudioStream" path="res://sounds/escada/desabamento.wav" id="som_desabamento"]
+[ext_resource type="TileSet" path="res://tilesets/fase1_tileset.tres" id="tiles"]
+[ext_resource type="TileSet" path="res://tilesets/fase1_tileset_outer.tres" id="tiles_outer"]
 [ext_resource type="PackedScene" path="res://objects/prop/prop.tscn" id="prop"]
+[ext_resource type="Texture2D" path="res://sprites/props/escada/andar0.png" id="tex_props_escada_andar0"]
+[ext_resource type="Texture2D" path="res://sprites/props/escada/andar4.png" id="tex_props_escada_andar4"]
+[ext_resource type="Texture2D" path="res://sprites/props/escada/continuacao.png" id="tex_props_escada_continuacao"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase2/porta_escada.png" id="tex_props_fase2_porta_escada"]
 
-[node name="Escada" type="Node2D" node_paths=PackedStringArray("Player", "Hud", "Screen", "Subida", "Marcos", "Bloqueios", "PortaSaida", "Saida", "CoberturaSaida")]
+[node name="Escada" type="Node2D" node_paths=PackedStringArray("Player", "Hud", "Screen", "PortaSaida", "Saida", "Inicio", "CoberturaSaida", "Desabamento", "Obstaculos", "NumeroAndar", "ContinuacaoB")]
 y_sort_enabled = true
 script = ExtResource("escada")
 Player = NodePath("Player")
 Hud = NodePath("Hud")
 Screen = NodePath("MessageScreen")
-Subida = NodePath("Subida")
-Marcos = NodePath("Marcos")
-Bloqueios = NodePath("Bloqueios")
 PortaSaida = NodePath("PortaSaida")
 Saida = NodePath("Saida")
+Inicio = NodePath("Inicio")
 CoberturaSaida = NodePath("CoberturaSaida")
+Desabamento = NodePath("Desabamento")
+Obstaculos = NodePath("Obstaculos")
+NumeroAndar = NodePath("NumeroAndar")
+ContinuacaoB = NodePath("ContinuacaoB")
+ColunaA = 96
+ColunaB = 352
+Faixa = 192
+PeDoLance = 1152
+AltoDoLance = 192
+FundoDoTerreo = 1344
+SomDesabamento = ExtResource("som_desabamento")
 
 [node name="Floor" type="TileMapLayer" parent="." groups=["floor"]]
 z_index = -10
 texture_filter = 1
 scale = Vector2(4, 4)
-tile_map_data = PackedByteArray("AAAJAAEAAAAAAAAAAAAKAAEAAAABAAAAAAALAAEAAAAAAAAAAAAMAAEAAAABAAAAAAANAAEAAAAAAAAAAAAJAAIAAAABAAAAAAAKAAIAAAAAAAAAAAALAAIAAAABAAAAAAAMAAIAAAAAAAAAAAANAAIAAAABAAAAAAAJAAMAAAAAAAAAAAAKAAMAAAABAAAAAAALAAMAAAAAAAAAAAAMAAMAAAABAAAAAAANAAMAAAAAAAAAAAAKAAQAAAAAAAAAAAALAAQAAAABAAAAAAAMAAQAAAAAAAAAAAACAAUAAAABAAAAAAADAAUAAAAAAAAAAAAEAAUAAAABAAAAAAAFAAUAAAAAAAAAAAAGAAUAAAABAAAAAAAHAAUAAAAAAAAAAAAIAAUAAAABAAAAAAAJAAUAAAAAAAAAAAAKAAUAAAABAAAAAAALAAUAAAAAAAAAAAAMAAUAAAABAAAAAAANAAUAAAAAAAAAAAAOAAUAAAABAAAAAAAPAAUAAAAAAAAAAAAQAAUAAAABAAAAAAARAAUAAAAAAAAAAAASAAUAAAABAAAAAAATAAUAAAAAAAAAAAAUAAUAAAABAAAAAAACAAYAAAAAAAAAAAADAAYAAAABAAAAAAAEAAYAAAAAAAAAAAAFAAYAAAABAAAAAAAGAAYAAAAAAAAAAAAHAAYAAAABAAAAAAAIAAYAAAAAAAAAAAAJAAYAAAABAAAAAAAKAAYAAAAAAAAAAAALAAYAAAABAAAAAAAMAAYAAAAAAAAAAAANAAYAAAABAAAAAAAOAAYAAAAAAAAAAAAPAAYAAAABAAAAAAAQAAYAAAAAAAAAAAARAAYAAAABAAAAAAASAAYAAAAAAAAAAAATAAYAAAABAAAAAAAUAAYAAAAAAAAAAAACAAcAAAABAAAAAAADAAcAAAAAAAAAAAAEAAcAAAABAAAAAAAFAAcAAAAAAAAAAAAGAAcAAAABAAAAAAAHAAcAAAAAAAAAAAAIAAcAAAABAAAAAAAJAAcAAAAAAAAAAAAKAAcAAAABAAAAAAALAAcAAAAAAAAAAAAMAAcAAAABAAAAAAANAAcAAAAAAAAAAAAOAAcAAAABAAAAAAAPAAcAAAAAAAAAAAAQAAcAAAABAAAAAAARAAcAAAAAAAAAAAASAAcAAAABAAAAAAATAAcAAAAAAAAAAAAUAAcAAAABAAAAAAACAAgAAAAAAAAAAAADAAgAAAABAAAAAAAEAAgAAAAAAAAAAAASAAgAAAAAAAAAAAATAAgAAAABAAAAAAAUAAgAAAAAAAAAAAACAAkAAAABAAAAAAADAAkAAAAAAAAAAAAEAAkAAAABAAAAAAASAAkAAAABAAAAAAATAAkAAAAAAAAAAAAUAAkAAAABAAAAAAACAAoAAAAAAAAAAAADAAoAAAABAAAAAAAEAAoAAAAAAAAAAAASAAoAAAAAAAAAAAATAAoAAAABAAAAAAAUAAoAAAAAAAAAAAACAAsAAAABAAAAAAADAAsAAAAAAAAAAAAEAAsAAAABAAAAAAASAAsAAAABAAAAAAATAAsAAAAAAAAAAAAUAAsAAAABAAAAAAACAAwAAAAAAAAAAAADAAwAAAABAAAAAAAEAAwAAAAAAAAAAAASAAwAAAAAAAAAAAATAAwAAAABAAAAAAAUAAwAAAAAAAAAAAACAA0AAAABAAAAAAADAA0AAAAAAAAAAAAEAA0AAAABAAAAAAASAA0AAAABAAAAAAATAA0AAAAAAAAAAAAUAA0AAAABAAAAAAACAA4AAAAAAAAAAAADAA4AAAABAAAAAAAEAA4AAAAAAAAAAAASAA4AAAAAAAAAAAATAA4AAAABAAAAAAAUAA4AAAAAAAAAAAACAA8AAAABAAAAAAADAA8AAAAAAAAAAAAEAA8AAAABAAAAAAASAA8AAAABAAAAAAATAA8AAAAAAAAAAAAUAA8AAAABAAAAAAACABAAAAAAAAAAAAADABAAAAABAAAAAAAEABAAAAAAAAAAAAASABAAAAAAAAAAAAATABAAAAABAAAAAAAUABAAAAAAAAAAAAACABEAAAABAAAAAAADABEAAAAAAAAAAAAEABEAAAABAAAAAAAFABEAAAAAAAAAAAAGABEAAAABAAAAAAAHABEAAAAAAAAAAAAIABEAAAABAAAAAAAJABEAAAAAAAAAAAAKABEAAAABAAAAAAALABEAAAAAAAAAAAAMABEAAAABAAAAAAANABEAAAAAAAAAAAAOABEAAAABAAAAAAAPABEAAAAAAAAAAAAQABEAAAABAAAAAAARABEAAAAAAAAAAAASABEAAAABAAAAAAATABEAAAAAAAAAAAAUABEAAAABAAAAAAACABIAAAAAAAAAAAADABIAAAABAAAAAAAEABIAAAAAAAAAAAAFABIAAAABAAAAAAAGABIAAAAAAAAAAAAHABIAAAABAAAAAAAIABIAAAAAAAAAAAAJABIAAAABAAAAAAAKABIAAAAAAAAAAAALABIAAAABAAAAAAAMABIAAAAAAAAAAAANABIAAAABAAAAAAAOABIAAAAAAAAAAAAPABIAAAABAAAAAAAQABIAAAAAAAAAAAARABIAAAABAAAAAAASABIAAAAAAAAAAAATABIAAAABAAAAAAAUABIAAAAAAAAAAAACABMAAAABAAAAAAADABMAAAAAAAAAAAAEABMAAAABAAAAAAAFABMAAAAAAAAAAAAGABMAAAABAAAAAAAHABMAAAAAAAAAAAAIABMAAAABAAAAAAAJABMAAAAAAAAAAAAKABMAAAABAAAAAAALABMAAAAAAAAAAAAMABMAAAABAAAAAAANABMAAAAAAAAAAAAOABMAAAABAAAAAAAPABMAAAAAAAAAAAAQABMAAAABAAAAAAARABMAAAAAAAAAAAASABMAAAABAAAAAAATABMAAAAAAAAAAAAUABMAAAABAAAAAAACABQAAAAAAAAAAAADABQAAAABAAAAAAAEABQAAAAAAAAAAAACABUAAAABAAAAAAADABUAAAAAAAAAAAAEABUAAAABAAAAAAACABYAAAAAAAAAAAADABYAAAABAAAAAAAEABYAAAAAAAAAAAA=")
+tile_map_data = PackedByteArray("AAAEAP//AAAAAAYAAAAFAP//AAAAAAYAAAAGAP//AAAAAAYAAAAEAAAAAAAAAAYAAAAFAAAAAAAAAAYAAAAGAAAAAAAAAAYAAAAEAAEAAAADAAYAAAAFAAEAAAACAAYAAAAGAAEAAAABAAYAAAAEAAIAAAABAAYAAAAFAAIAAAABAAYAAAAGAAIAAAADAAYAAAAAAAMAAAAFABMAAAABAAMAAAAFABMAAAACAAMAAAAFABMAAAAEAAMAAAAEABMAAAAFAAMAAAAFABMAAAAGAAMAAAAEABMAAAAAAAQAAAAFABMAAAABAAQAAAAFABMAAAACAAQAAAAEABMAAAAEAAQAAAAEABMAAAAFAAQAAAAFABMAAAAGAAQAAAAFABMAAAAAAAUAAAAFABMAAAABAAUAAAAFABMAAAACAAUAAAAEABMAAAAEAAUAAAAFABMAAAAFAAUAAAAFABMAAAAGAAUAAAAFABMAAAAAAAYAAAAFABMAAAABAAYAAAAFABMAAAACAAYAAAAFABMAAAAEAAYAAAAFABMAAAAFAAYAAAAFABMAAAAGAAYAAAAFABMAAAAAAAcAAAAFABMAAAABAAcAAAAEABMAAAACAAcAAAAFABMAAAAEAAcAAAAFABMAAAAFAAcAAAAFABMAAAAGAAcAAAAFABMAAAAAAAgAAAAFABMAAAABAAgAAAAEABMAAAACAAgAAAAFABMAAAAEAAgAAAAEABMAAAAFAAgAAAAFABMAAAAGAAgAAAAFABMAAAAAAAkAAAAFABMAAAABAAkAAAAEABMAAAACAAkAAAAEABMAAAAEAAkAAAAEABMAAAAFAAkAAAAFABMAAAAGAAkAAAAEABMAAAAAAAoAAAAEABMAAAABAAoAAAAEABMAAAACAAoAAAAFABMAAAAEAAoAAAAFABMAAAAFAAoAAAAEABMAAAAGAAoAAAAFABMAAAAAAAsAAAAEABMAAAABAAsAAAAEABMAAAACAAsAAAAFABMAAAAEAAsAAAAEABMAAAAFAAsAAAAEABMAAAAGAAsAAAAEABMAAAAAAAwAAAAFABMAAAABAAwAAAAFABMAAAACAAwAAAAFABMAAAAEAAwAAAAEABMAAAAFAAwAAAAFABMAAAAGAAwAAAAFABMAAAAAAA0AAAAEABMAAAABAA0AAAAFABMAAAACAA0AAAAFABMAAAAEAA0AAAAFABMAAAAFAA0AAAAFABMAAAAGAA0AAAAFABMAAAAAAA4AAAAEABMAAAABAA4AAAAFABMAAAACAA4AAAAFABMAAAAEAA4AAAAEABMAAAAFAA4AAAAFABMAAAAGAA4AAAAFABMAAAAAAA8AAAAEABMAAAABAA8AAAAEABMAAAACAA8AAAAFABMAAAAEAA8AAAAEABMAAAAFAA8AAAAEABMAAAAGAA8AAAAFABMAAAAAABAAAAAEABMAAAABABAAAAAFABMAAAACABAAAAAFABMAAAAEABAAAAAFABMAAAAFABAAAAAFABMAAAAGABAAAAAEABMAAAAAABEAAAAFABMAAAABABEAAAAFABMAAAACABEAAAAFABMAAAAEABEAAAAFABMAAAAFABEAAAAFABMAAAAGABEAAAAEABMAAAAAABIAAAAAAAYAAAABABIAAAAAAAYAAAACABIAAAAAAAYAAAAAABMAAAABAAYAAAABABMAAAAAAAYAAAACABMAAAAAAAYAAAAAABQAAAABAAYAAAABABQAAAAAAAYAAAACABQAAAAAAAYAAAA=")
+tile_set = ExtResource("tiles")
+
+[node name="Sombras" type="TileMapLayer" parent="."]
+z_index = -9
+texture_filter = 1
+scale = Vector2(4, 4)
+tile_map_data = PackedByteArray("AAAEAP//AAAFAA8AAAAFAP//AAADAA8AAAAGAP//AAAEAA8AAAAEAAAAAAABAA8AAAAGAAAAAAAAAA8AAAAEAAEAAAABAA8AAAAGAAEAAAAAAA8AAAAEAAIAAAABAA8AAAAGAAIAAAAAAA8AAAAAAAMAAAAFAA8AAAABAAMAAAADAA8AAAACAAMAAAAEAA8AAAAEAAMAAAABAA8AAAAGAAMAAAAAAA8AAAAAAAQAAAABAA8AAAACAAQAAAAAAA8AAAAEAAQAAAABAA8AAAAGAAQAAAAAAA8AAAAAAAUAAAABAA8AAAACAAUAAAAAAA8AAAAEAAUAAAABAA8AAAAGAAUAAAAAAA8AAAAAAAYAAAABAA8AAAACAAYAAAAAAA8AAAAEAAYAAAABAA8AAAAGAAYAAAAAAA8AAAAAAAcAAAABAA8AAAACAAcAAAAAAA8AAAAEAAcAAAABAA8AAAAGAAcAAAAAAA8AAAAAAAgAAAABAA8AAAACAAgAAAAAAA8AAAAEAAgAAAABAA8AAAAGAAgAAAAAAA8AAAAAAAkAAAABAA8AAAACAAkAAAAAAA8AAAAEAAkAAAABAA8AAAAGAAkAAAAAAA8AAAAAAAoAAAABAA8AAAACAAoAAAAAAA8AAAAEAAoAAAABAA8AAAAGAAoAAAAAAA8AAAAAAAsAAAABAA8AAAACAAsAAAAAAA8AAAAEAAsAAAABAA8AAAAGAAsAAAAAAA8AAAAAAAwAAAABAA8AAAACAAwAAAAAAA8AAAAEAAwAAAABAA8AAAAGAAwAAAAAAA8AAAAAAA0AAAABAA8AAAACAA0AAAAAAA8AAAAEAA0AAAABAA8AAAAGAA0AAAAAAA8AAAAAAA4AAAABAA8AAAACAA4AAAAAAA8AAAAEAA4AAAABAA8AAAAGAA4AAAAAAA8AAAAAAA8AAAABAA8AAAACAA8AAAAAAA8AAAAEAA8AAAABAA8AAAAGAA8AAAAAAA8AAAAAABAAAAABAA8AAAACABAAAAAAAA8AAAAEABAAAAABAA8AAAAGABAAAAAAAA8AAAAAABEAAAABAA8AAAACABEAAAAAAA8AAAAEABEAAAABAA8AAAAGABEAAAAAAA8AAAAAABIAAAABAA8AAAACABIAAAAAAA8AAAAAABMAAAABAA8AAAACABMAAAAAAA8AAAAAABQAAAABAA8AAAACABQAAAAAAA8AAAA=")
+tile_set = ExtResource("tiles")
+
+[node name="Abandono" type="TileMapLayer" parent="."]
+z_index = -8
+texture_filter = 1
+scale = Vector2(4, 4)
+tile_map_data = PackedByteArray("AAAGAP//AAAAABEAAAACAAMAAAAJABEAAAAAAAUAAAABABEAAAAGAAUAAAAAABEAAAAAAAYAAAAKABEAAAAEAAYAAAADABEAAAAAAAcAAAACABEAAAAGAAcAAAACABEAAAAFAAgAAAABABEAAAAFAAkAAAAOABEAAAAGAAkAAAABABEAAAACAAoAAAAKABEAAAAEAAsAAAAEABEAAAACAA0AAAAOABEAAAAAAA4AAAABABEAAAAAABAAAAAKABEAAAACABAAAAADABEAAAAFABAAAAABABEAAAAGABAAAAAEABEAAAAGABEAAAAKABEAAAACABIAAAABABEAAAA=")
 tile_set = ExtResource("tiles")
 
 [node name="Walls" type="TileMapLayer" parent="." groups=["obstacles"]]
 y_sort_enabled = true
 texture_filter = 1
 scale = Vector2(4, 4)
-tile_map_data = PackedByteArray("AAAJAAQAAAADAAAAAAANAAQAAAADAAAAAAAFAAgAAAACAAAAAAAGAAgAAAACAAAAAAAHAAgAAAACAAAAAAAIAAgAAAACAAAAAAAJAAgAAAACAAAAAAAKAAgAAAACAAAAAAALAAgAAAACAAAAAAAMAAgAAAACAAAAAAANAAgAAAACAAAAAAAOAAgAAAACAAAAAAAPAAgAAAACAAAAAAAQAAgAAAACAAAAAAARAAgAAAACAAAAAAAFAAkAAAACAAAAAAARAAkAAAACAAAAAAAFAAoAAAACAAAAAAARAAoAAAACAAAAAAAFAAsAAAACAAAAAAARAAsAAAACAAAAAAAFAAwAAAACAAAAAAARAAwAAAACAAAAAAAFAA0AAAACAAAAAAARAA0AAAACAAAAAAAFAA4AAAACAAAAAAARAA4AAAACAAAAAAAFAA8AAAACAAAAAAARAA8AAAACAAAAAAAFABAAAAADAAAAAAAGABAAAAADAAAAAAAHABAAAAADAAAAAAAIABAAAAADAAAAAAAJABAAAAADAAAAAAAKABAAAAADAAAAAAALABAAAAADAAAAAAAMABAAAAADAAAAAAANABAAAAADAAAAAAAOABAAAAADAAAAAAAPABAAAAADAAAAAAAQABAAAAADAAAAAAARABAAAAADAAAAAAA=")
+tile_map_data = PackedByteArray("AAADAAMAAAAFAAkAAAADAAQAAAAFAAkAAAADAAUAAAAFAAkAAAADAAYAAAAFAAkAAAADAAcAAAAFAAkAAAADAAgAAAAFAAkAAAADAAkAAAAFAAkAAAADAAoAAAAFAAkAAAADAAsAAAAFAAkAAAADAAwAAAAFAAkAAAADAA0AAAAFAAkAAAADAA4AAAAFAAkAAAADAA8AAAAFAAkAAAADABAAAAAFAAkAAAADABEAAAAFAAkAAAA=")
 tile_set = ExtResource("tiles")
 
 [node name="OuterWalls" type="TileMapLayer" parent="." groups=["obstacles", "outer_walls"]]
 y_sort_enabled = true
 texture_filter = 1
 scale = Vector2(4, 4)
-tile_map_data = PackedByteArray("AAAIAAAAAAACAAAAAAAJAAAAAAADAAAAAAAKAAAAAAADAAAAAAALAAAAAAADAAAAAAAMAAAAAAADAAAAAAANAAAAAAADAAAAAAAOAAAAAAACAAAAAAAIAAEAAAACAAAAAAAOAAEAAAACAAAAAAAIAAIAAAACAAAAAAAOAAIAAAACAAAAAAAIAAMAAAACAAAAAAAOAAMAAAACAAAAAAABAAQAAAACAAAAAAACAAQAAAADAAAAAAADAAQAAAADAAAAAAAEAAQAAAADAAAAAAAFAAQAAAADAAAAAAAGAAQAAAADAAAAAAAHAAQAAAADAAAAAAAIAAQAAAADAAAAAAAOAAQAAAADAAAAAAAPAAQAAAADAAAAAAAQAAQAAAADAAAAAAARAAQAAAADAAAAAAASAAQAAAADAAAAAAATAAQAAAADAAAAAAAUAAQAAAADAAAAAAAVAAQAAAACAAAAAAABAAUAAAACAAAAAAAVAAUAAAACAAAAAAABAAYAAAACAAAAAAAVAAYAAAACAAAAAAABAAcAAAACAAAAAAAVAAcAAAACAAAAAAABAAgAAAACAAAAAAAVAAgAAAACAAAAAAABAAkAAAACAAAAAAAVAAkAAAACAAAAAAABAAoAAAACAAAAAAAVAAoAAAACAAAAAAABAAsAAAACAAAAAAAVAAsAAAACAAAAAAABAAwAAAACAAAAAAAVAAwAAAACAAAAAAABAA0AAAACAAAAAAAVAA0AAAACAAAAAAABAA4AAAACAAAAAAAVAA4AAAACAAAAAAABAA8AAAACAAAAAAAVAA8AAAACAAAAAAABABAAAAACAAAAAAAVABAAAAACAAAAAAABABEAAAACAAAAAAAVABEAAAACAAAAAAABABIAAAACAAAAAAAVABIAAAACAAAAAAABABMAAAACAAAAAAAVABMAAAACAAAAAAABABQAAAACAAAAAAAFABQAAAACAAAAAAAGABQAAAACAAAAAAAHABQAAAACAAAAAAAIABQAAAACAAAAAAAJABQAAAACAAAAAAAKABQAAAACAAAAAAALABQAAAACAAAAAAAMABQAAAACAAAAAAANABQAAAACAAAAAAAOABQAAAACAAAAAAAPABQAAAACAAAAAAAQABQAAAACAAAAAAARABQAAAACAAAAAAASABQAAAACAAAAAAATABQAAAACAAAAAAAUABQAAAACAAAAAAAVABQAAAACAAAAAAABABUAAAACAAAAAAAFABUAAAACAAAAAAABABYAAAACAAAAAAAFABYAAAACAAAAAAABABcAAAACAAAAAAACABcAAAACAAAAAAADABcAAAACAAAAAAAEABcAAAACAAAAAAAFABcAAAACAAAAAAA=")
+tile_map_data = PackedByteArray("AAADAP7/AAAGAAkAAAAEAP7/AAADAAwAAAAFAP7/AAALAAwAAAAGAP7/AAAGAAwAAAAHAP7/AAAMAAkAAAADAP//AAAFAAkAAAAHAP//AAAFAAkAAAADAAAAAAAFAAkAAAAHAAAAAAAFAAkAAAADAAEAAAAFAAkAAAAHAAEAAAAFAAkAAAD//wIAAAAGAAkAAAAAAAIAAAALAAwAAAABAAIAAAADAAwAAAACAAIAAAADAAwAAAADAAIAAAANAAkAAAAHAAIAAAAFAAkAAAD//wMAAAAFAAkAAAAHAAMAAAAFAAkAAAD//wQAAAAFAAkAAAAHAAQAAAAFAAkAAAD//wUAAAAFAAkAAAAHAAUAAAAFAAkAAAD//wYAAAAFAAkAAAAHAAYAAAAFAAkAAAD//wcAAAAFAAkAAAAHAAcAAAAFAAkAAAD//wgAAAAFAAkAAAAHAAgAAAAFAAkAAAD//wkAAAAFAAkAAAAHAAkAAAAFAAkAAAD//woAAAAFAAkAAAAHAAoAAAAFAAkAAAD//wsAAAAFAAkAAAAHAAsAAAAFAAkAAAD//wwAAAAFAAkAAAAHAAwAAAAFAAkAAAD//w0AAAAFAAkAAAAHAA0AAAAFAAkAAAD//w4AAAAFAAkAAAAHAA4AAAAFAAkAAAD//w8AAAAFAAkAAAAHAA8AAAAFAAkAAAD//xAAAAAFAAkAAAAHABAAAAAFAAkAAAD//xEAAAAFAAkAAAAHABEAAAAFAAkAAAD//xIAAAAFAAkAAAADABIAAAAHAAkAAAAEABIAAAAKAAkAAAAFABIAAAAKAAkAAAAGABIAAAAKAAkAAAAHABIAAAAJAAkAAAD//xMAAAAFAAkAAAADABMAAAAFAAkAAAD//xQAAAAFAAkAAAADABQAAAAFAAkAAAD//xUAAAADAAkAAAAAABUAAAAKAAkAAAABABUAAAAKAAkAAAACABUAAAAKAAkAAAADABUAAAAJAAkAAAA=")
 tile_set = ExtResource("tiles_outer")
 
-[node name="Vao" type="ColorRect" parent="."]
-z_index = -5
-offset_left = 320.0
-offset_top = 512.0
-offset_right = 1152.0
-offset_bottom = 1088.0
+[node name="Fundo" type="ColorRect" parent="."]
+z_index = -12
+offset_left = -896.0
+offset_top = -896.0
+offset_right = 1344.0
+offset_bottom = 2240.0
 mouse_filter = 2
-color = Color(0.05, 0.06, 0.07, 1)
+color = Color(0.03, 0.035, 0.045, 1)
 
-[node name="PlacaVao" parent="." instance=ExtResource("prop")]
-z_index = 1
-position = Vector2(736, 832)
-Size = Vector2(360, 40)
+[node name="NumeroAndar" parent="." instance=ExtResource("prop")]
+z_index = -7
+position = Vector2(96, 1140)
+Size = Vector2(96, 112)
 Color = Color(0, 0, 0, 0)
-Text = "vão da escada"
-FontSize = 18
-TextColor = Color(0.35, 0.4, 0.38, 1)
+Texture = ExtResource("tex_props_escada_andar0")
 Solid = false
 
-[node name="Subida" parent="." node_paths=PackedStringArray("RespawnPoint") instance=ExtResource("room")]
-position = Vector2(128, 320)
-Size = Vector2(1216, 960)
-Waves = 0
-SurviveTime = 9999.0
-SurviveSpawnInterval = 1.5
-SurviveMaxAlive = 5
-SpawnAnywhere = true
-EnemyHealthScale = 0.6
-EnemySpeedScale = 1.1
-RespawnPoint = NodePath("Respawn")
-
-[node name="Respawn" type="Marker2D" parent="Subida"]
-position = Vector2(96, 1056)
-
-[node name="Marcos" type="Node2D" parent="."]
-
-[node name="Marco0" parent="Marcos" instance=ExtResource("area_trigger")]
-position = Vector2(128, 704)
-Size = Vector2(192, 128)
-Color = Color(0.3, 1, 0.55, 0.06)
-
-[node name="Marco1" parent="Marcos" instance=ExtResource("area_trigger")]
-position = Vector2(640, 320)
-Size = Vector2(192, 192)
-Color = Color(0.3, 1, 0.55, 0.06)
-
-[node name="Marco2" parent="Marcos" instance=ExtResource("area_trigger")]
-position = Vector2(1152, 704)
-Size = Vector2(192, 128)
-Color = Color(0.3, 1, 0.55, 0.06)
-
-[node name="Marco3" parent="Marcos" instance=ExtResource("area_trigger")]
-position = Vector2(640, 1088)
-Size = Vector2(192, 192)
-Color = Color(0.3, 1, 0.55, 0.06)
-
-[node name="Seta0" parent="." instance=ExtResource("prop")]
-z_index = -4
-position = Vector2(224, 1008)
-Size = Vector2(64, 64)
+[node name="Andar4" parent="." instance=ExtResource("prop")]
+z_index = -7
+position = Vector2(352, 120)
+Size = Vector2(96, 112)
 Color = Color(0, 0, 0, 0)
-Text = "↑"
-FontSize = 40
-TextColor = Color(0.55, 0.5, 0.42, 0.8)
+Texture = ExtResource("tex_props_escada_andar4")
 Solid = false
 
-[node name="Seta1" parent="." instance=ExtResource("prop")]
-z_index = -4
-position = Vector2(224, 624)
-Size = Vector2(64, 64)
+[node name="ContinuacaoA" parent="." instance=ExtResource("prop")]
+position = Vector2(96, 200)
+Size = Vector2(192, 160)
 Color = Color(0, 0, 0, 0)
-Text = "↑"
-FontSize = 40
-TextColor = Color(0.55, 0.5, 0.42, 0.8)
+Texture = ExtResource("tex_props_escada_continuacao")
 Solid = false
 
-[node name="Seta2" parent="." instance=ExtResource("prop")]
-z_index = -4
-position = Vector2(416, 432)
-Size = Vector2(64, 64)
+[node name="ContinuacaoB" parent="." instance=ExtResource("prop")]
+position = Vector2(352, 200)
+Size = Vector2(192, 160)
 Color = Color(0, 0, 0, 0)
-Text = "→"
-FontSize = 40
-TextColor = Color(0.55, 0.5, 0.42, 0.8)
+Texture = ExtResource("tex_props_escada_continuacao")
 Solid = false
 
-[node name="Seta3" parent="." instance=ExtResource("prop")]
-z_index = -4
-position = Vector2(1056, 432)
-Size = Vector2(64, 64)
+[node name="Desabamento" type="Node2D" parent="."]
+z_index = -6
+script = ExtResource("collapse")
+
+[node name="Obstaculos" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Inicio" parent="." instance=ExtResource("area_trigger")]
+position = Vector2(0, 1088)
+Size = Vector2(192, 64)
 Color = Color(0, 0, 0, 0)
-Text = "→"
-FontSize = 40
-TextColor = Color(0.55, 0.5, 0.42, 0.8)
+
+[node name="PortaEscadaEntrada" parent="." instance=ExtResource("prop")]
+position = Vector2(168, 1344)
+Size = Vector2(48, 192)
+Color = Color(0.5, 0.42, 0.3, 1)
+scale = Vector2(-1, 1)
+Texture = ExtResource("tex_props_fase2_porta_escada")
+Depth = 192
 Solid = false
-
-[node name="Seta4" parent="." instance=ExtResource("prop")]
-z_index = -4
-position = Vector2(1248, 624)
-Size = Vector2(64, 64)
-Color = Color(0, 0, 0, 0)
-Text = "↓"
-FontSize = 40
-TextColor = Color(0.55, 0.5, 0.42, 0.8)
-Solid = false
-
-[node name="Seta5" parent="." instance=ExtResource("prop")]
-z_index = -4
-position = Vector2(1248, 1008)
-Size = Vector2(64, 64)
-Color = Color(0, 0, 0, 0)
-Text = "↓"
-FontSize = 40
-TextColor = Color(0.55, 0.5, 0.42, 0.8)
-Solid = false
-
-[node name="Seta6" parent="." instance=ExtResource("prop")]
-z_index = -4
-position = Vector2(1056, 1200)
-Size = Vector2(64, 64)
-Color = Color(0, 0, 0, 0)
-Text = "←"
-FontSize = 40
-TextColor = Color(0.55, 0.5, 0.42, 0.8)
-Solid = false
-
-[node name="Seta7" parent="." instance=ExtResource("prop")]
-z_index = -4
-position = Vector2(416, 1200)
-Size = Vector2(64, 64)
-Color = Color(0, 0, 0, 0)
-Text = "←"
-FontSize = 40
-TextColor = Color(0.55, 0.5, 0.42, 0.8)
-Solid = false
-
-[node name="Bloqueios" type="Node2D" parent="."]
-
-[node name="Bloqueio0" type="Marker2D" parent="Bloqueios"]
-position = Vector2(224, 576)
-
-[node name="Bloqueio1" type="Marker2D" parent="Bloqueios"]
-position = Vector2(992, 448)
-
-[node name="Bloqueio2" type="Marker2D" parent="Bloqueios"]
-position = Vector2(1248, 1024)
-
-[node name="Bloqueio3" type="Marker2D" parent="Bloqueios"]
-position = Vector2(480, 1216)
 
 [node name="PortaSaida" parent="." instance=ExtResource("door")]
-position = Vector2(736, 320)
+position = Vector2(352, 192)
 Size = Vector2(192, 64)
 StartsLocked = true
 WallStyle = true
@@ -204,30 +146,102 @@ Color = Color(0.9, 0.75, 0.3, 1)
 
 [node name="CoberturaSaida" type="ColorRect" parent="."]
 z_index = 20
-offset_left = 512.0
-offset_top = 0.0
-offset_right = 960.0
-offset_bottom = 256.0
+offset_left = 192.0
+offset_top = -128.0
+offset_right = 512.0
+offset_bottom = 128.0
 mouse_filter = 2
-color = Color(0.149, 0.161, 0.188, 1)
+color = Color(0.03, 0.035, 0.045, 1)
 
 [node name="Saida" parent="." instance=ExtResource("area_trigger")]
-position = Vector2(576, 64)
-Size = Vector2(320, 192)
+position = Vector2(256, -64)
+Size = Vector2(192, 192)
 Text = "4º ANDAR"
 
-[node name="PlacaEntrada" parent="." instance=ExtResource("prop")]
-z_index = 1
-position = Vector2(224, 1288)
-Size = Vector2(220, 30)
-Color = Color(0, 0, 0, 0)
-Text = "ESCADA"
-FontSize = 16
-TextColor = Color(0.95, 0.9, 0.6, 1)
-Solid = false
+[node name="Noite" type="CanvasModulate" parent="." groups=["night"]]
+color = Color(0.11, 0.12, 0.2, 1)
+
+[node name="NightOverlay" parent="." instance=ExtResource("night_overlay")]
+
+[node name="Chuva" parent="." instance=ExtResource("rain")]
+AlwaysInside = true
+LightningInterval = Vector2(12, 26)
+
+[node name="Luzes" type="Node2D" parent="."]
+
+[node name="Emergencia1" parent="Luzes" instance=ExtResource("flicker_light")]
+position = Vector2(96, 320)
+color = Color(1, 0.82, 0.55, 1)
+texture_scale = 1.9
+BaseEnergy = 0.8
+Behavior = 1
+Seed = 501
+texture = ExtResource("light_tubo")
+
+[node name="Emergencia2" parent="Luzes" instance=ExtResource("flicker_light")]
+position = Vector2(96, 640)
+color = Color(1, 0.82, 0.55, 1)
+texture_scale = 1.9
+BaseEnergy = 0.8
+Behavior = 2
+Seed = 502
+texture = ExtResource("light_tubo")
+
+[node name="Emergencia3" parent="Luzes" instance=ExtResource("flicker_light")]
+position = Vector2(96, 960)
+color = Color(1, 0.82, 0.55, 1)
+texture_scale = 1.9
+BaseEnergy = 0.8
+Behavior = 1
+Seed = 503
+texture = ExtResource("light_tubo")
+
+[node name="Emergencia4" parent="Luzes" instance=ExtResource("flicker_light")]
+position = Vector2(352, 320)
+color = Color(1, 0.82, 0.55, 1)
+texture_scale = 1.9
+BaseEnergy = 0.8
+Behavior = 2
+Seed = 504
+texture = ExtResource("light_tubo")
+
+[node name="Emergencia5" parent="Luzes" instance=ExtResource("flicker_light")]
+position = Vector2(352, 640)
+color = Color(1, 0.82, 0.55, 1)
+texture_scale = 1.9
+BaseEnergy = 0.8
+Behavior = 1
+Seed = 505
+texture = ExtResource("light_tubo")
+
+[node name="Emergencia6" parent="Luzes" instance=ExtResource("flicker_light")]
+position = Vector2(352, 960)
+color = Color(1, 0.82, 0.55, 1)
+texture_scale = 1.9
+BaseEnergy = 0.8
+Behavior = 2
+Seed = 506
+texture = ExtResource("light_tubo")
+
+[node name="Terreo" parent="Luzes" instance=ExtResource("flicker_light")]
+position = Vector2(96, 1248)
+color = Color(1, 0.82, 0.55, 1)
+texture_scale = 1.6
+BaseEnergy = 0.8
+Behavior = 0
+Seed = 520
+texture = ExtResource("light_tubo")
+
+[node name="LuzSaida" parent="Luzes" instance=ExtResource("flicker_light")]
+position = Vector2(352, 64)
+color = Color(0.2, 1, 0.45, 1)
+texture_scale = 1.2
+BaseEnergy = 0.8
+Behavior = 0
+Seed = 540
 
 [node name="Player" parent="." instance=ExtResource("player")]
-position = Vector2(224, 1392)
+position = Vector2(96, 1264)
 StartWithAllWeapons = false
 
 [node name="Hud" parent="." node_paths=PackedStringArray("Player") instance=ExtResource("hud")]

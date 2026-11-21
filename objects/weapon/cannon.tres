@@ -20,6 +20,7 @@ Pellets = 1
 MagazineSize = 3
 ReloadTime = 2.0
 SpreadDegrees = 0.0
+BarricadeDamage = 1.0
 Sprite = ExtResource("2_sprite")
 BulletSprite = ExtResource("3_bullet")
 ShotSound = ExtResource("4_sound")
