@@ -66,7 +66,7 @@ public partial class Escada : LevelBase
 		new (char, int, float)[] { },
 		new[] { ('B', 1, 7f), ('E', 0, 5f) },
 		new[] { ('D', 0, 5f), ('L', 2, 11f), ('E', 2, 9f) },
-		new[] { ('L', 0, 4f), ('L', 2, 9f), ('L', 1, 13f), ('E', 1, 5f) },
+		new[] { ('L', 0, 4f), ('L', 2, 9f), ('L', 1, 13f), ('E', 0, 5f) },
 		new[] { ('E', 1, 8f), ('B', 1, 10f), ('E', 0, 4f), ('E', 2, 12f) },
 		new[] { ('M', 1, 3f), ('L', 0, 11f), ('E', 0, 10f) },
 		new[] { ('D', 1, 4f), ('B', 1, 9f), ('E', 0, 6f), ('E', 2, 10f) },
@@ -315,6 +315,8 @@ void fragment() {
 		_flight++;
 		float columnX = _flight % 2 == 0 ? ColunaA : ColunaB;
 
+		// a coluna de onde você saiu fica só como cenário (nada mais dispara nem rola lá)
+		DeactivateColumn((_flight + 1) % 2);
 		// a coluna onde você entra vira o lance novo (o que estava ali, de dois lances atrás, some)
 		ClearColumn(_flight % 2);
 		SpawnFlight(_flight);
@@ -331,6 +333,15 @@ void fragment() {
 	}
 
 	// ---------- obstáculos ----------
+
+	private void DeactivateColumn(int column)
+	{
+		foreach (Node node in _columnObstacles[column])
+		{
+			if (node is RollingExtinguisher extinguisher) extinguisher.Deactivate();
+			else if (node is FallingLamp lamp) lamp.Deactivate();
+		}
+	}
 
 	private void ClearColumn(int column)
 	{
@@ -356,8 +367,8 @@ void fragment() {
 					Size = new Vector2(Faixa, 56), Health = 3f, Position = new Vector2(columnX, PeDoLance - row * Tile),
 					Texture = GD.Load<Texture2D>($"res://sprites/props/escada/barricada{flight % 2}.png"),
 				},
-				'D' => MakeHole(columnX + (lane - 0.5f) * Tile, PeDoLance - row * Tile, 2, 2, "degrau_quebrado"),
-				'M' => MakeHole(columnX + (lane - 0.5f) * Tile, PeDoLance - row * Tile, 2, 5, "lance_metade"),
+				'D' => MakeHole(HoleX(columnX, lane, BrokenStepWidth), PeDoLance - row * Tile, BrokenStepWidth, 2 * Tile, "degrau_quebrado"),
+				'M' => MakeHole(columnX + (lane - 0.5f) * Tile, PeDoLance - row * Tile, 2 * Tile, 5 * Tile, "lance_metade"),
 				'L' => new FallingLamp
 				{
 					Position = new Vector2(laneX, PeDoLance - row * Tile),
@@ -381,12 +392,19 @@ void fragment() {
 	}
 
 	// Buraco no lance (degrau quebrado ou metade do lance caída): bloqueia a passagem, você passa pelo lado.
-	private static Node2D MakeHole(float centerX, float bottomY, int widthTiles, int heightTiles, string sprite)
+	// Largura do buraco do degrau quebrado (pixels; a sprite tem 26 px x 4).
+	private const float BrokenStepWidth = 104f;
+
+	// O buraco encosta na parede: faixa 0 = parede da esquerda, faixa 1 = parede da direita.
+	private float HoleX(float columnX, int lane, float width) =>
+		lane == 0 ? columnX - Faixa / 2 + width / 2 : columnX + Faixa / 2 - width / 2;
+
+	private static Node2D MakeHole(float centerX, float bottomY, float width, float height, string sprite)
 	{
 		Prop hole = GD.Load<PackedScene>("res://objects/prop/prop.tscn").Instantiate<Prop>();
 		hole.Position = new Vector2(centerX, bottomY);
-		hole.Size = new Vector2(widthTiles * Tile, heightTiles * Tile);
-		hole.Depth = heightTiles * Tile;
+		hole.Size = new Vector2(width, height);
+		hole.Depth = height;
 		hole.Color = new Color(0.02f, 0.02f, 0.03f);
 		hole.Texture = GD.Load<Texture2D>($"res://sprites/props/escada/{sprite}.png");
 		hole.ZIndex = -6;

@@ -122,6 +122,16 @@ public partial class RollingExtinguisher : Area2D, IHittable
 		_player?.TriggerShake(4f);
 	}
 
+	// O lance ficou para trás: não rola mais (e some, se estava rolando).
+	public void Deactivate()
+	{
+		if (_state is State.Waiting or State.Rolling)
+		{
+			SetState(State.Gone);
+			Hide();
+		}
+	}
+
 	public void Reset()
 	{
 		SetState(State.Waiting);
