@@ -40,12 +40,12 @@ public partial class Escada : LevelBase
 	[Export] public AudioStream SomDesabamento;
 
 	// Velocidade do desabamento (pixels por segundo; o jogador anda a 240) e quanto sobe a cada andar.
-	[Export] public float VelocidadeInicial = 205f;
-	[Export] public float AumentoPorAndar = 6f;
+	[Export] public float VelocidadeInicial = 215f;
+	[Export] public float AumentoPorAndar = 8f;
 
 	// Vantagem inicial e a vantagem máxima antes de o desabamento acelerar (pixels).
 	[Export] public float VantagemInicial = 128f;
-	[Export] public float VantagemMaxima = 320f;
+	[Export] public float VantagemMaxima = 256f;
 
 	private const string NextScene = "res://levels/fase_3.tscn";
 	private const int Flights = 8;
