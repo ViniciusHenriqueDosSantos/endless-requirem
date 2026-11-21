@@ -2,7 +2,8 @@ using Godot;
 
 // Calha de lâmpada fluorescente que despenca do teto quando o jogador chega perto.
 // Primeiro aparece a sombra no chão (aviso), depois a lâmpada cai e estilhaça. Quem estiver embaixo leva dano.
-// Fica a posição do impacto (o chão). Reset() pendura de novo (jogador reprovado).
+// Só cai na frente do jogador (quando ele vem subindo, de baixo). Os cacos no chão deixam o jogador mais lento
+// enquanto ele passa por cima. A posição do nó é o ponto do impacto (o chão). Reset() pendura de novo.
 public partial class FallingLamp : Node2D
 {
 	[Export] public Texture2D LampTexture;
@@ -10,10 +11,15 @@ public partial class FallingLamp : Node2D
 
 	// Dispara quando o jogador fica a esta distância (pixels).
 	[Export] public float TriggerDistance = 230f;
-	[Export] public float WarningTime = 0.8f;
+	[Export] public float WarningTime = 0.5f;
+
+	// Nos cacos: velocidade do jogador multiplicada por isto (e mais um pouquinho depois de sair).
+	[Export] public float ShardsSlowdown = 0.5f;
 
 	private const float PixelScale = 4f;
-	private const float FallTime = 0.22f;
+	private const float FallTime = 0.14f;
+	private const float SlowAfterTime = 0.25f;
+	private static readonly Vector2 ShardsSize = new(130, 50);
 	private const float FallHeight = 260f;
 	private static readonly Vector2 HitSize = new(120, 44);
 
@@ -22,6 +28,8 @@ public partial class FallingLamp : Node2D
 	private State _state = State.Hanging;
 	private float _timer;
 	private Player _player;
+	private float _playerSpeed;   // velocidade normal do jogador (para devolver depois dos cacos)
+	private float _slowTimer;
 
 	public override void _Process(double delta)
 	{
@@ -32,7 +40,9 @@ public partial class FallingLamp : Node2D
 		switch (_state)
 		{
 			case State.Hanging:
-				if (_player != null && _player.GlobalPosition.DistanceTo(GlobalPosition) < TriggerDistance)
+				// só acorda na frente: o jogador ainda está abaixo dela, chegando
+				if (_player != null && _player.GlobalPosition.Y > GlobalPosition.Y
+					&& _player.GlobalPosition.DistanceTo(GlobalPosition) < TriggerDistance)
 				{
 					_state = State.Warning;
 					_timer = WarningTime;
@@ -46,8 +56,30 @@ public partial class FallingLamp : Node2D
 				_timer -= dt;
 				if (_timer <= 0) Land();
 				break;
+			case State.Broken:
+				UpdateShards(dt);
+				break;
 		}
 		QueueRedraw();
+	}
+
+	// Cacos de vidro no chão: passar por cima deixa o jogador mais lento.
+	private void UpdateShards(float dt)
+	{
+		if (_player == null) return;
+
+		Rect2 shards = new(GlobalPosition - ShardsSize / 2, ShardsSize);
+		if (shards.HasPoint(_player.GlobalPosition))
+		{
+			if (_slowTimer <= 0) _playerSpeed = _player.Speed;
+			_slowTimer = SlowAfterTime;
+			_player.Speed = _playerSpeed * ShardsSlowdown;
+		}
+		else if (_slowTimer > 0)
+		{
+			_slowTimer -= dt;
+			if (_slowTimer <= 0) _player.Speed = _playerSpeed;
+		}
 	}
 
 	private void Land()
@@ -59,8 +91,16 @@ public partial class FallingLamp : Node2D
 		_player?.TriggerShake(5f);
 	}
 
+	// Saiu da cena (o lance foi trocado) com o jogador em cima dos cacos: devolve a velocidade.
+	public override void _ExitTree()
+	{
+		if (_slowTimer > 0 && IsInstanceValid(_player)) _player.Speed = _playerSpeed;
+	}
+
 	public void Reset()
 	{
+		if (_slowTimer > 0 && _player != null) _player.Speed = _playerSpeed;
+		_slowTimer = 0;
 		_state = State.Hanging;
 		QueueRedraw();
 	}
