@@ -29,8 +29,8 @@ public partial class Escada : LevelBase
 	// Segundos para chegar ao 4º andar (o relógio começa quando você entra no anel).
 	[Export] public float TimeLimit = 60f;
 
-	// Próxima cena: a Fase 3 ainda não existe; por enquanto volta ao começo do jogo.
-	private const string NextScene = "res://levels/fase_1.tscn";
+	// Próxima cena: o 4º andar (Fase 3).
+	private const string NextScene = "res://levels/fase_3.tscn";
 	private const int FirstFloor = 2;
 	private const int LastFloor = 4;
 	private const float LowTime = 10f;
@@ -185,7 +185,7 @@ public partial class Escada : LevelBase
 			"FIM DA FASE 2",
 			$"Chegou ao 4º andar com {seconds} segundos de sobra.\nLá em cima, os servidores estão acordando.",
 			NextScene,
-			"Fase 3 em construção. Aperte qualquer tecla para voltar ao começo.");
+			"Aperte qualquer tecla para entrar no 4º andar.");
 	}
 
 	public override void _Process(double delta)
