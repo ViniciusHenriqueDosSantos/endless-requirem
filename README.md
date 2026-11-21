@@ -8,7 +8,7 @@ Jogo de ação e tiro top-down feito em **Godot 4.7.2 (.NET / C#)** para a disci
 > - Fase 1: Entrada → Portaria → RU → Corredor → Cantina (Tia da Cantina) → Elevador.
 > - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (chave) → caixas (livro) → devolução → Bibliotecária (surda, enxerga pela luz: furtividade e caçada) → escada desabando atrás de você (8 lances do térreo ao 4º andar, com giro de câmera a cada lance; barricadas, degraus quebrados, lâmpadas caindo e extintores rolando).
 > - Arte: a **Fase 1 já tem pixel art** baseada no campus de verdade (tour 360° da UNIFESP SJC), à noite e abandonada, com lanterna e luzes piscando. Veja `tools/art/README.md`.
-> - Fase 3 (4º andar, laboratórios): esboço da planta (`levels/fase_3.tscn`, atalho F4); lutas e roteiro vêm depois. Salas de teste (`levels/test_rooms*.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
+> - Fase 3 (4º andar, laboratórios, atalho F4): porta de vidro da área final com senha → alarme e fantasmas no corredor → laboratórios seguros: fiação (Lab 1) e computador com o site da universidade (Lab 2) → senha (sorteada a cada partida) abre a porta e some com os fantasmas. A área final, o diploma e o chefe vêm depois. Salas de teste (`levels/test_rooms*.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
 
 ---
 
@@ -40,8 +40,10 @@ Na primeira vez, o Godot compila o código C# e pode demorar alguns segundos.
 | Atirar | **Botão esquerdo** do mouse (segure) |
 | Cambalhota (rola e fica invencível) | **Espaço** (rola para onde está andando; parado, para onde mira) |
 | Trocar de arma | **1**, **2**, **3** ou **roda do mouse** |
+| Interagir (fechadura, computador, quadro de energia) | **E** |
+| Sair de uma tela (senha, fios, computador) | **Esc** |
 
-**Atalhos de teste** (só rodando pelo editor): **F1** = Fase 1, **F2** = Fase 2, **F3** = escada.
+**Atalhos de teste** (só rodando pelo editor): **F1** = Fase 1, **F2** = Fase 2, **F3** = escada, **F4** = Fase 3.
 
 Armas: 1 = Laser · 2 = Escopeta · 3 = Canhão Perfurante. Na Fase 1 você começa só com o Laser; as outras vêm dos chefes.
 
@@ -81,6 +83,7 @@ objects/                uma pasta por objeto do jogo
   librarian/            Bibliotecária (lanterna, caçada) e as luminárias das salas de estudo
   decor/                assinaturas dos alunos nas paredes (Fase 2)
   escada/               escada: desabamento, barricada, lâmpada caindo e extintor rolando
+  fase3/                Fase 3: ponto de interagir (E), aparelho que brilha, área segura, telas 2D (senha, fios, site)
   game_state/           o que passa de uma fase para a outra (armas, pontos, tempo)
   night/                noite: luzes que piscam e a camada de tela (vinheta, granulado, neblina)
 tools/levelgen/         geradores das plantas (Python). As cenas levels/*.tscn são geradas por eles;
