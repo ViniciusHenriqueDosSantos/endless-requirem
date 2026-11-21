@@ -2,8 +2,9 @@
 # Cada sprite tem o tamanho do jogo dividido por 4 (1 pixel da arte = 4 do jogo).
 # Saída: sprites/props/escada/
 #   barricada0/1   pilha de carteiras, tábuas e fita zebrada (fecha a faixa: 48 x 14 = 192 x 56 no jogo)
-#   lampada        calha fluorescente caindo do teto (28 x 7)
-#   lampada_quebrada  a calha estilhaçada no chão (30 x 10)
+#   lampada        lâmpada de desenho (bulbo e rosca) caindo do teto (14 x 20)
+#   lampada_quebrada  a lâmpada estilhaçada no chão (22 x 12)
+#   continuacao    o fim do lance: degraus seguindo para cima no escuro, com seta para frente (48 x 40)
 #   extintor       extintor vermelho deitado, rolando escada abaixo (dois quadros: extintor0/1, 14 x 8)
 #   espuma         nuvem de pó quando o extintor leva um tiro (16 x 12)
 #   degrau_quebrado  buraco no meio do lance (32 x 32 = 2 x 2 tiles)
@@ -60,32 +61,63 @@ for s in range(2):
     barricada(s).save(OUT + f"barricada{s}.png")
 
 
-# ======================================================================== LÂMPADA FLUORESCENTE
+# ======================================================================== LÂMPADA (de desenho animado)
+GLASS_Y, GLASS_Y_L, GLASS_Y_D = hexc("fff2a8"), hexc("fffbe0"), hexc("e8c95a")
+BASE_M, BASE_M_L, BASE_M_D = hexc("b7bcc2"), hexc("e2e5e8"), hexc("7d838a")
+BULB = [  # bulbo em forma de pera (12 de largura), de cima para baixo
+    "....XXXX....",
+    "..XXXXXXXX..",
+    ".XXXXXXXXXX.",
+    "XXXXXXXXXXXX",
+    "XXXXXXXXXXXX",
+    "XXXXXXXXXXXX",
+    "XXXXXXXXXXXX",
+    ".XXXXXXXXXX.",
+    "..XXXXXXXX..",
+    "...XXXXXX...",
+    "....XXXX....",
+]
+
+
 def lampada():
-    """Calha de lâmpada do teto: chapa branca com duas lâmpadas tubulares, presa por um fio rompido."""
-    cv = Canvas(28, 7)
-    cv.rect(0, 1, 28, 5, hexc("dcdcd6")); cv.hline(0, 1, 28, hexc("f2f2ee")); cv.hline(0, 5, 28, hexc("9a9a94"))
-    for y in (2, 4):
-        cv.hline(2, y, 24, hexc("f8fbff"))
-        cv.put(2, y, hexc("b8c4cc")); cv.put(25, y, hexc("b8c4cc"))
-    cv.line(13, 0, 15, 0, hexc("3a3a3a"))   # fio rompido
+    """Lâmpada incandescente de desenho: bulbo amarelinho com brilho, filamento em zigue-zague e rosca prateada,
+    pendurada por um fio cortado. Cai de ponta-cabeça? Não: cai com a rosca para cima, como se o fio arrebentasse."""
+    cv = Canvas(14, 20)
+    cv.vline(7, 0, 2, hexc("2a2a2a")); cv.put(6, 0, hexc("2a2a2a"))            # fio arrebentado
+    for i in range(4):                                                            # rosca
+        cv.hline(4, 2 + i, 6, BASE_M if i % 2 == 0 else BASE_M_D)
+        cv.put(4, 2 + i, BASE_M_D); cv.put(9, 2 + i, BASE_M_L)
+    cv.hline(5, 6, 4, BASE_M_D)
+    for y, row in enumerate(BULB):                                                # vidro
+        for x, ch in enumerate(row):
+            if ch == "X":
+                cv.put(1 + x, 7 + y, GLASS_Y)
+    for y in range(7, 18):                                                        # sombra do lado direito
+        for x in range(13, 0, -1):
+            if cv.get(x, y)[3] > 0:
+                cv.put(x, y, GLASS_Y_D); cv.put(x - 1, y, mix(GLASS_Y, GLASS_Y_D, 0.5)); break
+    for (x, y) in [(3, 9), (3, 10), (4, 9), (3, 11), (4, 8)]:                     # brilho
+        cv.put(x, y, GLASS_Y_L)
+    for (x, y) in [(6, 7), (6, 8), (5, 9), (7, 10), (6, 11), (8, 12), (7, 13), (8, 7), (8, 8)]:   # filamento
+        cv.put(x, y, hexc("e07b1e"))
     cv.outline(INK)
     return cv
 
 
 def lampada_quebrada():
-    """A calha no chão, torta, com cacos de vidro espalhados e pó branco."""
-    cv = Canvas(30, 10)
+    """A lâmpada estilhaçada no chão: a rosca caída de lado, cacos de vidro amarelinho e um filamento torto."""
+    cv = Canvas(22, 12)
     r = rng(5200)
-    shadow_ellipse(cv, 15, 8, 13, 1.5, 70)
-    for x in range(2, 26):
-        y = 3 + (1 if x > 13 else 0) + (1 if x > 20 else 0)
-        cv.put(x, y, hexc("dcdcd6")); cv.put(x, y + 1, hexc("dcdcd6")); cv.put(x, y + 2, hexc("9a9a94"))
-    for x in range(4, 12):
-        cv.put(x, 4, hexc("f8fbff"))
-    for _ in range(26):   # cacos e pó
-        x, y = r.randrange(0, 30), r.randrange(0, 10)
-        cv.put(x, y, r.choice([hexc("e8f2fa"), hexc("bcd2e0"), hexc("ffffff", 160)]))
+    shadow_ellipse(cv, 11, 10, 9, 1.5, 70)
+    for i in range(3):                                                            # rosca deitada
+        cv.vline(9 + i, 4, 4, BASE_M if i % 2 == 0 else BASE_M_D)
+    cv.vline(12, 5, 2, BASE_M_D)
+    cv.line(13, 6, 15, 5, hexc("e07b1e")); cv.line(15, 5, 16, 7, hexc("e07b1e"))  # filamento
+    for _ in range(22):                                                           # cacos
+        x, y = r.randrange(1, 21), r.randrange(2, 11)
+        c = r.choice([GLASS_Y, GLASS_Y_L, GLASS_Y_D, hexc("ffffff", 200)])
+        cv.put(x, y, c)
+        if r.random() < 0.4: cv.put(x + 1, y, c)
     return cv
 
 
@@ -161,6 +193,34 @@ def buraco(w, h, seed, steps=True):
 
 buraco(32, 32, 0).save(OUT + "degrau_quebrado.png")
 buraco(32, 80, 1).save(OUT + "lance_metade.png")
+
+
+# ======================================================================== FIM DO LANCE
+def continuacao():
+    """No alto de cada lance, no lugar da parede: os degraus continuam subindo e somem no escuro,
+    com o corrimão dos dois lados e uma seta pintada apontando para frente. Passa a ideia de 'seguir em frente'."""
+    w, h = 48, 40
+    cv = Canvas(w, h)
+    step_l, step_d = hexc("cfc8b6"), hexc("8e8774")
+    for y in range(h):
+        fade = y / (h - 1)                         # 0 em cima (longe, escuro) a 1 embaixo (perto)
+        inset = int((1 - fade) * 7)                # mais estreito lá no alto: perspectiva
+        base = step_l if (y // 4) % 2 == 0 else step_d
+        if y % 4 == 3: base = shade(base, -0.35)   # quina do degrau
+        c = mix(VOID, base, fade ** 1.4)
+        for x in range(inset, w - inset):
+            cv.put(x, y, c)
+        rail = mix(VOID, hexc("6e6a62"), fade)     # corrimão dos lados
+        cv.put(inset, y, rail); cv.put(w - 1 - inset, y, rail)
+    # seta branca gasta apontando para frente (para cima)
+    arrow = mix(VOID, hexc("f0ece0"), 0.85)
+    cv.rect(22, 18, 4, 16, arrow)
+    for i in range(7):
+        cv.hline(24 - 1 - i, 11 + i, 2 + 2 * i, arrow)
+    return cv
+
+
+continuacao().save(OUT + "continuacao.png")
 
 
 # ======================================================================== NÚMEROS DOS ANDARES

@@ -27,6 +27,9 @@ public partial class Escada : LevelBase
 	[Export] public Node2D Obstaculos;
 	[Export] public Prop NumeroAndar;
 
+	// Degraus "continuando" no alto de cada coluna (no lugar da parede), para parecer que a escada segue em frente.
+	[Export] public CanvasItem ContinuacaoB;
+
 	// Geometria (pixels): x do meio de cada coluna, largura da faixa, y do pé e do alto dos lances,
 	// e y do fundo do patamar do térreo.
 	[Export] public float ColunaA = 96f;
@@ -61,13 +64,13 @@ public partial class Escada : LevelBase
 	private static readonly (char kind, int lane, float row)[][] Lances =
 	{
 		new (char, int, float)[] { },
-		new[] { ('B', 1, 7f) },
-		new[] { ('D', 0, 5f), ('L', 2, 11f) },
-		new[] { ('L', 0, 4f), ('L', 2, 9f), ('L', 1, 13f) },
-		new[] { ('E', 1, 8f), ('B', 1, 10f) },
-		new[] { ('M', 1, 3f), ('L', 0, 11f) },
-		new[] { ('D', 1, 4f), ('B', 1, 9f), ('E', 0, 6f) },
-		new[] { ('E', 0, 9f), ('E', 2, 5f), ('L', 1, 6f) },
+		new[] { ('B', 1, 7f), ('E', 0, 5f) },
+		new[] { ('D', 0, 5f), ('L', 2, 11f), ('E', 2, 9f) },
+		new[] { ('L', 0, 4f), ('L', 2, 9f), ('L', 1, 13f), ('E', 1, 5f) },
+		new[] { ('E', 1, 8f), ('B', 1, 10f), ('E', 0, 4f), ('E', 2, 12f) },
+		new[] { ('M', 1, 3f), ('L', 0, 11f), ('E', 0, 10f) },
+		new[] { ('D', 1, 4f), ('B', 1, 9f), ('E', 0, 6f), ('E', 2, 10f) },
+		new[] { ('E', 0, 9f), ('E', 2, 5f), ('L', 1, 6f), ('E', 1, 12f), ('E', 0, 3f) },
 	};
 
 	private enum State { Waiting, Intro, Running, Spinning, Done }
@@ -85,6 +88,8 @@ public partial class Escada : LevelBase
 	private ShaderMaterial _redEdge;
 	private ColorRect _fade;
 	private Camera2D _camera;
+	private Vector2 _cameraZoom = Vector2.One;
+	private const float SpinZoom = 1.3f;   // no giro, a câmera "avança" (aproxima) e volta
 
 	private float FlightLength => PeDoLance - AltoDoLance;
 
@@ -102,6 +107,8 @@ public partial class Escada : LevelBase
 		Inicio.PlayerEntered += OnClimbStarted;
 		Saida.PlayerEntered += OnReachedTop;
 		_camera = Player.GetNodeOrNull<Camera2D>("Camera2D");
+		if (_camera != null)
+			_cameraZoom = _camera.Zoom;
 
 		CreateScreenEffects();
 		ResetClimb();
@@ -162,6 +169,7 @@ void fragment() {
 		{
 			_camera.IgnoreRotation = true;
 			_camera.Rotation = 0;
+			_camera.Zoom = _cameraZoom;
 		}
 		Player.SetPhysicsProcess(true);
 		Hud.SetCounter("ANDAR 0");
@@ -275,7 +283,10 @@ void fragment() {
 		float t = 1f - Mathf.Clamp(_timer / SpinTime, 0f, 1f);
 		// meio giro (0 -> 90°), troca de lance no escuro, e o outro meio (-90° -> 0): 180° no total, sempre de pé
 		if (_camera != null)
+		{
 			_camera.Rotation = t < 0.5f ? Mathf.Pi * t : Mathf.Pi * (t - 1f);
+			_camera.Zoom = _cameraZoom * Mathf.Lerp(1f, SpinZoom, Mathf.Sin(t * Mathf.Pi));
+		}
 		_fade.Color = new Color(0, 0, 0, Mathf.Sin(t * Mathf.Pi) * 0.85f);
 
 		if (t >= 0.5f && !_movedThisSpin)
@@ -286,6 +297,7 @@ void fragment() {
 		if (_camera != null)
 		{
 			_camera.Rotation = 0;
+			_camera.Zoom = _cameraZoom;
 			_camera.IgnoreRotation = true;
 		}
 		_fade.Color = new Color(0, 0, 0, 0);
@@ -398,6 +410,7 @@ void fragment() {
 		else
 			PortaSaida.Lock();
 		CoberturaSaida.Visible = !visible;
+		ContinuacaoB.Visible = !visible;   // no 4º andar, no alto da coluna B fica a porta
 	}
 
 	// ---------- desenho do desabamento e o perigo ----------

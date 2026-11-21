@@ -1,6 +1,6 @@
 using Godot;
 
-// Calha de lâmpada fluorescente que despenca do teto quando o jogador chega perto.
+// Lâmpada que despenca do teto quando o jogador chega perto.
 // Primeiro aparece a sombra no chão (aviso), depois a lâmpada cai e estilhaça. Quem estiver embaixo leva dano.
 // Só cai na frente do jogador (quando ele vem subindo, de baixo). Os cacos no chão deixam o jogador mais lento
 // enquanto ele passa por cima. A posição do nó é o ponto do impacto (o chão). Reset() pendura de novo.
@@ -19,7 +19,7 @@ public partial class FallingLamp : Node2D
 	private const float PixelScale = 4f;
 	private const float FallTime = 0.14f;
 	private const float SlowAfterTime = 0.25f;
-	private static readonly Vector2 ShardsSize = new(130, 50);
+	private static readonly Vector2 ShardsSize = new(100, 44);
 	private const float FallHeight = 260f;
 	private static readonly Vector2 HitSize = new(120, 44);
 

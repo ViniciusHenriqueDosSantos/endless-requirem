@@ -17,9 +17,10 @@
 [ext_resource type="PackedScene" path="res://objects/prop/prop.tscn" id="prop"]
 [ext_resource type="Texture2D" path="res://sprites/props/escada/andar0.png" id="tex_props_escada_andar0"]
 [ext_resource type="Texture2D" path="res://sprites/props/escada/andar4.png" id="tex_props_escada_andar4"]
+[ext_resource type="Texture2D" path="res://sprites/props/escada/continuacao.png" id="tex_props_escada_continuacao"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/porta_escada.png" id="tex_props_fase2_porta_escada"]
 
-[node name="Escada" type="Node2D" node_paths=PackedStringArray("Player", "Hud", "Screen", "PortaSaida", "Saida", "Inicio", "CoberturaSaida", "Desabamento", "Obstaculos", "NumeroAndar")]
+[node name="Escada" type="Node2D" node_paths=PackedStringArray("Player", "Hud", "Screen", "PortaSaida", "Saida", "Inicio", "CoberturaSaida", "Desabamento", "Obstaculos", "NumeroAndar", "ContinuacaoB")]
 y_sort_enabled = true
 script = ExtResource("escada")
 Player = NodePath("Player")
@@ -32,6 +33,7 @@ CoberturaSaida = NodePath("CoberturaSaida")
 Desabamento = NodePath("Desabamento")
 Obstaculos = NodePath("Obstaculos")
 NumeroAndar = NodePath("NumeroAndar")
+ContinuacaoB = NodePath("ContinuacaoB")
 ColunaA = 96
 ColunaB = 352
 Faixa = 192
@@ -98,6 +100,20 @@ position = Vector2(352, 120)
 Size = Vector2(96, 112)
 Color = Color(0, 0, 0, 0)
 Texture = ExtResource("tex_props_escada_andar4")
+Solid = false
+
+[node name="ContinuacaoA" parent="." instance=ExtResource("prop")]
+position = Vector2(96, 200)
+Size = Vector2(192, 160)
+Color = Color(0, 0, 0, 0)
+Texture = ExtResource("tex_props_escada_continuacao")
+Solid = false
+
+[node name="ContinuacaoB" parent="." instance=ExtResource("prop")]
+position = Vector2(352, 200)
+Size = Vector2(192, 160)
+Color = Color(0, 0, 0, 0)
+Texture = ExtResource("tex_props_escada_continuacao")
 Solid = false
 
 [node name="Desabamento" type="Node2D" parent="."]

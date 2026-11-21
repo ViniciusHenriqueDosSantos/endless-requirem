@@ -30,6 +30,7 @@ public partial class RollingExtinguisher : Area2D, IHittable
 		_home = Position;
 		Monitoring = true;
 		Monitorable = true;
+		CollisionMask = 1u | Prop.FurnitureLayer;   // jogador, barricadas e buracos (Prop)
 		AddChild(new CollisionShape2D { Shape = new RectangleShape2D { Size = new Vector2(56, 32) }, Position = new Vector2(0, -16) });
 		BodyEntered += OnBodyEntered;
 		Hide();
@@ -68,9 +69,22 @@ public partial class RollingExtinguisher : Area2D, IHittable
 
 	private void OnBodyEntered(Node2D body)
 	{
-		if (_state != State.Rolling || body is not Player player) return;
-		player.TakeHit(GlobalPosition + new Vector2(0, -60), 650f);
-		Pop();
+		if (_state != State.Rolling) return;
+
+		if (body is Player player)
+		{
+			player.TakeHit(GlobalPosition + new Vector2(0, -60), 650f);
+			Pop();
+		}
+		else if (body is Barricade barricade && !barricade.IsDestroyed)
+		{
+			Pop();                              // bateu na barricada e estourou
+		}
+		else if (body is Prop { Solid: true, ZIndex: < 0 })
+		{
+			_state = State.Gone;                // caiu no buraco
+			Hide();
+		}
 	}
 
 	// Tiro: estoura numa nuvem de pó.
