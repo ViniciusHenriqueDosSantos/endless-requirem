@@ -370,7 +370,7 @@ void fragment() {
 					Frame0 = GD.Load<Texture2D>("res://sprites/props/escada/extintor0.png"),
 					Frame1 = GD.Load<Texture2D>("res://sprites/props/escada/extintor1.png"),
 					Puff = GD.Load<Texture2D>("res://sprites/props/escada/espuma.png"),
-					RollLength = FlightLength + Tile,
+					RollLength = FlightLength - Tile / 2,   // para no pé do lance (abaixo dele não tem corredor)
 				},
 				_ => null,
 			};

@@ -17,13 +17,25 @@ public partial class FallingLamp : Node2D
 	[Export] public float ShardsSlowdown = 0.5f;
 
 	private const float PixelScale = 4f;
-	private const float FallTime = 0.14f;
+	private const float FallTime = 0.35f;   // dá para ver a lâmpada caindo (acelera como queda de verdade)
 	private const float SlowAfterTime = 0.25f;
 	private static readonly Vector2 ShardsSize = new(100, 44);
 	private const float FallHeight = 260f;
 	private static readonly Vector2 HitSize = new(120, 44);
 
 	private enum State { Hanging, Warning, Falling, Broken }
+
+	// Lâmpadas com a sombra se formando ou caindo agora: enquanto houver alguma, nenhum extintor começa a rolar.
+	private static int _busy;
+	public static bool AnyBusy => _busy > 0;
+	private bool Busy => _state is State.Warning or State.Falling;
+
+	private void SetState(State state)
+	{
+		bool was = Busy;
+		_state = state;
+		if (was != Busy) _busy += Busy ? 1 : -1;
+	}
 
 	private State _state = State.Hanging;
 	private float _timer;
@@ -41,16 +53,18 @@ public partial class FallingLamp : Node2D
 		{
 			case State.Hanging:
 				// só acorda na frente: o jogador ainda está abaixo dela, chegando
+				// e espera passar qualquer extintor que ainda vai rolar por cima dela
 				if (_player != null && _player.GlobalPosition.Y > GlobalPosition.Y
-					&& _player.GlobalPosition.DistanceTo(GlobalPosition) < TriggerDistance)
+					&& _player.GlobalPosition.DistanceTo(GlobalPosition) < TriggerDistance
+					&& !RollingExtinguisher.AnyAbove(GlobalPosition))
 				{
-					_state = State.Warning;
+					SetState(State.Warning);
 					_timer = WarningTime;
 				}
 				break;
 			case State.Warning:
 				_timer -= dt;
-				if (_timer <= 0) { _state = State.Falling; _timer = FallTime; }
+				if (_timer <= 0) { SetState(State.Falling); _timer = FallTime; }
 				break;
 			case State.Falling:
 				_timer -= dt;
@@ -84,7 +98,7 @@ public partial class FallingLamp : Node2D
 
 	private void Land()
 	{
-		_state = State.Broken;
+		SetState(State.Broken);
 		Rect2 hit = new(GlobalPosition - new Vector2(HitSize.X / 2, HitSize.Y / 2 + 8), HitSize);
 		if (_player != null && hit.HasPoint(_player.GlobalPosition))
 			_player.TakeHit(GlobalPosition + new Vector2(0, -40), 420f);
@@ -94,6 +108,7 @@ public partial class FallingLamp : Node2D
 	// Saiu da cena (o lance foi trocado) com o jogador em cima dos cacos: devolve a velocidade.
 	public override void _ExitTree()
 	{
+		SetState(State.Hanging);
 		if (_slowTimer > 0 && IsInstanceValid(_player)) _player.Speed = _playerSpeed;
 	}
 
@@ -101,7 +116,7 @@ public partial class FallingLamp : Node2D
 	{
 		if (_slowTimer > 0 && _player != null) _player.Speed = _playerSpeed;
 		_slowTimer = 0;
-		_state = State.Hanging;
+		SetState(State.Hanging);
 		QueueRedraw();
 	}
 
@@ -127,7 +142,8 @@ public partial class FallingLamp : Node2D
 
 		if (_state == State.Falling && LampTexture != null)
 		{
-			float y = -FallHeight * (_timer / FallTime);
+			float p = 1f - _timer / FallTime;          // 0 -> 1
+			float y = -FallHeight * (1f - p * p);         // começa devagar e acelera
 			Vector2 size = LampTexture.GetSize() * PixelScale;
 			DrawTextureRect(LampTexture, new Rect2(new Vector2(-size.X / 2, y - size.Y), size), false);
 		}
