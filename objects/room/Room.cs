@@ -46,6 +46,10 @@ public partial class Room : Node2D
 	[Export] public string FinalWaveMessage = "";
 	[Export] public bool HasBoss;
 
+	// Faixas que aparecem quando a luta começa e quando a sala fica limpa (vazio = não mostra).
+	[Export] public string StartBanner = "PORTAS TRANCADAS!";
+	[Export] public string ClearBanner = "SALA LIMPA!";
+
 	// Ajuste dos fantasmas desta sala: vida e velocidade (1 = normal).
 	[Export] public float EnemyHealthScale = 1f;
 	[Export] public float EnemySpeedScale = 1f;
@@ -161,7 +165,8 @@ public partial class Room : Node2D
 
 		SetDoorsLocked(true);
 		_player?.TriggerShake(LockShake);
-		ShowBanner("PORTAS TRANCADAS!");
+		if (StartBanner != "")
+			ShowBanner(StartBanner);
 		EmitSignal(SignalName.Started);
 	}
 
@@ -353,7 +358,8 @@ public partial class Room : Node2D
 	{
 		_state = State.Cleared;
 		SetDoorsLocked(false);
-		ShowBanner("SALA LIMPA!");
+		if (ClearBanner != "")
+			ShowBanner(ClearBanner);
 		EmitSignal(SignalName.Cleared);
 	}
 

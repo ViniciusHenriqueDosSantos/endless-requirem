@@ -209,6 +209,14 @@ public partial class Enemy : CharacterBody2D
 			return;
 		}
 
+		// Jogador numa área segura (laboratório da Fase 3): o fantasma desiste e fica rondando onde está.
+		if (SafeZone.Contains(this, _player.GlobalPosition))
+		{
+			Velocity = _knockback;
+			MoveAndSlide();
+			return;
+		}
+
 		Vector2 toPlayer = _player.GlobalPosition - GlobalPosition;
 		float distance = toPlayer.Length();
 		Vector2 dir = toPlayer / Mathf.Max(distance, 1f);

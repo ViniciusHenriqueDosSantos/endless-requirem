@@ -1,7 +1,9 @@
 # Gera levels/fase_3.tscn (4º andar: laboratórios) a partir da planta do João (FASE_3_NOVA).
 # Uso: python3 tools/levelgen/gen_fase3.py levels/fase_3.tscn
 #
-# ESBOÇO (MVP 4a): só a planta, os móveis principais e a luz. As lutas e o roteiro entram depois.
+# MVP 4a: a planta, os móveis principais e a luz.
+# MVP 5a/5b/5c: a porta de vidro da área final com a fechadura de senha, o alarme (fantasmas no corredor),
+#   os laboratórios como áreas seguras, o computador do Lab 2 e o quadro de energia do Lab 1 (roteiro em Fase3.cs).
 # Lendo de baixo para cima:
 #   entrada (escada e elevador desligado, embaixo à direita) -> corredor comprido para cima
 #   -> Laboratório 1 (esquerda) -> Laboratório 2 (direita) -> hall estreito com dois elevadores (não usados)
@@ -44,6 +46,9 @@ for name, path in [('night_overlay', 'night/night_overlay'), ('flicker_light', '
                    ('rain', 'weather/rain'), ('item_inspect', 'inspect/item_inspect')]:
     L.res('PackedScene', f'res://objects/{path}.tscn', name)
 L.res('Texture2D', 'res://sprites/lights/tubo.png', 'light_tubo')
+L.res('Script', 'res://objects/fase3/Interactable.cs', 'interactable')
+L.res('Script', 'res://objects/fase3/GlowingDevice.cs', 'glow')
+L.res('Script', 'res://objects/fase3/SafeZone.cs', 'safe_zone')
 
 # ---------- arte do piso e das paredes (mesmo tileset das Fases 1 e 2) ----------
 from tiling import h
@@ -201,6 +206,54 @@ L.prop("PortaEscada", ".", ENTRADA[2] * T + 40, 71 * T, 48, 3 * T, col(0.5, 0.42
 L.prop("Placa4Andar", ".", 10 * T + 32, ENTRADA[1] * T + 24, 160, 26, col(0, 0, 0, 0), "4º ANDAR", font=14,
        text_color=col(0.95, 0.9, 0.6), solid=False, z=1)
 
+# ---------- MVP 5: porta da área final, alarme, laboratórios seguros, computador e quadro de energia ----------
+# porta de vidro entre o corredor e a área final (trancada até a senha certa)
+L.node("PortaFinal", inst="door", props={"position": v(6 * T, CORR[1] * T + 48), "Size": v(4 * T, 48),
+       "StartsLocked": "true", "MessageWhenLocked": "true",
+       "LockedMessage": '"Porta de vidro trancada. Tem uma fechadura com senha do lado."',
+       "LockedSprite": L.tex("porta_vidro_fechada", "props/fase3"),
+       "UnlockedSprite": L.tex("porta_vidro_aberta", "props/fase3")})
+# fechadura brilhando na parede logo à direita da porta, e onde apertar E
+L.node("LuzFechadura", type="Node2D", props={"position": v(8 * T + 22, (CORR[1] + 1) * T - 8),
+       "script": 'ExtResource("glow")', "Texture": L.tex("fechadura", "props/fase3"),
+       "GlowColor": col(1, 0.3, 0.25), "GlowRadius": "46", "LightEnergy": "1.1"})
+L.node("Fechadura", type="Area2D", props={"position": v(6.5 * T, (CORR[1] + 1.5) * T), "script": 'ExtResource("interactable")',
+       "Size": v(5 * T, 2 * T), "Prompt": '"Digitar senha"', "PromptHeight": "110"})
+
+# alarme: o corredor (com o hall e a entrada) vira uma sala de sobrevivência sem fim, que o roteiro liga e desliga.
+# Os fantasmas só surgem nos pontos Spawn (no corredor), nunca dentro dos laboratórios.
+AL = (CORR[0], CORR[1])
+L.node("Alarme", inst="room", props={"position": v(AL[0] * T, AL[1] * T), "Size": v(8 * T, (CORR[3] - CORR[1] + 1) * T),
+       "Waves": "0", "SurviveTime": "100000", "SurviveSpawnInterval": "2.4", "SurviveMaxAlive": "5",
+       "StartOnEnter": "false", "StartBanner": '"ALARME!"', "ClearBanner": '"ALARME DESLIGADO"',
+       "RespawnPoint": 'NodePath("Volta")'}, node_paths=["RespawnPoint"])
+L.node("Volta", "Alarme", type="Marker2D", props={"position": v((10 - AL[0]) * T, (47.5 - AL[1]) * T)})
+spawns = [(6, ty) for ty in (31, 39, 47, 55, 63, 71)] + [(10, 33), (10, 73)]
+for i, (gx, gy) in enumerate(spawns):
+    L.node(f"Spawn{i+1}", "Alarme", type="Marker2D", props={"position": v((gx - AL[0]) * T, (gy - AL[1]) * T)})
+
+# laboratórios: áreas seguras (fantasma não entra) e o ponto onde o jogador volta se for reprovado
+for name, r_ in (("Lab1", LAB1), ("Lab2", LAB2)):
+    L.node(f"Seguro{name}", type="Node2D", props={"position": v(r_[0] * T, r_[1] * T), "script": 'ExtResource("safe_zone")',
+           "Size": v((r_[2] - r_[0] + 1) * T, (r_[3] - r_[1] + 1) * T)})
+L.node("VoltaLab1", type="Marker2D", props={"position": v(1.5 * T, 61 * T)})
+L.node("VoltaLab2", type="Marker2D", props={"position": v(10 * T, 47.5 * T)})
+
+# Laboratório 2: o computador piscando na ponta da bancada mais perto da porta
+PC_X = (LAB2[2] + 1) * T - 36 - 2 * 250
+L.node("Monitor", type="Node2D", props={"z_index": "2", "position": v(PC_X, (LAB2[1] + 2) * T + 44),
+       "script": 'ExtResource("glow")', "Texture": L.tex("monitor0", "props/fase3"),
+       "BlinkTexture": L.tex("monitor1", "props/fase3"), "BlinkInterval": "0.45",
+       "GlowColor": col(0.4, 0.85, 1), "GlowRadius": "52"})
+L.node("Computador", type="Area2D", props={"position": v(PC_X, (LAB2[1] + 3.3) * T), "script": 'ExtResource("interactable")',
+       "Size": v(320, 260), "Prompt": '"Usar computador"', "PromptHeight": "120"})
+
+# Laboratório 1: o quadro de energia na parede de cima, ao lado da porta (à direita da lousa)
+L.node("Quadro", type="Node2D", props={"position": v(2.5 * T, LAB1[1] * T + 4), "script": 'ExtResource("glow")',
+       "Texture": L.tex("quadro_energia", "props/fase3"), "GlowColor": col(1, 0.75, 0.3), "GlowRadius": "60"})
+L.node("QuadroEnergia", type="Area2D", props={"position": v(2 * T, (LAB1[1] + 1) * T), "script": 'ExtResource("interactable")',
+       "Size": v(3 * T, 2.5 * T), "Prompt": '"Consertar fiação"', "PromptHeight": "120"})
+
 # ---------- noite e chuva (igual à Fase 2: tudo dentro do prédio) ----------
 L.node("Noite", type="CanvasModulate", groups=["night"], props={"color": col(0.11, 0.12, 0.2, 1)})
 L.node("NightOverlay", inst="night_overlay")
@@ -240,6 +293,8 @@ L.node("MessageScreen", inst="message_screen")
 L.node("ItemInspect", inst="item_inspect")
 
 paths = {"Player": "Player", "Hud": "Hud", "Screen": "MessageScreen", "Lab1": "Lab1", "Lab2": "Lab2",
-         "Convivencia": "Convivencia"}
+         "Convivencia": "Convivencia", "Alarme": "Alarme", "PortaFinal": "PortaFinal", "Fechadura": "Fechadura",
+         "LuzFechadura": "LuzFechadura", "Computador": "Computador", "Monitor": "Monitor",
+         "QuadroEnergia": "QuadroEnergia", "Quadro": "Quadro", "VoltaLab1": "VoltaLab1", "VoltaLab2": "VoltaLab2"}
 L.write(sys.argv[1], root_node("Fase3", "fase3", paths))
 print("chão", len(L.floor), "paredes dentro", len(L.inner_walls), "fora", len(L.outer_walls))
