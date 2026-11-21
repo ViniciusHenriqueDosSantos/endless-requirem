@@ -56,6 +56,11 @@ L.prop("NumeroAndar", ".", 1.5 * T, (FOOT + 1) * T - 12, 96, 112, col(0, 0, 0, 0
 L.prop("Andar4", ".", 5.5 * T, (EXIT[3] + 1) * T - 8, 96, 112, col(0, 0, 0, 0), solid=False, sprite="andar4",
        folder="props/escada", z=-7)
 
+# no alto de cada coluna, no lugar da parede: os degraus seguem para cima no escuro (sensação de seguir em frente)
+for name, cx in (("ContinuacaoA", 1.5), ("ContinuacaoB", 5.5)):
+    L.prop(name, ".", cx * T, TOP * T + 8, 3 * T, 160, col(0, 0, 0, 0), solid=False, sprite="continuacao",
+           folder="props/escada")
+
 # ---------- o que desaba, os obstáculos (criados pelo roteiro), começo e saída ----------
 L.node("Desabamento", type="Node2D", props={"z_index": "-6", "script": 'ExtResource("collapse")'})
 L.node("Obstaculos", type="Node2D", props={"y_sort_enabled": "true"})
@@ -94,7 +99,7 @@ L.node("MessageScreen", inst="message_screen")
 
 paths = {"Player": "Player", "Hud": "Hud", "Screen": "MessageScreen", "PortaSaida": "PortaSaida", "Saida": "Saida",
          "Inicio": "Inicio", "CoberturaSaida": "CoberturaSaida", "Desabamento": "Desabamento", "Obstaculos": "Obstaculos",
-         "NumeroAndar": "NumeroAndar"}
+         "NumeroAndar": "NumeroAndar", "ContinuacaoB": "ContinuacaoB"}
 root = root_node("Escada", "escada", paths)
 root += f"\nColunaA = {1.5 * T:g}\nColunaB = {5.5 * T:g}\nFaixa = {3 * T:g}\nPeDoLance = {(FOOT + 1) * T:g}"
 root += f"\nAltoDoLance = {TOP * T:g}\nFundoDoTerreo = {(FOOT + 4) * T:g}"
