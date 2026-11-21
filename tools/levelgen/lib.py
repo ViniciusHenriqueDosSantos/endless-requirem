@@ -139,9 +139,10 @@ class Level:
         return tiler
 
     def prop(self, name, parent, x, y, w, h, color, text="", depth=None, font=16, text_color=None, solid=True, z=None,
-             tall=False, blocks_ghosts=False, inner=None, sprite=None, folder="props/fase2", fade=False):
+             tall=False, blocks_ghosts=False, inner=None, sprite=None, folder="props/fase2", fade=False, flip=False):
         self.res('PackedScene', 'res://objects/prop/prop.tscn', 'prop')
         p = {"position": v(x, y), "Size": v(w, h), "Color": color}
+        if flip: p["scale"] = v(-1, 1)   # espelhado (ex.: sprite de parede da esquerda usado na parede da direita)
         if sprite: p["Texture"] = self.tex(sprite, folder)
         if fade: p["FadeWhenBehind"] = "true"
         if tall: p["Tall"] = "true"
