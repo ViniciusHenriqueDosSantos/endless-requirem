@@ -49,12 +49,12 @@ public partial class PacMan : Node2D
 	private const float Tile = 24f;
 
 	// velocidades em casas por segundo
-	private const float PlayerSpeed = 7.5f;
-	private const float GhostSpeed = 7f;
-	private const float FrightSpeed = 4.2f;
-	private const float EyesSpeed = 14f;
-	private const float TunnelSpeed = 3.8f;
-	private const float LeavingSpeed = 4f;
+	private const float PlayerSpeed = 5f;
+	private const float GhostSpeed = 4.6f;
+	private const float FrightSpeed = 2.8f;
+	private const float EyesSpeed = 9f;
+	private const float TunnelSpeed = 2.5f;
+	private const float LeavingSpeed = 2.8f;
 
 	private const float FrightTime = 6f;
 	private const float FrightBlinkTime = 2f;
@@ -522,40 +522,57 @@ public partial class PacMan : Node2D
 		DrawHud(view);
 	}
 
+	private bool IsWallLike(int x, int y)
+	{
+		if (x < 0 || x >= W || y < 0 || y >= H) return true;   // fora do mapa conta como parede (sem contorno)
+		char c = _cells[x, y];
+		return c == '#' || c == 'V';
+	}
+
+	// Paredes no estilo clássico: duas linhas finas acompanhando a borda das paredes, contínuas de uma casa para
+	// a outra, com cantos arredondados (por fora) e curvinhas nos cantos de dentro.
 	private void DrawMaze(Color wall)
 	{
-		float inset = 6f;
+		float size = Tile * _scale;
+		float width = 1.6f * _scale;
+		float round = 3f * _scale;
+		float[] offsets = { 3f * _scale, 8f * _scale };
+
 		for (int y = 0; y < H; y++)
 			for (int x = 0; x < W; x++)
 			{
 				char c = _cells[x, y];
 				if (c == '-')
 				{
-					Vector2 a = Screen(new Vector2(x - 0.5f, y));
-					Vector2 b = Screen(new Vector2(x + 0.5f, y));
-					DrawLine(a, b, new Color(1f, 0.7f, 0.85f), 3f * _scale);
+					DrawLine(Screen(new Vector2(x - 0.5f, y)), Screen(new Vector2(x + 0.5f, y)), new Color(1f, 0.7f, 0.85f), 3f * _scale);
 					continue;
 				}
 				if (c != '#') continue;
 
-				// contorno duplo nas bordas da parede que encostam em corredor
-				Vector2 topLeft = _origin + new Vector2(x, y) * Tile * _scale;
-				float size = Tile * _scale;
-				foreach (Vector2I d in DirOrder)
+				Vector2 o = _origin + new Vector2(x, y) * size;
+				bool up = IsWallLike(x, y - 1), down = IsWallLike(x, y + 1);
+				bool left = IsWallLike(x - 1, y), right = IsWallLike(x + 1, y);
+
+				foreach (float off in offsets)
 				{
-					char n = Cell(new Vector2I(x + d.X, y + d.Y));
-					if (y + d.Y < 0 || y + d.Y >= H || x + d.X < 0 || x + d.X >= W) continue;
-					if (n == '#' || n == 'V') continue;
-					for (int line = 0; line < 2; line++)
-					{
-						float off = (line == 0 ? 2f : inset) * _scale;
-						Vector2 from, to;
-						if (d == Up) { from = topLeft + new Vector2(0, off); to = topLeft + new Vector2(size, off); }
-						else if (d == Down) { from = topLeft + new Vector2(0, size - off); to = topLeft + new Vector2(size, size - off); }
-						else if (d == Left) { from = topLeft + new Vector2(off, 0); to = topLeft + new Vector2(off, size); }
-						else { from = topLeft + new Vector2(size - off, 0); to = topLeft + new Vector2(size - off, size); }
-						DrawLine(from, to, wall, 2f * _scale);
-					}
+					float cut = off + round;
+					// bordas viradas para corredor
+					if (!up) DrawLine(o + new Vector2(left ? 0 : cut, off), o + new Vector2(right ? size : size - cut, off), wall, width);
+					if (!down) DrawLine(o + new Vector2(left ? 0 : cut, size - off), o + new Vector2(right ? size : size - cut, size - off), wall, width);
+					if (!left) DrawLine(o + new Vector2(off, up ? 0 : cut), o + new Vector2(off, down ? size : size - cut), wall, width);
+					if (!right) DrawLine(o + new Vector2(size - off, up ? 0 : cut), o + new Vector2(size - off, down ? size : size - cut), wall, width);
+
+					// cantos de fora (as duas bordas abertas): arredondados
+					if (!up && !left) DrawArc(o + new Vector2(cut, cut), round, Mathf.Pi, Mathf.Pi * 1.5f, 6, wall, width);
+					if (!up && !right) DrawArc(o + new Vector2(size - cut, cut), round, Mathf.Pi * 1.5f, Mathf.Tau, 6, wall, width);
+					if (!down && !right) DrawArc(o + new Vector2(size - cut, size - cut), round, 0, Mathf.Pi * 0.5f, 6, wall, width);
+					if (!down && !left) DrawArc(o + new Vector2(cut, size - cut), round, Mathf.Pi * 0.5f, Mathf.Pi, 6, wall, width);
+
+					// cantos de dentro (as duas bordas fechadas, mas a diagonal aberta): curvinha ligando as linhas vizinhas
+					if (up && left && !IsWallLike(x - 1, y - 1)) DrawArc(o, off, 0, Mathf.Pi * 0.5f, 6, wall, width);
+					if (up && right && !IsWallLike(x + 1, y - 1)) DrawArc(o + new Vector2(size, 0), off, Mathf.Pi * 0.5f, Mathf.Pi, 6, wall, width);
+					if (down && right && !IsWallLike(x + 1, y + 1)) DrawArc(o + new Vector2(size, size), off, Mathf.Pi, Mathf.Pi * 1.5f, 6, wall, width);
+					if (down && left && !IsWallLike(x - 1, y + 1)) DrawArc(o + new Vector2(0, size), off, Mathf.Pi * 1.5f, Mathf.Tau, 6, wall, width);
 				}
 			}
 	}
