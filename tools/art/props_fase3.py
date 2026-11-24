@@ -10,7 +10,14 @@
 #       trancada (luz vermelha), fechada mas livre (luz verde), aberta (só o batente)
 #   camera0 / camera1  câmera de segurança de parede: apagada / gravando com a luz vermelha (8 x 7)
 #   vidro_lateral   trecho de parede de vidro do corredor de vidro, com a noite e a chuva lá fora (16 x 16)
-from pix import Canvas, rng, shade, hexc, text_center
+#   eva_azul / eva_verde   placa de tatame de EVA com os dentes de encaixe (32 x 32 = 2 x 2 tiles)
+#   puff_<cor>      puff redondo para sentar no tatame (13 x 11), em várias cores
+#   pingpong        mesa de ping-pong vista de cima, com a rede, raquetes e bolinha (60 x 31)
+#   lousa1 / lousa2 lousa branca dos laboratórios com moldura, rabiscos de matéria e a bandeja de pincéis (160 x 16)
+#   poltrona        poltrona vermelha do auditório, vista de trás (10 x 12)
+#   palco           palco de madeira com a cortina no fundo (176 x 32 = 11 x 2 tiles)
+#   pulpito         púlpito de madeira com o microfone (12 x 14)
+from pix import Canvas, rng, shade, hexc, text, text_center
 from palette import C
 
 OUT = "sprites/props/fase3/"
@@ -148,6 +155,146 @@ def vidro_lateral():
     return cv
 
 
+# ======================================================================== TATAME E PUFFS
+def eva(base):
+    """Placa de EVA (2x2 tiles): cor lisa com textura de pontinhos, borda mais escura e os dentes de encaixe."""
+    cv = Canvas(32, 32)
+    r = rng(sum(base[:3]))
+    dark, light = shade(base, -0.25), shade(base, 0.18)
+    cv.rect(0, 0, 32, 32, base)
+    for _ in range(40):
+        cv.put(r.randrange(1, 31), r.randrange(1, 31), light if r.random() < 0.5 else shade(base, -0.1))
+    cv.frame(0, 0, 32, 32, dark)
+    for k in range(4):                                       # dentes de encaixe nas quatro bordas
+        a = 3 + k * 7
+        cv.rect(a, 0, 3, 2, dark); cv.rect(a + 3, 30, 3, 2, dark)
+        cv.rect(0, a + 3, 2, 3, dark); cv.rect(30, a, 2, 3, dark)
+    return cv
+
+
+def puff(base):
+    """Puff redondo (pufe de bolinhas de isopor) visto de cima/de lado, com a dobra do tecido e o brilho."""
+    cv = Canvas(13, 11)
+    cv.ellipse(6, 7, 6, 3.5, shade(base, -0.35))             # base mais escura (lado)
+    cv.ellipse(6, 5, 6, 4.5, base)
+    cv.ellipse(5, 4, 3, 2, shade(base, 0.2))                 # brilho
+    cv.line(4, 6, 8, 5, shade(base, -0.2))                   # dobra de quem sentou
+    cv.outline(INK)
+    return cv
+
+
+# ======================================================================== PING-PONG
+def pingpong():
+    """Mesa de ping-pong (vista 3/4): tampo verde com bordas e linha brancas, a rede no meio, pés e as raquetes."""
+    w, h = 60, 31
+    cv = Canvas(w, h)
+    top, side = hexc("1f6b4a"), hexc("124430")
+    white = hexc("eef2ee")
+    cv.rect(2, 1, w - 4, 22, top)
+    cv.frame(2, 1, w - 4, 22, white)
+    cv.hline(3, 11, w - 6, white)                            # linha do meio
+    cv.rect(2, 23, w - 4, 3, side)                           # grossura do tampo
+    for x in (5, w - 7, w // 2 - 1):                         # pés
+        cv.rect(x, 26, 2, 4, C["steel_d"])
+    cv.rect(w // 2 - 1, 0, 2, 24, hexc("d8dcd8")); cv.vline(w // 2, 0, 24, hexc("9aa09a"))   # rede
+    cv.rect(w // 2 - 2, 0, 4, 1, C["steel_k"])
+    cv.ellipse(12, 7, 3, 2, hexc("c8322b")); cv.rect(14, 8, 3, 1, C["wood"])                    # raquete vermelha
+    cv.ellipse(46, 15, 3, 2, hexc("1d1e22")); cv.rect(42, 16, 3, 1, C["wood"])                  # raquete preta
+    cv.put(22, 15, hexc("ffffff")); cv.put(22, 16, hexc("f29a2e"))                              # bolinha
+    cv.outline(INK)
+    return cv
+
+
+# ======================================================================== LOUSA
+def lousa(variant):
+    """Lousa branca de laboratório: moldura de alumínio, rabiscos de pincel azul/vermelho e a bandeja com pincéis."""
+    w, h = 160, 16
+    cv = Canvas(w, h)
+    r = rng(400 + variant)
+    blue, red, black = hexc("2f5fd0"), hexc("d03a32"), hexc("2b2d30")
+    cv.rect(0, 0, w, h - 2, hexc("f6f7f9"))
+    for _ in range(25):                                       # manchas de apagador
+        x, y = r.randrange(2, w - 8), r.randrange(1, h - 4)
+        cv.hline(x, y, r.randrange(3, 8), hexc("e3e6ea"))
+    if variant == 1:
+        text(cv, "ESTRUTURA DE DADOS", 4, 2, blue)
+        text(cv, "ARVORE BINARIA", 4, 8 - 1, black)
+        for (x0, y0, x1, y1) in [(96, 3, 90, 7), (96, 3, 102, 7), (90, 7, 87, 9), (102, 7, 105, 9)]:
+            cv.line(x0, y0, x1, y1, black)
+        for (x, y) in [(96, 2), (90, 7), (102, 7), (87, 9), (105, 9)]:
+            cv.rect(x - 1, y - 1, 2, 2, red)
+        text(cv, "LOG N", 116, 3, red)
+    else:
+        text(cv, "CALCULO I", 4, 2, blue)
+        text(cv, "PROVA SEXTA!", 4, 8 - 1, red)
+        for x in range(60, 110):                              # curva de uma função
+            y = int(6 - 3.5 * __import__("math").sin((x - 60) / 7))
+            cv.put(x, y, black)
+        cv.hline(58, 6, 54, hexc("9aa0a8")); cv.vline(60, 1, 9, hexc("9aa0a8"))
+        text(cv, "SEN X", 120, 3, blue)
+    cv.frame(0, 0, w, h - 2, C["inox"])
+    cv.rect(2, h - 2, w - 4, 2, C["inox_d"])                  # bandeja
+    cv.rect(20, h - 3, 6, 1, blue); cv.rect(28, h - 3, 6, 1, red); cv.rect(36, h - 3, 6, 1, black)
+    cv.rect(130, h - 4, 8, 2, hexc("3b4048"))                 # apagador
+    cv.outline(INK)
+    return cv
+
+
+# ======================================================================== AUDITÓRIO
+def poltrona():
+    """Poltrona do auditório vista de trás (a plateia olha para o palco, embaixo): encosto vermelho e braços."""
+    cv = Canvas(10, 12)
+    red, red_d, red_l = hexc("a3262c"), hexc("6e1418"), hexc("c94046")
+    cv.rect(1, 0, 8, 8, red); cv.hline(1, 0, 8, red_l); cv.vline(1, 0, 8, red_l)   # encosto
+    cv.rect(2, 2, 6, 1, red_d)                                                     # costura
+    cv.rect(0, 5, 1, 5, hexc("3b2a22")); cv.rect(9, 5, 1, 5, hexc("3b2a22"))       # braços
+    cv.rect(1, 8, 8, 2, red_d)                                                     # assento
+    cv.rect(2, 10, 1, 2, C["steel_d"]); cv.rect(7, 10, 1, 2, C["steel_d"])        # pés
+    cv.outline(INK)
+    return cv
+
+
+def palco():
+    """Palco de madeira (11 x 2 tiles): tábuas, borda da frente mais clara e a cortina vermelha no fundo (embaixo)."""
+    w, h = 176, 32
+    cv = Canvas(w, h)
+    r = rng(707)
+    for y in range(0, 22, 3):                                # tábuas
+        cv.rect(0, y, w, 3, C["wood"] if (y // 3) % 2 else C["wood_l"])
+        cv.hline(0, y + 2, w, C["wood_d"])
+        for _ in range(6):
+            x = r.randrange(0, w); cv.vline(x, y, 3, C["wood_d"])
+    cv.hline(0, 0, w, hexc("e8c98f"))                        # quina da frente do palco
+    curtain, curtain_d = hexc("8e1a22"), hexc("5b0f15")
+    for x in range(w):                                        # cortina pregueada no fundo
+        cv.vline(x, 22, 10, curtain if (x // 3) % 2 else curtain_d)
+    cv.hline(0, 22, w, hexc("d4a93a"))                       # barra dourada
+    cv.outline(INK)
+    return cv
+
+
+def pulpito():
+    """Púlpito de madeira com o microfone."""
+    cv = Canvas(12, 14)
+    cv.rect(1, 4, 10, 10, C["wood"]); cv.vline(1, 4, 10, C["wood_l"]); cv.vline(10, 4, 10, C["wood_d"])
+    cv.rect(0, 3, 12, 2, C["wood_d"])                        # tampo inclinado
+    cv.rect(4, 7, 4, 3, hexc("d4a93a"))                      # brasão
+    cv.line(7, 3, 9, 0, C["steel_k"]); cv.put(9, 0, hexc("1d1e22"))   # microfone
+    cv.outline(INK)
+    return cv
+
+
+eva(hexc("2d5d95")).save(OUT + "eva_azul.png")
+eva(hexc("2e7a4e")).save(OUT + "eva_verde.png")
+for name, color in [("vermelho", "d1453b"), ("amarelo", "e8be2e"), ("roxo", "8a4fc9"), ("laranja", "ec8a2f"),
+                    ("rosa", "e66aa8"), ("turquesa", "2fb3a8")]:
+    puff(hexc(color)).save(OUT + f"puff_{name}.png")
+pingpong().save(OUT + "pingpong.png")
+lousa(1).save(OUT + "lousa1.png")
+lousa(2).save(OUT + "lousa2.png")
+poltrona().save(OUT + "poltrona.png")
+palco().save(OUT + "palco.png")
+pulpito().save(OUT + "pulpito.png")
 porta(False).save(OUT + "porta_vidro_fechada.png")
 porta(False, 32).save(OUT + "porta_vidro_estreita_fechada.png")
 porta(True, 32).save(OUT + "porta_vidro_estreita_aberta.png")
