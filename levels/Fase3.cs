@@ -235,8 +235,9 @@ public partial class Fase3 : LevelBase
 			Hud.SetObjective("Digite na porta a senha que você viu no site");
 			return;
 		}
-		Hud.SetObjective("Descubra a senha nos laboratórios");
-		Hud.ShowMessage("As câmeras chamaram os fantasmas! Os laboratórios destrancaram: procure a senha lá dentro (eles não entram).", 5f);
+		// sem objetivo fixo: só um aviso rápido (o jogador descobre o resto sozinho)
+		Hud.SetObjective("");
+		Hud.ShowMessage("A senha deve estar em algum dos laboratórios...", 3.5f);
 	}
 
 	private void OnCodeAccepted()

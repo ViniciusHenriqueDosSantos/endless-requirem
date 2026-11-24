@@ -1349,10 +1349,8 @@ position = Vector2(256, 1728)
 Size = Vector2(512, 3136)
 Waves = 0
 SurviveTime = 100000
-SurviveSpawnInterval = 1.2
-SurviveMaxAlive = 10
-FastChance = 30
-TankChance = 10
+SurviveSpawnInterval = 1.4
+SurviveMaxAlive = 8
 EnemySpeedScale = 1.1
 StartOnEnter = false
 StartBanner = "ALARME!"
@@ -1434,14 +1432,14 @@ Prompt = "Consertar fiação"
 PromptHeight = 120
 
 [node name="Distribuidor" type="Node2D" parent="."]
-position = Vector2(96, 4348)
+position = Vector2(-480, 4348)
 script = ExtResource("glow")
 Texture = ExtResource("tex_props_fase3_distribuidor")
 GlowColor = Color(1, 0.75, 0.3, 1)
 GlowRadius = 60
 
 [node name="CalibrarDistribuidor" type="Area2D" parent="."]
-position = Vector2(96, 4288)
+position = Vector2(-480, 4288)
 script = ExtResource("interactable")
 Size = Vector2(192, 160)
 Prompt = "Calibrar distribuidor"
@@ -1461,6 +1459,15 @@ Size = Vector2(48, 56)
 Color = Color(0.48, 0.34, 0.22, 1)
 Texture = ExtResource("tex_props_fase3_pulpito")
 Depth = 28
+
+[node name="PisoAuditorio" type="ColorRect" parent="."]
+z_index = -6
+offset_left = 2048.0
+offset_top = 256.0
+offset_right = 2752.0
+offset_bottom = 1216.0
+mouse_filter = 2
+color = Color(0.66, 0.5, 0.34, 1)
 
 [node name="Tapete" parent="." instance=ExtResource("prop")]
 z_index = -5
