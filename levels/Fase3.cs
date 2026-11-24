@@ -3,9 +3,11 @@ using Godot;
 // Roteiro da Fase 3 (4º andar: laboratórios). As peças ficam em levels/fase_3.tscn (gerada por tools/levelgen/gen_fase3.py).
 //
 // Até entrar na área final (MVPs 5a, 5b e 5c):
-//   1. O jogador chega pela escada (embaixo). Uma seta aponta para a área final, no alto do corredor.
-//   2. A porta de vidro está trancada. A fechadura brilha; com E abre o teclado de senha.
-//      Nessa hora toca o ALARME e os fantasmas começam a surgir no corredor (sala "Alarme", sem fim).
+//   1. O jogador chega pela escada (embaixo). Uma seta aponta para a senha da porta, no alto do corredor.
+//      As portas dos laboratórios estão trancadas.
+//   2. A porta de vidro (no pé do corredor de vidro que leva à área final) está trancada. A fechadura brilha;
+//      com E abre o teclado de senha. Nessa hora as câmeras do corredor apitam e piscam, toca o ALARME
+//      e os fantasmas começam a surgir no corredor (sala "Alarme", sem fim). Os laboratórios destrancam.
 //   3. Ao sair do teclado: "Descubra a senha nos laboratórios". Os laboratórios são áreas seguras.
 //   4. Laboratório 2 (direita): o computador pisca. Chegando perto, avisa que precisa da fiação do Laboratório 1.
 //   5. Laboratório 1 (esquerda): o quadro de energia, com o desafio dos fios (dá para fazer antes, em qualquer ordem).
@@ -32,6 +34,13 @@ public partial class Fase3 : LevelBase
 	// Onde o jogador volta se for reprovado (dentro de cada laboratório).
 	[Export] public Marker2D VoltaLab1;
 	[Export] public Marker2D VoltaLab2;
+
+	// Portas dos laboratórios: trancadas até o alarme.
+	[Export] public Door PortaLab1;
+	[Export] public Door PortaLab2;
+
+	// Atraso entre os bipes das câmeras e a sirene.
+	private const float SirenDelay = 0.75f;
 
 	private const float AlarmVolume = -9f;
 	private const float AlarmTintMax = 0.13f;
@@ -78,8 +87,8 @@ public partial class Fase3 : LevelBase
 		Lab1.Entered += () => SetRespawn(VoltaLab1);
 		Lab2.Entered += () => SetRespawn(VoltaLab2);
 
-		Hud.SetObjective("Chegue à área final, no fim do corredor");
-		Hud.ShowMessage("4º andar. A área final fica lá no alto do corredor.", 4f);
+		Hud.SetObjective("Vá até a porta da área final, no alto do corredor");
+		Hud.ShowMessage("4º andar. A porta da área final fica lá no alto do corredor.", 4f);
 	}
 
 	private void CreateScreens()
@@ -127,7 +136,7 @@ public partial class Fase3 : LevelBase
 
 		// antes de tentar a porta: seta para a área final
 		if (!_alarmOn && !_doorOpen)
-			Hud.PointTo(Fechadura.GlobalPosition, "ÁREA FINAL");
+			Hud.PointTo(Fechadura.GlobalPosition, "SENHA");
 
 		if (_alarmOn)
 		{
@@ -152,7 +161,34 @@ public partial class Fase3 : LevelBase
 		_alarmOn = true;
 		Hud.HidePointer();
 		Alarme.StartFight();
-		_alarmSound.Play();
+		PortaLab1.Unlock();
+		PortaLab2.Unlock();
+		SetCameras(true);
+
+		// as câmeras apitam primeiro; a sirene vem logo depois (o relógio corre mesmo com o teclado aberto)
+		AudioStreamPlayer beep = new()
+		{
+			Stream = GD.Load<AudioStream>("res://sounds/fase3/camera.wav"),
+			VolumeDb = -4f,
+			ProcessMode = ProcessModeEnum.Always,
+		};
+		beep.Finished += beep.QueueFree;
+		AddChild(beep);
+		beep.Play();
+		GetTree().CreateTimer(SirenDelay, true).Timeout += () => { if (_alarmOn) _alarmSound.Play(); };
+	}
+
+	// Câmeras do corredor: gravando (luz vermelha piscando) ou apagadas.
+	private void SetCameras(bool recording)
+	{
+		Texture2D off = GD.Load<Texture2D>("res://sprites/props/fase3/camera0.png");
+		Texture2D on = GD.Load<Texture2D>("res://sprites/props/fase3/camera1.png");
+		foreach (Node node in GetTree().GetNodesInGroup("cameras"))
+		{
+			if (node is not GlowingDevice camera) continue;
+			camera.SetTextures(recording ? on : off, recording ? off : null, recording ? 0.25f : 0f);
+			camera.Glow = recording;
+		}
 	}
 
 	private void StopAlarm()
@@ -172,13 +208,14 @@ public partial class Fase3 : LevelBase
 			return;
 		}
 		Hud.SetObjective("Descubra a senha nos laboratórios");
-		Hud.ShowMessage("ALARME! Os fantasmas acordaram. Procure a senha nos laboratórios: lá dentro eles não entram.", 5f);
+		Hud.ShowMessage("As câmeras chamaram os fantasmas! Os laboratórios destrancaram: procure a senha lá dentro (eles não entram).", 5f);
 	}
 
 	private void OnCodeAccepted()
 	{
 		_doorOpen = true;
 		StopAlarm();
+		SetCameras(false);
 		Alarme.FinishFight();               // todos os fantasmas somem
 		PortaFinal.Unlock();
 		Fechadura.Enabled = false;

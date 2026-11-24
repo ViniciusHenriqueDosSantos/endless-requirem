@@ -38,6 +38,14 @@ public partial class Door : StaticBody2D
 	[Export] public Texture2D LockedSprite;
 	[Export] public Texture2D UnlockedSprite;
 
+	// Porta de verdade (ex.: laboratórios da Fase 3): destrancada, continua desenhada fechada (ClosedSprite)
+	// e só aparece aberta (UnlockedSprite) com o jogador perto. Dá para passar do mesmo jeito.
+	[Export] public bool AutoOpen;
+	[Export] public Texture2D ClosedSprite;
+	private const float AutoOpenDistance = 150f;
+	private bool _playerNear;
+	private Node2D _player;
+
 	[Export] public string RequiredItem = "";
 	[Export] public string LockedMessage = "Trancado.";
 	[Export] public string UnlockMessage = "";
@@ -107,6 +115,18 @@ public partial class Door : StaticBody2D
 		}
 	}
 
+	public override void _Process(double delta)
+	{
+		if (Engine.IsEditorHint() || !AutoOpen || IsLocked) return;
+
+		if (!IsInstanceValid(_player))
+			_player = GetTree().GetFirstNodeInGroup("player") as Node2D;
+		bool near = _player != null && _player.GlobalPosition.DistanceTo(GlobalPosition + new Vector2(0, -Size.Y / 2)) < AutoOpenDistance;
+		if (near == _playerNear) return;
+		_playerNear = near;
+		QueueRedraw();
+	}
+
 	public void Lock() => SetLocked(true);
 
 	public void Unlock()
@@ -144,7 +164,8 @@ public partial class Door : StaticBody2D
 			return;
 		}
 
-		Texture2D whole = locked ? LockedSprite : UnlockedSprite;
+		Texture2D whole = locked ? LockedSprite
+			: AutoOpen && !_playerNear && ClosedSprite != null ? ClosedSprite : UnlockedSprite;
 		if (whole != null)
 		{
 			Vector2 size = whole.GetSize() * 4f;
