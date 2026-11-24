@@ -121,9 +121,11 @@ for ty in range(TATAME[1], TATAME[3] + 1, 2):
         cor = "eva_azul" if ((tx + ty) // 2) % 2 == 0 else "eva_verde"
         L.prop(f"Placa_{tx}_{ty}", "Tatame", (tx + 1) * T, (ty + 2) * T, 2 * T, 2 * T, col(0, 0, 0, 0), solid=False,
                sprite=cor, folder="props/fase3", z=-5)
-for i, (tx, ty, cor) in enumerate([(2, 2, "vermelho"), (9, 3, "amarelo"), (3, 6, "roxo"), (6, 7, "laranja"),
-                                   (11, 7, "rosa"), (12, 2, "turquesa")]):
-    L.prop(f"Puff{i+1}", ".", tx * T + 32, (ty + CY) * T + 56, 52, 44, col(0, 0, 0, 0), depth=20,
+for i, (tx, ty, cor) in enumerate([(1, 1, "vermelho"), (2, 3, "azul"), (6, 1, "amarelo"), (9, 2, "verde"),
+                                   (12, 1, "turquesa"), (2, 5, "roxo"), (5, 4, "laranja"), (8, 5, "cinza"),
+                                   (11, 4, "rosa"), (1, 8, "amarelo"), (4, 7, "verde"), (7, 8, "vermelho"),
+                                   (10, 7, "azul"), (12, 8, "roxo")]):
+    L.prop(f"Puff{i+1}", ".", tx * T + 32, (ty + CY) * T + 60, 72, 56, col(0, 0, 0, 0), depth=28,
            sprite=f"puff_{cor}", folder="props/fase3")
 L.prop("PlacaTatame", ".", 4 * T + 32, (TATAME[1] + 2) * T + 40, 260, 30, col(0, 0, 0, 0), "TATAME", font=16,
        text_color=col(0.75, 0.9, 1), solid=False, z=1)

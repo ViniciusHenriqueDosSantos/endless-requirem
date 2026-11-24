@@ -11,7 +11,7 @@
 #   camera0 / camera1  câmera de segurança de parede: apagada / gravando com a luz vermelha (8 x 7)
 #   vidro_lateral   trecho de parede de vidro do corredor de vidro, com a noite e a chuva lá fora (16 x 16)
 #   eva_azul / eva_verde   placa de tatame de EVA com os dentes de encaixe (32 x 32 = 2 x 2 tiles)
-#   puff_<cor>      puff redondo para sentar no tatame (13 x 11), em várias cores
+#   puff_<cor>      puff redondo para sentar no tatame (19 x 16), em várias cores
 #   pingpong        mesa de ping-pong vista de cima, com a rede, raquetes e bolinha (60 x 31)
 #   lousa1 / lousa2 lousa branca dos laboratórios com moldura, rabiscos de matéria e a bandeja de pincéis (160 x 16)
 #   poltrona        poltrona vermelha do auditório, vista de trás (10 x 12)
@@ -184,11 +184,12 @@ def eva(base):
 
 def puff(base):
     """Puff redondo (pufe de bolinhas de isopor) visto de cima/de lado, com a dobra do tecido e o brilho."""
-    cv = Canvas(13, 11)
-    cv.ellipse(6, 7, 6, 3.5, shade(base, -0.35))             # base mais escura (lado)
-    cv.ellipse(6, 5, 6, 4.5, base)
-    cv.ellipse(5, 4, 3, 2, shade(base, 0.2))                 # brilho
-    cv.line(4, 6, 8, 5, shade(base, -0.2))                   # dobra de quem sentou
+    cv = Canvas(19, 16)
+    cv.ellipse(9, 10, 9, 5, shade(base, -0.35))              # base mais escura (lado)
+    cv.ellipse(9, 7, 9, 6.5, base)
+    cv.ellipse(7, 5, 4.5, 3, shade(base, 0.2))               # brilho
+    cv.line(5, 9, 13, 7, shade(base, -0.2))                  # dobra de quem sentou
+    cv.line(9, 2, 10, 6, shade(base, -0.12))                 # costura
     cv.outline(INK)
     return cv
 
@@ -490,7 +491,8 @@ distribuidor(True).save(OUT + "distribuidor_ok.png")
 eva(hexc("2d5d95")).save(OUT + "eva_azul.png")
 eva(hexc("2e7a4e")).save(OUT + "eva_verde.png")
 for name, color in [("vermelho", "d1453b"), ("amarelo", "e8be2e"), ("roxo", "8a4fc9"), ("laranja", "ec8a2f"),
-                    ("rosa", "e66aa8"), ("turquesa", "2fb3a8")]:
+                    ("rosa", "e66aa8"), ("turquesa", "2fb3a8"), ("azul", "3f7fe0"), ("verde", "5cc05a"),
+                    ("cinza", "8a8f98")]:
     puff(hexc(color)).save(OUT + f"puff_{name}.png")
 pingpong().save(OUT + "pingpong.png")
 lousa(1).save(OUT + "lousa1.png")
