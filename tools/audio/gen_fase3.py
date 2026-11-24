@@ -7,6 +7,10 @@
 #   ok.wav      senha certa / tarefa concluída (dois tons subindo)
 #   fio.wav     fio encaixado (estalo elétrico curto)
 #   clique.wav  clique de link no computador
+#   camera.wav  as câmeras do corredor apitando (três bipes agudos) logo antes do alarme
+#   glitch.wav  o telão ligando sozinho, com chiado digital (auditório em 3D)
+#   puxao.wav   o jogador sendo puxado para dentro do telão (zumbido subindo + estouro)
+#   passo.wav   passo no chão de madeira do auditório
 import os
 import numpy as np
 from scipy.io import wavfile
@@ -63,4 +67,24 @@ save("fio.wav", zap, 0.5)
 
 x = t(0.03)
 save("clique.wav", rng.standard_normal(len(x)) * np.exp(-x * 200), 0.35)
+beeps = []
+for k in range(3):
+    x = t(0.09)
+    beeps += [square(np.full(len(x), 1760.0), x) * 0.5 * env(len(x), 0.002, 0.02), np.zeros(int(SR * 0.07))]
+save("camera.wav", np.concatenate(beeps), 0.45)
+x = t(1.2)
+noise = rng.standard_normal(len(x))
+gate = (np.floor(x * 25) % 3 != 0).astype(float)                                 # cortes digitais
+buzz = square(np.where((x * 7) % 1 < 0.5, 90.0, 140.0), x)
+save("glitch.wav", (noise * 0.6 + buzz * 0.4) * gate * env(len(x), 0.01, 0.2), 0.6)
+
+x = t(1.6)
+freq = 60 + 900 * (x / 1.6) ** 3
+pull = np.sin(2 * np.pi * np.cumsum(freq) / SR) * (0.3 + 0.7 * x / 1.6)
+pull += rng.standard_normal(len(x)) * (x / 1.6) ** 2 * 0.5
+pull[-int(SR * 0.08):] += rng.standard_normal(int(SR * 0.08)) * 1.5           # estouro no fim
+save("puxao.wav", pull * env(len(x), 0.05, 0.02), 0.7)
+
+x = t(0.12)
+save("passo.wav", rng.standard_normal(len(x)) * np.exp(-x * 45) * 0.6 + np.sin(2 * np.pi * 110 * x) * np.exp(-x * 30), 0.35)
 print("sons em", os.path.abspath(OUT))

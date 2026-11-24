@@ -33,7 +33,7 @@ project/assembly_name="endless_requirem"
 
 theme/default_font_antialiasing=0
 theme/default_font_hinting=0
-theme/custom_font="res://fonts/PixelifySans.ttf"
+theme/custom_font="res://fonts/pixelify_jogo.tres"
 
 [input]
 

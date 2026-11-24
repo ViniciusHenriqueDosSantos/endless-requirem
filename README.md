@@ -8,7 +8,7 @@ Jogo de ação e tiro top-down feito em **Godot 4.7.2 (.NET / C#)** para a disci
 > - Fase 1: Entrada → Portaria → RU → Corredor → Cantina (Tia da Cantina) → Elevador.
 > - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (chave) → caixas (livro) → devolução → Bibliotecária (surda, enxerga pela luz: furtividade e caçada) → escada desabando atrás de você (8 lances do térreo ao 4º andar, com giro de câmera a cada lance; barricadas, degraus quebrados, lâmpadas caindo e extintores rolando).
 > - Arte: a **Fase 1 já tem pixel art** baseada no campus de verdade (tour 360° da UNIFESP SJC), à noite e abandonada, com lanterna e luzes piscando. Veja `tools/art/README.md`.
-> - Fase 3 (4º andar, laboratórios, atalho F4): porta de vidro da área final com senha → alarme e fantasmas no corredor → laboratórios seguros: fiação (Lab 1) e computador com o site da universidade (Lab 2) → senha (sorteada a cada partida) abre a porta e some com os fantasmas. A área final, o diploma e o chefe vêm depois. Salas de teste (`levels/test_rooms*.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
+> - Fase 3 (4º andar, laboratórios, atalho F4): porta de vidro (no pé do corredor de vidro) da área final com senha → câmeras apitam, alarme e fantasmas no corredor, laboratórios destrancam → laboratórios seguros: fiação e distribuidor (Lab 1) e computador com login (aluno/unifesp) e o site da universidade (Lab 2) → senha (sorteada a cada partida) abre a porta e some com os fantasmas. Já tem o auditório (área restrita, porta com E, palco) ligado à área final; o diploma e o chefe vêm depois. Salas de teste (`levels/test_rooms*.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
 
 ---
 
@@ -43,7 +43,7 @@ Na primeira vez, o Godot compila o código C# e pode demorar alguns segundos.
 | Interagir (fechadura, computador, quadro de energia) | **E** |
 | Sair de uma tela (senha, fios, computador) | **Esc** |
 
-**Atalhos de teste** (só rodando pelo editor): **F1** = Fase 1, **F2** = Fase 2, **F3** = escada, **F4** = Fase 3.
+**Atalhos de teste** (só rodando pelo editor): **F1** = Fase 1, **F2** = Fase 2, **F3** = escada, **F4** = Fase 3, **F5** = auditório em 3D, **F6** = Pac-Man dentro do telão.
 
 Armas: 1 = Laser · 2 = Escopeta · 3 = Canhão Perfurante. Na Fase 1 você começa só com o Laser; as outras vêm dos chefes.
 
@@ -59,6 +59,8 @@ levels/Fase2.cs         roteiro da Fase 2
 levels/escada.tscn      escada (fim da Fase 2): vão com 2 colunas de lances, 8 lances (2 por andar), o chão desaba atrás
 levels/fase_3.tscn      Fase 3 (4º andar): corredor, laboratórios, hall do elevador e convivência
 levels/Fase3.cs         roteiro da Fase 3
+levels/auditorio_3d.tscn  auditório em 3D (primeira pessoa): o diploma no palco e a S.I.A. no telão (Auditorio3D.cs)
+levels/pacman.tscn      dentro do telão: Pac-Man da S.I.A. (PacMan.cs), uma rodada, cada fantasma com seu jeito
 levels/Escada.cs        roteiro da escada
 levels/LevelBase.cs     o que toda fase faz igual (REPROVADO, fim de fase, levar armas)
 levels/test_rooms.tscn  sala de teste da MVP 1

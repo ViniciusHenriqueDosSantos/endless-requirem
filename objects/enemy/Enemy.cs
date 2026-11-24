@@ -43,6 +43,11 @@ public partial class Enemy : CharacterBody2D
 	// (camada 4, bit 8) e atravessam paredes internas, portas, mesas, o jogador e uns aos outros.
 	// O dano vem do contato com a HitBox. Para não ficarem presos num balcão ou na borda,
 	// seguem o mapa de caminhos (GhostNav) quando há algo no meio.
+	// Com o jogador numa área segura, o fantasma se afasta até esta distância (pixels).
+	private const float SafeRetreatDistance = 420f;
+	private const float WanderSpeedFactor = 0.45f;
+	private Vector2 _wanderTarget;
+	private float _wanderTimer;
 	private const uint GhostLayer = 4;
 
 	// De perto, vão direto no jogador; de longe, seguem o caminho e recalculam de tempos em tempos.
@@ -209,13 +214,14 @@ public partial class Enemy : CharacterBody2D
 			return;
 		}
 
-		// Jogador numa área segura (laboratório da Fase 3): o fantasma desiste e fica rondando onde está.
-		if (SafeZone.Contains(this, _player.GlobalPosition))
+		// Jogador numa área segura (laboratório da Fase 3): o fantasma desiste e se afasta um pouco pelo corredor
+		// (para o jogador conseguir sair), depois fica rondando onde está.
+		if (SafeZone.PlayerIsSafe(this, _player.GlobalPosition))
 		{
-			Velocity = _knockback;
-			MoveAndSlide();
+			Wander(dt);
 			return;
 		}
+		_wanderTimer = 0;
 
 		Vector2 toPlayer = _player.GlobalPosition - GlobalPosition;
 		float distance = toPlayer.Length();
@@ -249,6 +255,46 @@ public partial class Enemy : CharacterBody2D
 		move = move.Normalized();
 		Velocity = move * _stats.Speed * SpeedScale * SpeedFactor() + _knockback;
 		MoveAndSlide();
+	}
+
+	// Com o jogador numa área segura: cada fantasma escolhe o seu ponto no corredor (longe do jogador, no chão livre,
+	// fora das áreas seguras) e vai até lá devagar, contornando paredes; chegando, escolhe outro ponto perto
+	// de tempos em tempos. Assim eles se espalham e rondam, em vez de se empilharem numa fila.
+	private void Wander(float dt)
+	{
+		_wanderTimer -= dt;
+		if (_wanderTimer <= 0)
+		{
+			_wanderTarget = PickWanderPoint();
+			_wanderTimer = (float)GD.RandRange(2.5, 4.5);
+		}
+
+		// chegando no ponto, fica rondando ali (só se afasta dos outros) até a hora de escolher outro
+		bool arrived = GlobalPosition.DistanceTo(_wanderTarget) < 20f;
+		Vector2 move = Vector2.Zero;
+		if (!arrived)
+		{
+			Vector2 next = GhostNav.TryNextWaypoint(this, GlobalPosition, _wanderTarget, out Vector2 waypoint) ? waypoint : _wanderTarget;
+			move = (next - GlobalPosition).Normalized();
+		}
+		move += Separation() * 0.8f;
+		float speed = _stats.Speed * SpeedScale * WanderSpeedFactor;
+		Velocity = move.LimitLength(1f) * speed + _knockback;
+		MoveAndSlide();
+	}
+
+	private Vector2 PickWanderPoint()
+	{
+		Vector2 player = _player.GlobalPosition;
+		for (int i = 0; i < 16; i++)
+		{
+			Vector2 candidate = GlobalPosition + Vector2.FromAngle((float)GD.RandRange(0, Mathf.Tau)) * (float)GD.RandRange(60, 320);
+			if (candidate.DistanceTo(player) < SafeRetreatDistance) continue;
+			if (!GhostNav.IsFreeFloor(this, candidate) || SafeZone.InsideAny(this, candidate)) continue;
+			return candidate;
+		}
+		// nada bom por perto: só se afasta do jogador
+		return GlobalPosition + (GlobalPosition - player).Normalized() * 160f;
 	}
 
 	// Flutua (troca de quadro) e olha para o lado do jogador.
