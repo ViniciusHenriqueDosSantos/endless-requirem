@@ -39,6 +39,12 @@ public partial class Fase3 : LevelBase
 	[Export] public Door PortaLab1;
 	[Export] public Door PortaLab2;
 
+	// Auditório: área restrita. Por fora não se vê nada (Cobertura); a porta abre com E e a cobertura some ao entrar.
+	[Export] public Door PortaAuditorio;
+	[Export] public Interactable AbrirAuditorio;
+	[Export] public AreaTrigger EntradaAuditorio;
+	[Export] public CanvasItem CoberturaAuditorio;
+
 	// Atraso entre os bipes das câmeras e a sirene.
 	private const float SirenDelay = 0.75f;
 
@@ -88,6 +94,11 @@ public partial class Fase3 : LevelBase
 		Lab1.Entered += () => SetRespawn(VoltaLab1);
 		Lab2.Entered += () => SetRespawn(VoltaLab2);
 
+		// a cobertura ignora as luzes (senão a luz do auditório e a lanterna revelariam o que tem dentro)
+		CoberturaAuditorio.Material = new CanvasItemMaterial { LightMode = CanvasItemMaterial.LightModeEnum.Unshaded };
+		AbrirAuditorio.Interacted += OpenAuditorium;
+		EntradaAuditorio.PlayerEntered += RevealAuditorium;
+
 		Hud.SetObjective("Vá até a porta da área final, no alto do corredor");
 		Hud.ShowMessage("4º andar. A porta da área final fica lá no alto do corredor.", 4f);
 	}
@@ -110,7 +121,7 @@ public partial class Fase3 : LevelBase
 		_site.Closed += () =>
 		{
 			if (_codeFound && !_doorOpen)
-				Hud.ShowMessage($"Senha da porta: {_code}. Volte para a área final!", 5f);
+				Hud.ShowMessage("Decore a senha que você viu no site e volte para a porta da área final!", 5f);
 		};
 	}
 
@@ -209,7 +220,7 @@ public partial class Fase3 : LevelBase
 
 		if (_codeFound)
 		{
-			Hud.SetObjective($"Digite a senha {_code} na porta da área final");
+			Hud.SetObjective("Digite na porta a senha que você viu no site");
 			return;
 		}
 		Hud.SetObjective("Descubra a senha nos laboratórios");
@@ -227,6 +238,22 @@ public partial class Fase3 : LevelBase
 		LuzFechadura.GlowColor = new Color(0.3f, 1f, 0.5f);
 		Hud.SetObjective("Entre na área final");
 		Hud.ShowMessage("Acesso liberado. O alarme parou... e os fantasmas sumiram.", 4f);
+	}
+
+	// ---------- auditório ----------
+
+	private void OpenAuditorium()
+	{
+		PortaAuditorio.Unlock();
+		AbrirAuditorio.Enabled = false;
+		Hud.ShowMessage("A porta do auditório destrancou...", 3f);
+	}
+
+	private void RevealAuditorium()
+	{
+		Tween tween = CreateTween();
+		tween.TweenProperty(CoberturaAuditorio, "modulate:a", 0f, 0.8f);
+		tween.TweenCallback(Callable.From(() => { CoberturaAuditorio.Visible = false; }));
 	}
 
 	// ---------- laboratórios ----------
@@ -256,7 +283,7 @@ public partial class Fase3 : LevelBase
 	{
 		_codeFound = true;
 		if (!_doorOpen)
-			Hud.SetObjective($"Digite a senha {_code} na porta da área final");
+			Hud.SetObjective("Volte à porta da área final e digite a senha do site (decore!)");
 	}
 
 	// ---------- reprovado ----------
