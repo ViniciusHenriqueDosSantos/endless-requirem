@@ -8,7 +8,7 @@ using System.Collections.Generic;
 // Ao abrir a página do aviso, dispara NoticeFound (uma vez). Esc ou o × do navegador fecham.
 // Antes do site, a tela de login dos computadores da universidade (foto borrada do campus ao fundo):
 // primeiro o usuário (aluno), Enter, depois a senha (unifesp). Depois de entrar, o computador fica logado.
-// Errando duas vezes, aparece uma dica.
+// A dica (usuário e senha padrão) aparece desde o começo; depois de 3 erros surge o botão "Entrar como anônimo".
 // Fonte: Inter (fonts/Inter-*.otf, licença OFL). Todo o conteúdo é inventado; só o visual lembra o site de verdade.
 public partial class IntranetScreen : OverlayScreen
 {
@@ -88,6 +88,8 @@ public partial class IntranetScreen : OverlayScreen
 	private bool _loggedIn;
 	private bool _askingPassword;
 	private int _loginErrors;
+	private Button _anonymous;
+	private const int AnonymousAfter = 3;
 
 	protected override void BuildUi()
 	{
@@ -305,6 +307,21 @@ public partial class IntranetScreen : OverlayScreen
 
 		_loginError = Paragraph("", 14, new Color("c62828"));
 		fields.AddChild(_loginError);
+		fields.AddChild(Paragraph("Dica: os computadores dos laboratórios usam o usuário e a senha padrão da universidade.",
+			13, InkSoft));
+
+		_anonymous = new Button { Text = "Entrar como anônimo", Visible = false, FocusMode = Control.FocusModeEnum.None,
+			CustomMinimumSize = new Vector2(0, 40) };
+		_anonymous.AddThemeFontOverride("font", _bold);
+		_anonymous.AddThemeFontSizeOverride("font_size", 15);
+		_anonymous.AddThemeColorOverride("font_color", Colors.White);
+		_anonymous.AddThemeColorOverride("font_hover_color", Colors.White);
+		_anonymous.AddThemeColorOverride("font_pressed_color", Colors.White);
+		_anonymous.AddThemeStyleboxOverride("normal", Box(Green, 16, 8, 12));
+		_anonymous.AddThemeStyleboxOverride("hover", Box(Green.Lightened(0.12f), 16, 8, 12));
+		_anonymous.AddThemeStyleboxOverride("pressed", Box(Green.Darkened(0.15f), 16, 8, 12));
+		_anonymous.Pressed += LogIn;
+		fields.AddChild(_anonymous);
 		fields.AddChild(Plain("Digite e aperte Enter  •  Esc: sair", 12, InkSoft));
 	}
 
@@ -345,28 +362,32 @@ public partial class IntranetScreen : OverlayScreen
 
 		if (typed == Password)
 		{
-			PlaySound("ok");
-			_loggedIn = true;
-			_loginField.ReleaseFocus();
-			_login.Visible = false;
-			_site.Visible = true;
-			_history.Clear();
-			ShowPage(StartPage, false);
+			LogIn();
 			return;
 		}
 		LoginFailed("Senha incorreta.");
 		AskUser();
 	}
 
+	private void LogIn()
+	{
+		PlaySound("ok");
+		_loggedIn = true;
+		_loginField.ReleaseFocus();
+		_login.Visible = false;
+		_site.Visible = true;
+		_history.Clear();
+		ShowPage(StartPage, false);
+	}
+
+	// Depois de 3 erros aparece o botão de entrar como anônimo (para não travar quem não sabe a senha padrão).
 	private void LoginFailed(string message)
 	{
 		_loginErrors++;
 		PlaySound("erro");
-		_loginError.Text = _loginErrors >= 2
-			? message + "\nDica: os computadores dos laboratórios usam o usuário e a senha padrão da universidade."
-			: message;
-		if (_loginErrors >= 4)
-			_loginError.Text = message + "\nDica: usuário \"aluno\", senha \"unifesp\".";
+		_loginError.Text = message;
+		if (_loginErrors >= AnonymousAfter)
+			_anonymous.Visible = true;
 	}
 
 	// ---------- navegação ----------

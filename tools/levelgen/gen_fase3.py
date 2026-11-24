@@ -262,8 +262,8 @@ for i, (side, ty) in enumerate(CAMERAS):
 # Os fantasmas só surgem nos pontos Spawn (no corredor), nunca dentro dos laboratórios.
 AL = (CORR[0], CORR[1])
 L.node("Alarme", inst="room", props={"position": v(AL[0] * T, AL[1] * T), "Size": v(8 * T, (CORR[3] - CORR[1] + 1) * T),
-       "Waves": "0", "SurviveTime": "100000", "SurviveSpawnInterval": "1.2", "SurviveMaxAlive": "10",
-       "FastChance": "30", "TankChance": "10", "EnemySpeedScale": "1.1",
+       "Waves": "0", "SurviveTime": "100000", "SurviveSpawnInterval": "1.4", "SurviveMaxAlive": "8",
+       "EnemySpeedScale": "1.1",
        "StartOnEnter": "false", "StartBanner": '"ALARME!"', "ClearBanner": '"ALARME DESLIGADO"',
        "RespawnPoint": 'NodePath("Volta")'}, node_paths=["RespawnPoint"])
 L.node("Volta", "Alarme", type="Marker2D", props={"position": v((10 - AL[0]) * T, (47.5 - AL[1]) * T)})
@@ -292,11 +292,11 @@ L.node("Quadro", type="Node2D", props={"position": v((LAB1[0] + 0.5) * T, LAB1[1
        "Texture": L.tex("quadro_energia", "props/fase3"), "GlowColor": col(1, 0.75, 0.3), "GlowRadius": "60"})
 L.node("QuadroEnergia", type="Area2D", props={"position": v((LAB1[0] + 1) * T, (LAB1[1] + 1) * T), "script": 'ExtResource("interactable")',
        "Size": v(3 * T, 2.5 * T), "Prompt": '"Consertar fiação"', "PromptHeight": "120"})
-# ... e, do lado oposto da sala, encostado na parede de baixo, o distribuidor de energia (desafio de calibrar)
-L.node("Distribuidor", type="Node2D", props={"position": v((LAB1[2] - 0.5) * T, (LAB1[3] + 1) * T - 4),
+# ... e, na parede de baixo (lado esquerdo), o distribuidor de energia (desafio de calibrar)
+L.node("Distribuidor", type="Node2D", props={"position": v((LAB1[0] + 1.5) * T, (LAB1[3] + 1) * T - 4),
        "script": 'ExtResource("glow")', "Texture": L.tex("distribuidor", "props/fase3"), "GlowColor": col(1, 0.75, 0.3),
        "GlowRadius": "60"})
-L.node("CalibrarDistribuidor", type="Area2D", props={"position": v((LAB1[2] - 0.5) * T, LAB1[3] * T),
+L.node("CalibrarDistribuidor", type="Area2D", props={"position": v((LAB1[0] + 1.5) * T, LAB1[3] * T),
        "script": 'ExtResource("interactable")', "Size": v(3 * T, 2.5 * T), "Prompt": '"Calibrar distribuidor"',
        "PromptHeight": "130"})
 
@@ -308,6 +308,10 @@ AISLE = (AUD[0] + AUD[2]) // 2
 L.prop("Palco", ".", AUD_CX, (PALCO[3] + 1) * T, (PALCO[2] - PALCO[0] + 1) * T, (PALCO[3] - PALCO[1] + 1) * T,
        col(0.45, 0.3, 0.18), solid=False, z=-4, sprite="palco", folder="props/fase3")
 L.prop("Pulpito", ".", AUD_CX, (PALCO[1] + 1) * T, 48, 56, WOOD, depth=28, sprite="pulpito", folder="props/fase3")
+# piso do auditório: madeira marrom clara (mais clara que as poltronas), por baixo do tapete vermelho
+L.node("PisoAuditorio", type="ColorRect", props={"z_index": "-6", "offset_left": f"{AUD[0] * T}.0",
+       "offset_top": f"{AUD[1] * T}.0", "offset_right": f"{(AUD[2] + 1) * T}.0", "offset_bottom": f"{PALCO[1] * T}.0",
+       "mouse_filter": "2", "color": col(0.66, 0.5, 0.34, 1)})
 L.prop("Tapete", ".", AISLE * T + 32, PALCO[1] * T, 56, (PALCO[1] - AUD[1]) * T, col(0.42, 0.1, 0.12), solid=False,
        z=-5)
 for row, ty in enumerate(range(AUD[1] + 1, AUD[3] - 3, 2)):          # fileiras de poltronas, corredores dos lados e no meio
