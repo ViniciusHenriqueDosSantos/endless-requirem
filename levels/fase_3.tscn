@@ -25,11 +25,10 @@
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/puff_azul.png" id="tex_props_fase3_puff_azul"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/puff_amarelo.png" id="tex_props_fase3_puff_amarelo"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/puff_verde.png" id="tex_props_fase3_puff_verde"]
-[ext_resource type="Texture2D" path="res://sprites/props/fase3/puff_turquesa.png" id="tex_props_fase3_puff_turquesa"]
-[ext_resource type="Texture2D" path="res://sprites/props/fase3/puff_roxo.png" id="tex_props_fase3_puff_roxo"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/puff_laranja.png" id="tex_props_fase3_puff_laranja"]
-[ext_resource type="Texture2D" path="res://sprites/props/fase3/puff_cinza.png" id="tex_props_fase3_puff_cinza"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase3/puff_roxo.png" id="tex_props_fase3_puff_roxo"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/puff_rosa.png" id="tex_props_fase3_puff_rosa"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase3/puff_turquesa.png" id="tex_props_fase3_puff_turquesa"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase1/mesa_cantina.png" id="tex_props_fase1_mesa_cantina"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/cadeira_espera.png" id="tex_props_fase2_cadeira_espera"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/pingpong.png" id="tex_props_fase3_pingpong"]
@@ -421,101 +420,59 @@ Texture = ExtResource("tex_props_fase3_eva_verde")
 Solid = false
 
 [node name="Puff1" parent="." instance=ExtResource("prop")]
-position = Vector2(96, -196)
+position = Vector2(70.4, -234.4)
 Size = Vector2(72, 56)
 Color = Color(0, 0, 0, 0)
 Texture = ExtResource("tex_props_fase3_puff_vermelho")
 Depth = 28
 
 [node name="Puff2" parent="." instance=ExtResource("prop")]
-position = Vector2(160, -68)
+position = Vector2(140.8, -228)
 Size = Vector2(72, 56)
 Color = Color(0, 0, 0, 0)
 Texture = ExtResource("tex_props_fase3_puff_azul")
 Depth = 28
 
 [node name="Puff3" parent="." instance=ExtResource("prop")]
-position = Vector2(416, -196)
+position = Vector2(64, -157.6)
 Size = Vector2(72, 56)
 Color = Color(0, 0, 0, 0)
 Texture = ExtResource("tex_props_fase3_puff_amarelo")
 Depth = 28
 
 [node name="Puff4" parent="." instance=ExtResource("prop")]
-position = Vector2(608, -132)
+position = Vector2(512, -234.4)
 Size = Vector2(72, 56)
 Color = Color(0, 0, 0, 0)
 Texture = ExtResource("tex_props_fase3_puff_verde")
 Depth = 28
 
 [node name="Puff5" parent="." instance=ExtResource("prop")]
-position = Vector2(800, -196)
+position = Vector2(588.8, -228)
 Size = Vector2(72, 56)
 Color = Color(0, 0, 0, 0)
-Texture = ExtResource("tex_props_fase3_puff_turquesa")
+Texture = ExtResource("tex_props_fase3_puff_laranja")
 Depth = 28
 
 [node name="Puff6" parent="." instance=ExtResource("prop")]
-position = Vector2(160, 60)
+position = Vector2(64, 213.6)
 Size = Vector2(72, 56)
 Color = Color(0, 0, 0, 0)
 Texture = ExtResource("tex_props_fase3_puff_roxo")
 Depth = 28
 
 [node name="Puff7" parent="." instance=ExtResource("prop")]
-position = Vector2(352, -4)
-Size = Vector2(72, 56)
-Color = Color(0, 0, 0, 0)
-Texture = ExtResource("tex_props_fase3_puff_laranja")
-Depth = 28
-
-[node name="Puff8" parent="." instance=ExtResource("prop")]
-position = Vector2(544, 60)
-Size = Vector2(72, 56)
-Color = Color(0, 0, 0, 0)
-Texture = ExtResource("tex_props_fase3_puff_cinza")
-Depth = 28
-
-[node name="Puff9" parent="." instance=ExtResource("prop")]
-position = Vector2(736, -4)
+position = Vector2(70.4, 284)
 Size = Vector2(72, 56)
 Color = Color(0, 0, 0, 0)
 Texture = ExtResource("tex_props_fase3_puff_rosa")
 Depth = 28
 
-[node name="Puff10" parent="." instance=ExtResource("prop")]
-position = Vector2(96, 252)
+[node name="Puff8" parent="." instance=ExtResource("prop")]
+position = Vector2(147.2, 290.4)
 Size = Vector2(72, 56)
 Color = Color(0, 0, 0, 0)
-Texture = ExtResource("tex_props_fase3_puff_amarelo")
-Depth = 28
-
-[node name="Puff11" parent="." instance=ExtResource("prop")]
-position = Vector2(288, 188)
-Size = Vector2(72, 56)
-Color = Color(0, 0, 0, 0)
-Texture = ExtResource("tex_props_fase3_puff_verde")
-Depth = 28
-
-[node name="Puff12" parent="." instance=ExtResource("prop")]
-position = Vector2(480, 252)
-Size = Vector2(72, 56)
-Color = Color(0, 0, 0, 0)
-Texture = ExtResource("tex_props_fase3_puff_vermelho")
-Depth = 28
-
-[node name="Puff13" parent="." instance=ExtResource("prop")]
-position = Vector2(672, 188)
-Size = Vector2(72, 56)
-Color = Color(0, 0, 0, 0)
-Texture = ExtResource("tex_props_fase3_puff_azul")
-Depth = 28
-
-[node name="Puff14" parent="." instance=ExtResource("prop")]
-position = Vector2(800, 252)
-Size = Vector2(72, 56)
-Color = Color(0, 0, 0, 0)
-Texture = ExtResource("tex_props_fase3_puff_roxo")
+Texture = ExtResource("tex_props_fase3_puff_turquesa")
 Depth = 28
 
 [node name="PlacaTatame" parent="." instance=ExtResource("prop")]
@@ -808,6 +765,7 @@ Size = Vector2(44, 120)
 Color = Color(0.25, 0.4, 0.6, 1)
 Texture = ExtResource("tex_props_fase3_armario0")
 Tall = true
+BlocksGhosts = true
 Depth = 120
 
 [node name="Armario2" parent="." instance=ExtResource("prop")]
@@ -816,6 +774,7 @@ Size = Vector2(44, 120)
 Color = Color(0.25, 0.4, 0.6, 1)
 Texture = ExtResource("tex_props_fase3_armario2")
 Tall = true
+BlocksGhosts = true
 Depth = 120
 
 [node name="Armario3" parent="." instance=ExtResource("prop")]
@@ -824,6 +783,7 @@ Size = Vector2(44, 120)
 Color = Color(0.25, 0.4, 0.6, 1)
 Texture = ExtResource("tex_props_fase3_armario1")
 Tall = true
+BlocksGhosts = true
 Depth = 120
 
 [node name="Armario4" parent="." instance=ExtResource("prop")]
@@ -832,6 +792,7 @@ Size = Vector2(44, 120)
 Color = Color(0.25, 0.4, 0.6, 1)
 Texture = ExtResource("tex_props_fase3_armario0")
 Tall = true
+BlocksGhosts = true
 Depth = 120
 
 [node name="Armario5" parent="." instance=ExtResource("prop")]
@@ -840,6 +801,7 @@ Size = Vector2(44, 120)
 Color = Color(0.25, 0.4, 0.6, 1)
 Texture = ExtResource("tex_props_fase3_armario2")
 Tall = true
+BlocksGhosts = true
 Depth = 120
 
 [node name="ElevadorHall1" parent="." instance=ExtResource("prop")]
