@@ -307,6 +307,7 @@ public partial class Fase3 : LevelBase
 		if (!cover.GetGlobalRect().HasPoint(Player.GlobalPosition)) return;
 
 		_auditoriumRevealed = true;
+		Player.InputLocked = true;   // parado olhando o auditório até a cena em 3D carregar
 		RevealAuditorium();
 		GetTree().CreateTimer(AuditoriumLookTime, false).Timeout += () =>
 		{
