@@ -20,6 +20,9 @@
 #   distribuidor / distribuidor_ok  distribuidor de energia do Lab 1 (16 x 18): mostradores vermelhos / verdes
 #   bancada_dupla / bancada_esq / bancada_dir  bancada comprida dos laboratórios (vista de cima, 18 x 128 = 8 tiles):
 #       monitores, teclados e mouses; dupla = computadores dos dois lados, esq/dir = virados só para um lado
+#   armario0..2     armário de aço do corredor, encostado na parede da esquerda (vista de cima, 11 x 30):
+#       tampo, a frente virada para o corredor com as aberturas de ventilação, o puxador e o número; variações
+#       (amassado, porta entreaberta, adesivo)
 #   painel_fios     fundo da tela dos fios: chapa de metal, parafusos, réguas de bornes e adesivo de alta tensão (140 x 95)
 #   painel_calibrar fundo da tela de calibrar: chapa com os três mostradores cromados e as plaquinhas (140 x 105)
 from pix import Canvas, rng, shade, hexc, text, text_center
@@ -422,6 +425,37 @@ bancada("esq", 2).save(OUT + "bancada_esq.png")
 bancada("dir", 3).save(OUT + "bancada_dir.png")
 painel_fios().save(OUT + "painel_fios.png")
 painel_calibrar().save(OUT + "painel_calibrar.png")
+# ======================================================================== ARMÁRIO DO CORREDOR
+def armario(variant):
+    """Armário de aço azul (2 tiles de altura) encostado na parede da esquerda: de cima se vê o tampo e,
+    à direita, a frente com duas portas (ventilação, puxador e número). variant muda os detalhes."""
+    w, h = 11, 30
+    cv = Canvas(w, h)
+    r = rng(1500 + variant)
+    blue, blue_l, blue_d, blue_k = hexc("3d6a9e"), hexc("5a86ba"), hexc("2b4c74"), hexc("1d3350")
+    cv.rect(0, 0, 7, h, blue_l); cv.vline(0, 0, h, hexc("7aa2cf"))                     # tampo (visto de cima)
+    cv.rect(7, 0, 4, h, blue); cv.vline(10, 0, h, blue_d)                              # frente (virada pro corredor)
+    cv.hline(7, h // 2, 4, blue_k)                                                     # divisão das duas portas
+    for door in range(2):
+        y0 = 2 + door * 15
+        for k in range(3):                                                             # aberturas de ventilação
+            cv.hline(8, y0 + k * 2, 2, blue_k)
+        cv.rect(8, y0 + 8, 1, 3, hexc("c9cdd3"))                                        # puxador
+        cv.put(9, y0 + 11, hexc("e8eaee"))                                              # plaquinha do número
+    if variant == 1:                                                                   # amassado
+        cv.rect(2, 9, 3, 2, shade(blue_l, -0.15)); cv.put(3, 10, blue_d)
+    if variant == 2:                                                                   # porta entreaberta
+        cv.rect(9, 16, 2, 12, hexc("1a1c20")); cv.vline(10, 16, 12, blue)
+    if variant != 1:                                                                   # adesivo colado no tampo
+        cv.rect(2, 20 - variant * 4, 3, 3, [hexc("e8c22e"), hexc("e05a8a"), hexc("54e38a")][variant])
+    for _ in range(8):                                                                 # arranhões
+        cv.put(r.randrange(1, 6), r.randrange(1, h - 1), hexc("6f96c4"))
+    cv.outline(INK)
+    return cv
+
+
+for v in range(3):
+    armario(v).save(OUT + f"armario{v}.png")
 distribuidor(False).save(OUT + "distribuidor.png")
 distribuidor(True).save(OUT + "distribuidor_ok.png")
 eva(hexc("2d5d95")).save(OUT + "eva_azul.png")
