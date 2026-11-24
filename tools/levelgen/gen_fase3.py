@@ -258,7 +258,8 @@ for i, (side, ty) in enumerate(CAMERAS):
 # Os fantasmas só surgem nos pontos Spawn (no corredor), nunca dentro dos laboratórios.
 AL = (CORR[0], CORR[1])
 L.node("Alarme", inst="room", props={"position": v(AL[0] * T, AL[1] * T), "Size": v(8 * T, (CORR[3] - CORR[1] + 1) * T),
-       "Waves": "0", "SurviveTime": "100000", "SurviveSpawnInterval": "2.4", "SurviveMaxAlive": "5",
+       "Waves": "0", "SurviveTime": "100000", "SurviveSpawnInterval": "1.2", "SurviveMaxAlive": "10",
+       "FastChance": "30", "TankChance": "10", "EnemySpeedScale": "1.1",
        "StartOnEnter": "false", "StartBanner": '"ALARME!"', "ClearBanner": '"ALARME DESLIGADO"',
        "RespawnPoint": 'NodePath("Volta")'}, node_paths=["RespawnPoint"])
 L.node("Volta", "Alarme", type="Marker2D", props={"position": v((10 - AL[0]) * T, (47.5 - AL[1]) * T)})

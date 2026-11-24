@@ -56,6 +56,7 @@ public partial class Fase3 : LevelBase
 	private IntranetScreen _site;
 	private AudioStreamPlayer _alarmSound;
 	private ColorRect _alarmTint;
+	private ScreenAlert _alert;
 	private float _alarmTime;
 
 	protected override void SetupDefaultLoadout()
@@ -99,6 +100,8 @@ public partial class Fase3 : LevelBase
 		AddChild(_keypad);
 		AddChild(_wires);
 		AddChild(_site);
+		_alert = new ScreenAlert();
+		AddChild(_alert);
 
 		_keypad.Solved += OnCodeAccepted;
 		_keypad.Closed += OnKeypadClosed;
@@ -164,6 +167,8 @@ public partial class Fase3 : LevelBase
 		PortaLab1.Unlock();
 		PortaLab2.Unlock();
 		SetCameras(true);
+		// para quem joga sem som: borda vermelha piscando e legenda por cima do teclado
+		_alert.Flash("AS CÂMERAS DETECTARAM VOCÊ!\nOs fantasmas foram alertados.", 4.5f);
 
 		// as câmeras apitam primeiro; a sirene vem logo depois (o relógio corre mesmo com o teclado aberto)
 		AudioStreamPlayer beep = new()
