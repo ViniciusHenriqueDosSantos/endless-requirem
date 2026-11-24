@@ -31,6 +31,10 @@ public partial class Player : CharacterBody2D
 	// Desligado: começa só com a primeira e ganha as outras pelos chefes.
 	[Export] public bool StartWithAllWeapons = true;
 
+	// Ligado: o jogador não anda, não atira, não rola nem troca de arma (ex.: com o teclado de senha da Fase 3 aberto),
+	// mas o jogo continua: os fantasmas ainda podem chegar e bater.
+	public bool InputLocked;
+
 	private const float InvulnerabilityTime = 1.0f;
 	private const float ReviveInvulnerabilityTime = 1.5f;
 	private const float DamageShake = 10f;
@@ -248,6 +252,7 @@ public partial class Player : CharacterBody2D
 
 	public override void _UnhandledInput(InputEvent @event)
 	{
+		if (InputLocked) return;
 		if (@event.IsActionPressed("weapon_next"))
 		{
 			SelectWeapon(_ownedWeapons.IndexOf(Weapon) + 1);
@@ -449,7 +454,7 @@ public partial class Player : CharacterBody2D
 		}
 
 		// Rolando não dá para atirar.
-		if (Input.IsActionPressed("shoot") && _fireCooldown <= 0 && _rollTimer <= 0)
+		if (!InputLocked && Input.IsActionPressed("shoot") && _fireCooldown <= 0 && _rollTimer <= 0)
 			Shoot();
 	}
 
@@ -494,7 +499,7 @@ public partial class Player : CharacterBody2D
 		if (_rollGraceTimer > 0) _rollGraceTimer -= dt;
 		if (_rollBufferTimer > 0) _rollBufferTimer -= dt;
 		// Atrás de uma estante bamba (biblioteca), [Espaço] empurra a estante em vez de rolar.
-		if (Input.IsActionJustPressed("dash") && !ToppleShelf.TryPush(this)) _rollBufferTimer = RollInputBuffer;
+		if (!InputLocked && Input.IsActionJustPressed("dash") && !ToppleShelf.TryPush(this)) _rollBufferTimer = RollInputBuffer;
 
 		if (_rollTimer > 0)
 		{
@@ -510,7 +515,7 @@ public partial class Player : CharacterBody2D
 
 		_knockback = _knockback.MoveToward(Vector2.Zero, KnockbackDecay * dt);
 
-		Vector2 dir = Input.GetVector("move_left", "move_right", "move_up", "move_down");
+		Vector2 dir = InputLocked ? Vector2.Zero : Input.GetVector("move_left", "move_right", "move_up", "move_down");
 
 		if (_rollBufferTimer > 0 && _rollCooldownTimer <= 0)
 		{

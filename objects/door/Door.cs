@@ -38,6 +38,14 @@ public partial class Door : StaticBody2D
 	[Export] public Texture2D LockedSprite;
 	[Export] public Texture2D UnlockedSprite;
 
+	// Porta de verdade (ex.: laboratórios da Fase 3): destrancada, fica fechada (ClosedSprite, e segura tiros)
+	// e só abre (UnlockedSprite, sem colisão) com o jogador encostando nela.
+	[Export] public bool AutoOpen;
+	[Export] public Texture2D ClosedSprite;
+	private const float AutoOpenDistance = 28f;   // distância do jogador até a borda da porta (quase encostando)
+	private bool _playerNear;
+	private Node2D _player;
+
 	[Export] public string RequiredItem = "";
 	[Export] public string LockedMessage = "Trancado.";
 	[Export] public string UnlockMessage = "";
@@ -107,6 +115,27 @@ public partial class Door : StaticBody2D
 		}
 	}
 
+	public override void _Process(double delta)
+	{
+		if (Engine.IsEditorHint() || !AutoOpen || IsLocked) return;
+
+		if (!IsInstanceValid(_player))
+			_player = GetTree().GetFirstNodeInGroup("player") as Node2D;
+		Rect2 door = new(GlobalPosition + new Vector2(-Size.X / 2, -Size.Y), Size);
+		bool near = _player != null && DistanceToRect(door, _player.GlobalPosition) < AutoOpenDistance;
+		if (near == _playerNear) return;
+		_playerNear = near;
+		// fechada, a porta volta a ser sólida: segura os tiros (e quem está do outro lado)
+		_collision.SetDeferred(CollisionShape2D.PropertyName.Disabled, near);
+		QueueRedraw();
+	}
+
+	private static float DistanceToRect(Rect2 rect, Vector2 point)
+	{
+		Vector2 closest = new(Mathf.Clamp(point.X, rect.Position.X, rect.End.X), Mathf.Clamp(point.Y, rect.Position.Y, rect.End.Y));
+		return closest.DistanceTo(point);
+	}
+
 	public void Lock() => SetLocked(true);
 
 	public void Unlock()
@@ -120,7 +149,8 @@ public partial class Door : StaticBody2D
 	private void SetLocked(bool locked)
 	{
 		IsLocked = locked;
-		_collision.SetDeferred(CollisionShape2D.PropertyName.Disabled, !locked);
+		bool solid = locked || (AutoOpen && !_playerNear);   // porta automática destrancada: sólida enquanto fechada
+		_collision.SetDeferred(CollisionShape2D.PropertyName.Disabled, !solid);
 		QueueRedraw();
 	}
 
@@ -144,7 +174,8 @@ public partial class Door : StaticBody2D
 			return;
 		}
 
-		Texture2D whole = locked ? LockedSprite : UnlockedSprite;
+		Texture2D whole = locked ? LockedSprite
+			: AutoOpen && !_playerNear && ClosedSprite != null ? ClosedSprite : UnlockedSprite;
 		if (whole != null)
 		{
 			Vector2 size = whole.GetSize() * 4f;

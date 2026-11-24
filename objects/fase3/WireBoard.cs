@@ -15,8 +15,8 @@ public partial class WireBoard : Control
 	};
 
 	private static readonly Vector2 BoardSize = new(560, 380);
-	private const float LeftX = 70f;
-	private const float RightX = 490f;
+	private const float LeftX = 52f;
+	private const float RightX = 508f;
 	private const float TopY = 70f;
 	private const float StepY = 82f;
 	private const float GrabRadius = 34f;
@@ -26,6 +26,7 @@ public partial class WireBoard : Control
 	private readonly bool[] _connected = new bool[4];
 	private int _dragging = -1;
 	private Vector2 _mouse;
+	private Texture2D _panel;
 
 	public bool IsComplete => System.Array.TrueForAll(_connected, c => c);
 
@@ -33,6 +34,8 @@ public partial class WireBoard : Control
 	{
 		CustomMinimumSize = BoardSize;
 		MouseFilter = MouseFilterEnum.Stop;
+		TextureFilter = TextureFilterEnum.Nearest;
+		_panel = GD.Load<Texture2D>("res://sprites/props/fase3/painel_fios.png");
 		Shuffle();
 	}
 
@@ -102,14 +105,8 @@ public partial class WireBoard : Control
 
 	public override void _Draw()
 	{
-		// placa de metal do quadro
-		DrawRect(new Rect2(Vector2.Zero, BoardSize), new Color(0.2f, 0.21f, 0.23f));
-		DrawRect(new Rect2(Vector2.Zero, BoardSize), new Color(0.45f, 0.47f, 0.5f), false, 4f);
-		for (int i = 0; i < 4; i++)   // parafusos
-		{
-			Vector2 corner = new(i % 2 == 0 ? 16 : BoardSize.X - 16, i < 2 ? 16 : BoardSize.Y - 16);
-			DrawCircle(corner, 6, new Color(0.55f, 0.57f, 0.6f));
-		}
+		// chapa do quadro (sprite com parafusos, réguas de bornes, disjuntores e o adesivo de perigo)
+		DrawTextureRect(_panel, new Rect2(Vector2.Zero, BoardSize), false);
 
 		for (int color = 0; color < WireColors.Length; color++)
 		{
@@ -117,21 +114,23 @@ public partial class WireBoard : Control
 			Vector2 left = LeftEnd(color);
 			Vector2 right = RightEnd(color);
 
-			// fio que sai da esquerda e o terminal da direita
-			DrawRect(new Rect2(0, left.Y - 12, LeftX + 6, 24), c.Darkened(0.35f));
-			DrawRect(new Rect2(RightX - 6, right.Y - 12, BoardSize.X - RightX + 6, 24), c.Darkened(0.35f));
-			DrawCircle(right, 15, new Color(0.1f, 0.1f, 0.12f));
-			DrawCircle(right, 11, _connected[color] ? c : c.Darkened(0.5f));
+			// borne da direita: anel colorido em volta do parafuso (acende quando o fio encaixa)
+			DrawArc(right, 18, 0, Mathf.Tau, 24, _connected[color] ? c : c.Darkened(0.45f), 5f);
 
+			// fio: capa com sombra, brilho por cima e a ponta de cobre
 			Vector2? end = _connected[color] ? right : _dragging == color ? _mouse : (Vector2?)null;
-			if (end.HasValue)
-			{
-				DrawLine(left, end.Value, WireColors[color].Darkened(0.5f), WireWidth + 6);
-				DrawLine(left, end.Value, c, WireWidth);
-				DrawCircle(end.Value, WireWidth / 2 + 2, c);
-			}
-			DrawCircle(left, 16, new Color(0.1f, 0.1f, 0.12f));
-			DrawCircle(left, 12, c);
+			Vector2 tip = end ?? left + new Vector2(26, 6);   // solto: a ponta fica caída perto do borne
+			Vector2 shadow = new(3, 5);
+			DrawLine(left + shadow, tip + shadow, new Color(0, 0, 0, 0.35f), WireWidth + 2);
+			DrawLine(left, tip, c.Darkened(0.45f), WireWidth + 4);
+			DrawLine(left, tip, c, WireWidth);
+			DrawLine(left + new Vector2(0, -3), tip + new Vector2(0, -3), c.Lightened(0.35f), 3f);
+			DrawCircle(tip, WireWidth / 2 + 3, new Color(0.8f, 0.5f, 0.25f));   // cobre
+			DrawCircle(tip, WireWidth / 2 - 1, new Color(0.95f, 0.7f, 0.4f));
+
+			// borne da esquerda (onde o fio está preso)
+			DrawCircle(left, 14, c.Darkened(0.3f));
+			DrawCircle(left, 9, new Color(0.75f, 0.77f, 0.8f));
 		}
 	}
 }
