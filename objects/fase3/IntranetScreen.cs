@@ -4,7 +4,7 @@ using System.Collections.Generic;
 // Tela 2D do computador do Laboratório 2 (Fase 3): uma paródia do site "SUA" da universidade, num navegador.
 // Abre na página da Intranet. O aviso com a senha da porta da área final fica em
 //   (menu) Assuntos Acadêmicos -> Diplomas e Certificados   (3 páginas contando a primeira).
-// O link para o aviso tem a etiqueta "NOVO AVISO", e o aviso é um quadro amarelo grande com a senha em destaque.
+// O aviso é um quadro amarelo grande com a senha em destaque.
 // Ao abrir a página do aviso, dispara NoticeFound (uma vez). Esc ou o × do navegador fecham.
 // Fonte: Inter (fonts/Inter-*.otf, licença OFL). Todo o conteúdo é inventado; só o visual lembra o site de verdade.
 public partial class IntranetScreen : OverlayScreen
@@ -293,7 +293,7 @@ public partial class IntranetScreen : OverlayScreen
 		Label label = new() { Text = text, MouseFilter = Control.MouseFilterEnum.Ignore };
 		label.AddThemeFontSizeOverride("font_size", size);
 		label.AddThemeColorOverride("font_color", color);
-		if (bold) label.AddThemeFontOverride("font", _bold);
+		label.AddThemeFontOverride("font", bold ? _bold : _font);   // sempre a fonte do site (nunca a do jogo)
 		return label;
 	}
 
@@ -398,7 +398,7 @@ public partial class IntranetScreen : OverlayScreen
 		button.AddThemeColorOverride("font_hover_color", color.Lightened(0.2f));
 		button.AddThemeColorOverride("font_pressed_color", color);
 		button.AddThemeColorOverride("font_disabled_color", new Color(color, 0.35f));
-		if (bold) button.AddThemeFontOverride("font", _bold);
+		button.AddThemeFontOverride("font", bold ? _bold : _font);
 		return button;
 	}
 
@@ -478,7 +478,7 @@ public partial class IntranetScreen : OverlayScreen
 					Heading = "Serviços",
 					Links = new[]
 					{
-						new Link("Diplomas e Certificados", NoticePage, "NOVO AVISO"),
+						new Link("Diplomas e Certificados", NoticePage),
 						new Link("Histórico escolar", "historico"),
 						new Link("Rematrícula", "indisponivel"),
 					},
