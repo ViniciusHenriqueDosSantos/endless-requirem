@@ -12,6 +12,9 @@
 [ext_resource type="PackedScene" path="res://objects/weather/rain.tscn" id="rain"]
 [ext_resource type="PackedScene" path="res://objects/inspect/item_inspect.tscn" id="item_inspect"]
 [ext_resource type="Texture2D" path="res://sprites/lights/tubo.png" id="light_tubo"]
+[ext_resource type="Script" path="res://objects/fase3/Interactable.cs" id="interactable"]
+[ext_resource type="Script" path="res://objects/fase3/GlowingDevice.cs" id="glow"]
+[ext_resource type="Script" path="res://objects/fase3/SafeZone.cs" id="safe_zone"]
 [ext_resource type="TileSet" path="res://tilesets/fase1_tileset.tres" id="tiles"]
 [ext_resource type="TileSet" path="res://tilesets/fase1_tileset_outer.tres" id="tiles_outer"]
 [ext_resource type="PackedScene" path="res://objects/prop/prop.tscn" id="prop"]
@@ -22,8 +25,14 @@
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/elevador.png" id="tex_props_fase2_elevador"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/elevador_quebrado.png" id="tex_props_fase2_elevador_quebrado"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/porta_escada.png" id="tex_props_fase2_porta_escada"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase3/porta_vidro_fechada.png" id="tex_props_fase3_porta_vidro_fechada"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase3/porta_vidro_aberta.png" id="tex_props_fase3_porta_vidro_aberta"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase3/fechadura.png" id="tex_props_fase3_fechadura"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase3/monitor0.png" id="tex_props_fase3_monitor0"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase3/monitor1.png" id="tex_props_fase3_monitor1"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase3/quadro_energia.png" id="tex_props_fase3_quadro_energia"]
 
-[node name="Fase3" type="Node2D" node_paths=PackedStringArray("Player", "Hud", "Screen", "Lab1", "Lab2", "Convivencia")]
+[node name="Fase3" type="Node2D" node_paths=PackedStringArray("Player", "Hud", "Screen", "Lab1", "Lab2", "Convivencia", "Alarme", "PortaFinal", "Fechadura", "LuzFechadura", "Computador", "Monitor", "QuadroEnergia", "Quadro", "VoltaLab1", "VoltaLab2")]
 y_sort_enabled = true
 script = ExtResource("fase3")
 Player = NodePath("Player")
@@ -32,6 +41,16 @@ Screen = NodePath("MessageScreen")
 Lab1 = NodePath("Lab1")
 Lab2 = NodePath("Lab2")
 Convivencia = NodePath("Convivencia")
+Alarme = NodePath("Alarme")
+PortaFinal = NodePath("PortaFinal")
+Fechadura = NodePath("Fechadura")
+LuzFechadura = NodePath("LuzFechadura")
+Computador = NodePath("Computador")
+Monitor = NodePath("Monitor")
+QuadroEnergia = NodePath("QuadroEnergia")
+Quadro = NodePath("Quadro")
+VoltaLab1 = NodePath("VoltaLab1")
+VoltaLab2 = NodePath("VoltaLab2")
 
 [node name="Floor" type="TileMapLayer" parent="." groups=["floor"]]
 z_index = -10
@@ -1162,6 +1181,116 @@ Text = "4º ANDAR"
 FontSize = 14
 TextColor = Color(0.95, 0.9, 0.6, 1)
 Solid = false
+
+[node name="PortaFinal" parent="." instance=ExtResource("door")]
+position = Vector2(384, 1776)
+Size = Vector2(256, 48)
+StartsLocked = true
+MessageWhenLocked = true
+LockedMessage = "Porta de vidro trancada. Tem uma fechadura com senha do lado."
+LockedSprite = ExtResource("tex_props_fase3_porta_vidro_fechada")
+UnlockedSprite = ExtResource("tex_props_fase3_porta_vidro_aberta")
+
+[node name="LuzFechadura" type="Node2D" parent="."]
+position = Vector2(534, 1784)
+script = ExtResource("glow")
+Texture = ExtResource("tex_props_fase3_fechadura")
+GlowColor = Color(1, 0.3, 0.25, 1)
+GlowRadius = 46
+LightEnergy = 1.1
+
+[node name="Fechadura" type="Area2D" parent="."]
+position = Vector2(416, 1824)
+script = ExtResource("interactable")
+Size = Vector2(320, 128)
+Prompt = "Digitar senha"
+PromptHeight = 110
+
+[node name="Alarme" parent="." node_paths=PackedStringArray("RespawnPoint") instance=ExtResource("room")]
+position = Vector2(256, 1728)
+Size = Vector2(512, 3136)
+Waves = 0
+SurviveTime = 100000
+SurviveSpawnInterval = 2.4
+SurviveMaxAlive = 5
+StartOnEnter = false
+StartBanner = "ALARME!"
+ClearBanner = "ALARME DESLIGADO"
+RespawnPoint = NodePath("Volta")
+
+[node name="Volta" type="Marker2D" parent="Alarme"]
+position = Vector2(384, 1312)
+
+[node name="Spawn1" type="Marker2D" parent="Alarme"]
+position = Vector2(128, 256)
+
+[node name="Spawn2" type="Marker2D" parent="Alarme"]
+position = Vector2(128, 768)
+
+[node name="Spawn3" type="Marker2D" parent="Alarme"]
+position = Vector2(128, 1280)
+
+[node name="Spawn4" type="Marker2D" parent="Alarme"]
+position = Vector2(128, 1792)
+
+[node name="Spawn5" type="Marker2D" parent="Alarme"]
+position = Vector2(128, 2304)
+
+[node name="Spawn6" type="Marker2D" parent="Alarme"]
+position = Vector2(128, 2816)
+
+[node name="Spawn7" type="Marker2D" parent="Alarme"]
+position = Vector2(384, 384)
+
+[node name="Spawn8" type="Marker2D" parent="Alarme"]
+position = Vector2(384, 2944)
+
+[node name="SeguroLab1" type="Node2D" parent="."]
+position = Vector2(-576, 3648)
+script = ExtResource("safe_zone")
+Size = Vector2(768, 704)
+
+[node name="SeguroLab2" type="Node2D" parent="."]
+position = Vector2(576, 2752)
+script = ExtResource("safe_zone")
+Size = Vector2(768, 704)
+
+[node name="VoltaLab1" type="Marker2D" parent="."]
+position = Vector2(96, 3904)
+
+[node name="VoltaLab2" type="Marker2D" parent="."]
+position = Vector2(640, 3040)
+
+[node name="Monitor" type="Node2D" parent="."]
+z_index = 2
+position = Vector2(808, 2924)
+script = ExtResource("glow")
+Texture = ExtResource("tex_props_fase3_monitor0")
+BlinkTexture = ExtResource("tex_props_fase3_monitor1")
+BlinkInterval = 0.45
+GlowColor = Color(0.4, 0.85, 1, 1)
+GlowRadius = 52
+
+[node name="Computador" type="Area2D" parent="."]
+position = Vector2(808, 2963.2)
+script = ExtResource("interactable")
+Size = Vector2(320, 260)
+Prompt = "Usar computador"
+PromptHeight = 120
+
+[node name="Quadro" type="Node2D" parent="."]
+position = Vector2(160, 3652)
+script = ExtResource("glow")
+Texture = ExtResource("tex_props_fase3_quadro_energia")
+GlowColor = Color(1, 0.75, 0.3, 1)
+GlowRadius = 60
+
+[node name="QuadroEnergia" type="Area2D" parent="."]
+position = Vector2(128, 3712)
+script = ExtResource("interactable")
+Size = Vector2(192, 160)
+Prompt = "Consertar fiação"
+PromptHeight = 120
 
 [node name="Noite" type="CanvasModulate" parent="." groups=["night"]]
 color = Color(0.11, 0.12, 0.2, 1)
