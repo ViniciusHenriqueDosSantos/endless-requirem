@@ -307,7 +307,13 @@ AUD_CX = (AUD[0] + AUD[2] + 1) * T / 2
 AISLE = (AUD[0] + AUD[2]) // 2
 L.prop("Palco", ".", AUD_CX, (PALCO[3] + 1) * T, (PALCO[2] - PALCO[0] + 1) * T, (PALCO[3] - PALCO[1] + 1) * T,
        col(0.45, 0.3, 0.18), solid=False, z=-4, sprite="palco", folder="props/fase3")
-L.prop("Pulpito", ".", AUD_CX, (PALCO[1] + 1) * T, 48, 56, WOOD, depth=28, sprite="pulpito", folder="props/fase3")
+L.prop("Pulpito", ".", AUD_CX + 2 * T, (PALCO[1] + 1) * T, 48, 56, WOOD, depth=28, sprite="pulpito", folder="props/fase3")
+# o diploma num suporte no meio do palco e as duas escadinhas nas laterais (como na cena em 3D)
+L.prop("DiplomaPalco", ".", AUD_CX, (PALCO[1] + 1) * T - 8, 48, 40, col(0, 0, 0, 0), solid=False, sprite="diploma_palco",
+       folder="props/fase3")
+for side, tx in (("E", AUD[0]), ("D", AUD[2])):
+    L.prop(f"EscadaPalco{side}", ".", tx * T + 32, PALCO[1] * T + 24, 64, 64, col(0, 0, 0, 0), solid=False, z=-3,
+           sprite="escada_palco", folder="props/fase3")
 # piso do auditório: madeira marrom clara (mais clara que as poltronas), por baixo do tapete vermelho
 L.node("PisoAuditorio", type="ColorRect", props={"z_index": "-6", "offset_left": f"{AUD[0] * T}.0",
        "offset_top": f"{AUD[1] * T}.0", "offset_right": f"{(AUD[2] + 1) * T}.0", "offset_bottom": f"{PALCO[1] * T}.0",
