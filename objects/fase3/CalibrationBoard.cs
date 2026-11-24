@@ -3,7 +3,7 @@ using Godot;
 // O painel "Calibrar distribuidor" (estilo Among Us), usado pela tela CalibrationScreen.
 // Três mostradores, um embaixo do outro, cada um com um pedaço colorido girando sem parar.
 // O jogador aperta o botão CALIBRAR do mostrador da vez (de cima para baixo) quando o pedaço passa pela marca do alto.
-// Acertou: o mostrador trava e acende verde; o próximo gira mais rápido. Errou: pisca vermelho e continua girando.
+// Acertou: o mostrador trava e acende verde; o próximo gira mais rápido. Errou: pisca vermelho e os três recomeçam.
 //   Hit / Miss: acertou ou errou um mostrador.  Completed: os três calibrados.
 public partial class CalibrationBoard : Control
 {
@@ -98,6 +98,13 @@ public partial class CalibrationBoard : Control
 		}
 		else
 		{
+			// errou: os três voltam a girar e começa tudo de novo
+			for (int i = 0; i < Dials; i++)
+			{
+				_locked[i] = false;
+				_angle[i] = (float)GD.RandRange(-Mathf.Pi, Mathf.Pi);
+			}
+			_current = 0;
 			_missFlash = MissFlashTime;
 			EmitSignal(SignalName.Miss);
 		}

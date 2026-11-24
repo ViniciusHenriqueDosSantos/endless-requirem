@@ -53,6 +53,10 @@ public partial class Fase3 : LevelBase
 	// Atraso entre os bipes das câmeras e a sirene.
 	private const float SirenDelay = 0.75f;
 	private const int FirstGhosts = 2;
+	private const int KeypadMaxGhosts = 3;
+	private const float KeypadSpawnDistance = 600f;
+	private int _corridorMaxGhosts;
+	private float _corridorSpawnDistance;
 
 	private const float AlarmVolume = -9f;
 	private const float AlarmTintMax = 0.13f;
@@ -92,7 +96,11 @@ public partial class Fase3 : LevelBase
 		do _code = rng.RandiRange(1000, 9999).ToString();
 		while (_code[0] == _code[1] || _code[1] == _code[2] || _code[2] == _code[3]);
 
+		_corridorMaxGhosts = Alarme.SurviveMaxAlive;
+		_corridorSpawnDistance = Alarme.MinSpawnDistance;
 		CreateScreens();
+		// reprovado com o teclado aberto: fecha o teclado (a tela de REPROVADO fica por cima)
+		Player.Died += () => _keypad.Close();
 		CreateAlarm();
 
 		Fechadura.Interacted += OpenKeypad;
@@ -127,6 +135,7 @@ public partial class Fase3 : LevelBase
 		_alert = new ScreenAlert();
 		AddChild(_alert);
 
+		_keypad.PausesGame = false;
 		_keypad.Solved += OnCodeAccepted;
 		_keypad.Closed += OnKeypadClosed;
 		_wires.Solved += OnWiresFixed;
@@ -180,7 +189,23 @@ public partial class Fase3 : LevelBase
 		if (_doorOpen) return;
 		if (!_alarmOn)
 			StartAlarm();
+
+		// o jogo não pausa no teclado: o jogador fica parado digitando e os fantasmas continuam vindo,
+		// só que em menor número e surgindo mais longe
+		Player.InputLocked = true;
+		Fechadura.Enabled = false;
+		Alarme.SurviveMaxAlive = KeypadMaxGhosts;
+		Alarme.MinSpawnDistance = KeypadSpawnDistance;
 		_keypad.Open();
+	}
+
+	// Ao sair do teclado (fechou, acertou ou foi reprovado): o jogador volta a se mexer e o alarme volta ao normal.
+	private void RestoreAfterKeypad()
+	{
+		Player.InputLocked = false;
+		Fechadura.Enabled = !_doorOpen;
+		Alarme.SurviveMaxAlive = _corridorMaxGhosts;
+		Alarme.MinSpawnDistance = _corridorSpawnDistance;
 	}
 
 	private void StartAlarm()
@@ -188,7 +213,8 @@ public partial class Fase3 : LevelBase
 		_alarmOn = true;
 		Hud.HidePointer();
 		Alarme.StartFight();
-		// os primeiros fantasmas já surgem junto com o alarme (estão lá quando o jogador sai do teclado)
+		// os primeiros fantasmas já surgem junto com o alarme, longe (chegam enquanto o jogador ainda digita)
+		Alarme.MinSpawnDistance = KeypadSpawnDistance;
 		for (int i = 0; i < FirstGhosts; i++)
 			Alarme.SpawnExtraEnemy();
 		PortaLab1.Unlock();
@@ -232,6 +258,7 @@ public partial class Fase3 : LevelBase
 
 	private void OnKeypadClosed()
 	{
+		RestoreAfterKeypad();
 		if (_doorOpen) return;
 
 		if (_codeFound)

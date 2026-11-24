@@ -24,10 +24,16 @@ public partial class KeypadScreen : OverlayScreen
 	private float _closeTimer = -1f;
 	private bool _solved;
 
+	// O jogo não pausa com o teclado aberto, então o fundo escurece pouco.
+	protected override float DimAlpha => 0.3f;
+
 	protected override void BuildUi()
 	{
+		// o teclado fica na metade direita da tela: o jogador (no meio) e os fantasmas chegando continuam à vista
 		CenterContainer center = new();
 		center.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		center.AnchorLeft = 0.5f;
+		center.OffsetLeft = 0;
 		Root.AddChild(center);
 		_center = center;
 

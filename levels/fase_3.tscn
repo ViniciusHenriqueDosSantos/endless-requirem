@@ -1350,8 +1350,8 @@ position = Vector2(256, 1728)
 Size = Vector2(512, 3136)
 Waves = 0
 SurviveTime = 100000
-SurviveSpawnInterval = 2.2
-SurviveMaxAlive = 5
+SurviveSpawnInterval = 2.0
+SurviveMaxAlive = 6
 EnemySpeedScale = 0.95
 StartOnEnter = false
 StartBanner = "ALARME!"
@@ -1477,281 +1477,421 @@ Size = Vector2(56, 960)
 Color = Color(0.42, 0.1, 0.12, 1)
 Solid = false
 
-[node name="Poltrona1_33" parent="." instance=ExtResource("prop")]
-position = Vector2(2144, 376)
+[node name="Poltrona1_0_0" parent="." instance=ExtResource("prop")]
+position = Vector2(2140, 376)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona1_34" parent="." instance=ExtResource("prop")]
-position = Vector2(2208, 376)
+[node name="Poltrona1_0_1" parent="." instance=ExtResource("prop")]
+position = Vector2(2180, 376)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona1_35" parent="." instance=ExtResource("prop")]
-position = Vector2(2272, 376)
+[node name="Poltrona1_0_2" parent="." instance=ExtResource("prop")]
+position = Vector2(2220, 376)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona1_36" parent="." instance=ExtResource("prop")]
-position = Vector2(2336, 376)
+[node name="Poltrona1_0_3" parent="." instance=ExtResource("prop")]
+position = Vector2(2260, 376)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona1_38" parent="." instance=ExtResource("prop")]
-position = Vector2(2464, 376)
+[node name="Poltrona1_0_4" parent="." instance=ExtResource("prop")]
+position = Vector2(2300, 376)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona1_39" parent="." instance=ExtResource("prop")]
-position = Vector2(2528, 376)
+[node name="Poltrona1_0_5" parent="." instance=ExtResource("prop")]
+position = Vector2(2340, 376)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona1_40" parent="." instance=ExtResource("prop")]
-position = Vector2(2592, 376)
+[node name="Poltrona1_1_0" parent="." instance=ExtResource("prop")]
+position = Vector2(2460, 376)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona1_41" parent="." instance=ExtResource("prop")]
-position = Vector2(2656, 376)
+[node name="Poltrona1_1_1" parent="." instance=ExtResource("prop")]
+position = Vector2(2500, 376)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona2_33" parent="." instance=ExtResource("prop")]
-position = Vector2(2144, 504)
+[node name="Poltrona1_1_2" parent="." instance=ExtResource("prop")]
+position = Vector2(2540, 376)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona2_34" parent="." instance=ExtResource("prop")]
-position = Vector2(2208, 504)
+[node name="Poltrona1_1_3" parent="." instance=ExtResource("prop")]
+position = Vector2(2580, 376)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona2_35" parent="." instance=ExtResource("prop")]
-position = Vector2(2272, 504)
+[node name="Poltrona1_1_4" parent="." instance=ExtResource("prop")]
+position = Vector2(2620, 376)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona2_36" parent="." instance=ExtResource("prop")]
-position = Vector2(2336, 504)
+[node name="Poltrona1_1_5" parent="." instance=ExtResource("prop")]
+position = Vector2(2660, 376)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona2_38" parent="." instance=ExtResource("prop")]
-position = Vector2(2464, 504)
+[node name="Poltrona2_0_0" parent="." instance=ExtResource("prop")]
+position = Vector2(2140, 504)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona2_39" parent="." instance=ExtResource("prop")]
-position = Vector2(2528, 504)
+[node name="Poltrona2_0_1" parent="." instance=ExtResource("prop")]
+position = Vector2(2180, 504)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona2_40" parent="." instance=ExtResource("prop")]
-position = Vector2(2592, 504)
+[node name="Poltrona2_0_2" parent="." instance=ExtResource("prop")]
+position = Vector2(2220, 504)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona2_41" parent="." instance=ExtResource("prop")]
-position = Vector2(2656, 504)
+[node name="Poltrona2_0_3" parent="." instance=ExtResource("prop")]
+position = Vector2(2260, 504)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona3_33" parent="." instance=ExtResource("prop")]
-position = Vector2(2144, 632)
+[node name="Poltrona2_0_4" parent="." instance=ExtResource("prop")]
+position = Vector2(2300, 504)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona3_34" parent="." instance=ExtResource("prop")]
-position = Vector2(2208, 632)
+[node name="Poltrona2_0_5" parent="." instance=ExtResource("prop")]
+position = Vector2(2340, 504)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona3_35" parent="." instance=ExtResource("prop")]
-position = Vector2(2272, 632)
+[node name="Poltrona2_1_0" parent="." instance=ExtResource("prop")]
+position = Vector2(2460, 504)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona3_36" parent="." instance=ExtResource("prop")]
-position = Vector2(2336, 632)
+[node name="Poltrona2_1_1" parent="." instance=ExtResource("prop")]
+position = Vector2(2500, 504)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona3_38" parent="." instance=ExtResource("prop")]
-position = Vector2(2464, 632)
+[node name="Poltrona2_1_2" parent="." instance=ExtResource("prop")]
+position = Vector2(2540, 504)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona3_39" parent="." instance=ExtResource("prop")]
-position = Vector2(2528, 632)
+[node name="Poltrona2_1_3" parent="." instance=ExtResource("prop")]
+position = Vector2(2580, 504)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona3_40" parent="." instance=ExtResource("prop")]
-position = Vector2(2592, 632)
+[node name="Poltrona2_1_4" parent="." instance=ExtResource("prop")]
+position = Vector2(2620, 504)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona3_41" parent="." instance=ExtResource("prop")]
-position = Vector2(2656, 632)
+[node name="Poltrona2_1_5" parent="." instance=ExtResource("prop")]
+position = Vector2(2660, 504)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona4_33" parent="." instance=ExtResource("prop")]
-position = Vector2(2144, 760)
+[node name="Poltrona3_0_0" parent="." instance=ExtResource("prop")]
+position = Vector2(2140, 632)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona4_34" parent="." instance=ExtResource("prop")]
-position = Vector2(2208, 760)
+[node name="Poltrona3_0_1" parent="." instance=ExtResource("prop")]
+position = Vector2(2180, 632)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona4_35" parent="." instance=ExtResource("prop")]
-position = Vector2(2272, 760)
+[node name="Poltrona3_0_2" parent="." instance=ExtResource("prop")]
+position = Vector2(2220, 632)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona4_36" parent="." instance=ExtResource("prop")]
-position = Vector2(2336, 760)
+[node name="Poltrona3_0_3" parent="." instance=ExtResource("prop")]
+position = Vector2(2260, 632)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona4_38" parent="." instance=ExtResource("prop")]
-position = Vector2(2464, 760)
+[node name="Poltrona3_0_4" parent="." instance=ExtResource("prop")]
+position = Vector2(2300, 632)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona4_39" parent="." instance=ExtResource("prop")]
-position = Vector2(2528, 760)
+[node name="Poltrona3_0_5" parent="." instance=ExtResource("prop")]
+position = Vector2(2340, 632)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona4_40" parent="." instance=ExtResource("prop")]
-position = Vector2(2592, 760)
+[node name="Poltrona3_1_0" parent="." instance=ExtResource("prop")]
+position = Vector2(2460, 632)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona4_41" parent="." instance=ExtResource("prop")]
-position = Vector2(2656, 760)
+[node name="Poltrona3_1_1" parent="." instance=ExtResource("prop")]
+position = Vector2(2500, 632)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona5_33" parent="." instance=ExtResource("prop")]
-position = Vector2(2144, 888)
+[node name="Poltrona3_1_2" parent="." instance=ExtResource("prop")]
+position = Vector2(2540, 632)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona5_34" parent="." instance=ExtResource("prop")]
-position = Vector2(2208, 888)
+[node name="Poltrona3_1_3" parent="." instance=ExtResource("prop")]
+position = Vector2(2580, 632)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona5_35" parent="." instance=ExtResource("prop")]
-position = Vector2(2272, 888)
+[node name="Poltrona3_1_4" parent="." instance=ExtResource("prop")]
+position = Vector2(2620, 632)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona5_36" parent="." instance=ExtResource("prop")]
-position = Vector2(2336, 888)
+[node name="Poltrona3_1_5" parent="." instance=ExtResource("prop")]
+position = Vector2(2660, 632)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona5_38" parent="." instance=ExtResource("prop")]
-position = Vector2(2464, 888)
+[node name="Poltrona4_0_0" parent="." instance=ExtResource("prop")]
+position = Vector2(2140, 760)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona5_39" parent="." instance=ExtResource("prop")]
-position = Vector2(2528, 888)
+[node name="Poltrona4_0_1" parent="." instance=ExtResource("prop")]
+position = Vector2(2180, 760)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona5_40" parent="." instance=ExtResource("prop")]
-position = Vector2(2592, 888)
+[node name="Poltrona4_0_2" parent="." instance=ExtResource("prop")]
+position = Vector2(2220, 760)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")
 Depth = 22
 
-[node name="Poltrona5_41" parent="." instance=ExtResource("prop")]
-position = Vector2(2656, 888)
+[node name="Poltrona4_0_3" parent="." instance=ExtResource("prop")]
+position = Vector2(2260, 760)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona4_0_4" parent="." instance=ExtResource("prop")]
+position = Vector2(2300, 760)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona4_0_5" parent="." instance=ExtResource("prop")]
+position = Vector2(2340, 760)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona4_1_0" parent="." instance=ExtResource("prop")]
+position = Vector2(2460, 760)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona4_1_1" parent="." instance=ExtResource("prop")]
+position = Vector2(2500, 760)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona4_1_2" parent="." instance=ExtResource("prop")]
+position = Vector2(2540, 760)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona4_1_3" parent="." instance=ExtResource("prop")]
+position = Vector2(2580, 760)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona4_1_4" parent="." instance=ExtResource("prop")]
+position = Vector2(2620, 760)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona4_1_5" parent="." instance=ExtResource("prop")]
+position = Vector2(2660, 760)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona5_0_0" parent="." instance=ExtResource("prop")]
+position = Vector2(2140, 888)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona5_0_1" parent="." instance=ExtResource("prop")]
+position = Vector2(2180, 888)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona5_0_2" parent="." instance=ExtResource("prop")]
+position = Vector2(2220, 888)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona5_0_3" parent="." instance=ExtResource("prop")]
+position = Vector2(2260, 888)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona5_0_4" parent="." instance=ExtResource("prop")]
+position = Vector2(2300, 888)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona5_0_5" parent="." instance=ExtResource("prop")]
+position = Vector2(2340, 888)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona5_1_0" parent="." instance=ExtResource("prop")]
+position = Vector2(2460, 888)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona5_1_1" parent="." instance=ExtResource("prop")]
+position = Vector2(2500, 888)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona5_1_2" parent="." instance=ExtResource("prop")]
+position = Vector2(2540, 888)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona5_1_3" parent="." instance=ExtResource("prop")]
+position = Vector2(2580, 888)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona5_1_4" parent="." instance=ExtResource("prop")]
+position = Vector2(2620, 888)
+Size = Vector2(40, 46)
+Color = Color(0.45, 0.12, 0.14, 1)
+Texture = ExtResource("tex_props_fase3_poltrona")
+Depth = 22
+
+[node name="Poltrona5_1_5" parent="." instance=ExtResource("prop")]
+position = Vector2(2660, 888)
 Size = Vector2(40, 46)
 Color = Color(0.45, 0.12, 0.14, 1)
 Texture = ExtResource("tex_props_fase3_poltrona")

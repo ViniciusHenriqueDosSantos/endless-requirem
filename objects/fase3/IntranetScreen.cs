@@ -101,6 +101,8 @@ public partial class IntranetScreen : OverlayScreen
 		Control site = new() { Theme = theme };
 		site.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 		site.OffsetLeft = 36; site.OffsetTop = 24; site.OffsetRight = -36; site.OffsetBottom = -24;
+		// texto de site com filtro suave (o jogo usa "nearest" para a pixel art, o que deixava as letras falhadas)
+		site.TextureFilter = CanvasItem.TextureFilterEnum.Linear;
 		Root.AddChild(site);
 		_site = site;
 
@@ -240,7 +242,7 @@ public partial class IntranetScreen : OverlayScreen
 
 	private void BuildLogin(Theme theme)
 	{
-		_login = new Control { Theme = theme };
+		_login = new Control { Theme = theme, TextureFilter = CanvasItem.TextureFilterEnum.Linear };
 		_login.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 		Root.AddChild(_login);
 
@@ -323,7 +325,6 @@ public partial class IntranetScreen : OverlayScreen
 		_anonymous.AddThemeStyleboxOverride("pressed", Box(Green.Darkened(0.15f), 16, 8, 12));
 		_anonymous.Pressed += LogIn;
 		fields.AddChild(_anonymous);
-		fields.AddChild(Plain("Digite e aperte Enter  •  Esc: sair", 12, InkSoft));
 	}
 
 	private void AskUser()
