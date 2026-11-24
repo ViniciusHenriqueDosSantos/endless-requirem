@@ -54,7 +54,7 @@ public partial class PacMan : Node2D
 	private const float FrightSpeed = 2.8f;
 	private const float EyesSpeed = 9f;
 	private const float TunnelSpeed = 2.5f;
-	private const float LeavingSpeed = 2.8f;
+	private const float LeavingSpeed = 4f;
 
 	private const float FrightTime = 6f;
 	private const float FrightBlinkTime = 2f;
@@ -90,6 +90,8 @@ public partial class PacMan : Node2D
 		public Vector2I StartTile;
 		public float ReleaseAt;   // segundos depois do "PRONTO!" para sair da casinha
 		public GhostMode Mode;
+		public bool Scared;       // na casinha ou saindo quando a pastilha foi comida: fica azul e sai assustado
+		public bool IsBlue => Mode == GhostMode.Frightened || Scared;
 	}
 
 	private readonly char[,] _cells = new char[W, H];
@@ -167,6 +169,7 @@ public partial class PacMan : Node2D
 			g.Progress = 0;
 			g.Dir = g.Index == 0 ? Left : Vector2I.Zero;
 			g.Mode = g.Index == 0 ? GhostMode.Active : GhostMode.House;
+			g.Scared = false;
 		}
 		_frightTimer = 0;
 		_modeIndex = 0;
@@ -260,7 +263,10 @@ public partial class PacMan : Node2D
 			_frightTimer -= dt;
 			if (_frightTimer <= 0)
 				foreach (Ghost g in _ghosts)
+				{
 					if (g.Mode == GhostMode.Frightened) g.Mode = GhostMode.Active;
+					g.Scared = false;
+				}
 			return;   // o relógio de espalhar/perseguir para enquanto estão assustados
 		}
 
@@ -341,7 +347,9 @@ public partial class PacMan : Node2D
 		_eatChain = 0;
 		foreach (Ghost g in _ghosts)
 		{
-			if (g.Mode != GhostMode.Active && g.Mode != GhostMode.Frightened) continue;
+			// quem está na casinha ou saindo (inclusive quem acabou de renascer) também fica azul
+			if (g.Mode is GhostMode.House or GhostMode.Leaving) { g.Scared = true; continue; }
+			if (g.Mode == GhostMode.Eyes) continue;
 			if (g.Mode == GhostMode.Active) Reverse(g);
 			g.Mode = GhostMode.Frightened;
 		}
@@ -388,7 +396,8 @@ public partial class PacMan : Node2D
 	{
 		if (g.Mode == GhostMode.Leaving && g.Tile == AboveDoor)
 		{
-			g.Mode = GhostMode.Active;
+			g.Mode = g.Scared && _frightTimer > 0 ? GhostMode.Frightened : GhostMode.Active;
+			g.Scared = false;
 			g.Dir = Left;   // sai sempre para a esquerda, como no clássico
 		}
 		else if (g.Mode == GhostMode.Eyes && g.Tile == HouseCenter)
@@ -472,8 +481,9 @@ public partial class PacMan : Node2D
 			if (g.Mode is GhostMode.House or GhostMode.Eyes) continue;
 			if (Distance(g.Pos, _player.Pos) > 0.6f) continue;
 
-			if (g.Mode == GhostMode.Frightened)
+			if (g.IsBlue)
 			{
+				g.Scared = false;
 				_eatChain++;
 				int points = 100 << _eatChain;   // 200, 400, 800, 1600
 				_score += points;
@@ -621,7 +631,7 @@ public partial class PacMan : Node2D
 		}
 
 		Color tint = g.Color;
-		if (g.Mode == GhostMode.Frightened)
+		if (g.IsBlue)
 		{
 			bool blinkWhite = _frightTimer < FrightBlinkTime && Mathf.PosMod(_time, 0.3f) < 0.15f;
 			tint = blinkWhite ? Colors.White : new Color(0.25f, 0.35f, 1f);
