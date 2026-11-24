@@ -43,7 +43,7 @@ Na primeira vez, o Godot compila o código C# e pode demorar alguns segundos.
 | Interagir (fechadura, computador, quadro de energia) | **E** |
 | Sair de uma tela (senha, fios, computador) | **Esc** |
 
-**Atalhos de teste** (só rodando pelo editor): **F1** = Fase 1, **F2** = Fase 2, **F3** = escada, **F4** = Fase 3, **F5** = auditório em 3D.
+**Atalhos de teste** (só rodando pelo editor): **F1** = Fase 1, **F2** = Fase 2, **F3** = escada, **F4** = Fase 3, **F5** = auditório em 3D, **F6** = Pac-Man dentro do telão.
 
 Armas: 1 = Laser · 2 = Escopeta · 3 = Canhão Perfurante. Na Fase 1 você começa só com o Laser; as outras vêm dos chefes.
 
@@ -60,6 +60,7 @@ levels/escada.tscn      escada (fim da Fase 2): vão com 2 colunas de lances, 8 
 levels/fase_3.tscn      Fase 3 (4º andar): corredor, laboratórios, hall do elevador e convivência
 levels/Fase3.cs         roteiro da Fase 3
 levels/auditorio_3d.tscn  auditório em 3D (primeira pessoa): o diploma no palco e a S.I.A. no telão (Auditorio3D.cs)
+levels/pacman.tscn      dentro do telão: Pac-Man da S.I.A. (PacMan.cs), uma rodada, cada fantasma com seu jeito
 levels/Escada.cs        roteiro da escada
 levels/LevelBase.cs     o que toda fase faz igual (REPROVADO, fim de fase, levar armas)
 levels/test_rooms.tscn  sala de teste da MVP 1

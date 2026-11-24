@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 // com uma luz em cima. Para subir no palco há duas escadinhas nas laterais. Chegando perto: "[E] Pegar o diploma".
 // Ao pegar começa a cena (sem controle): o telão atrás do palco liga sozinho, aparece a S.I.A., fala com o jogador,
 // a câmera vira para o telão e ele é puxado para dentro. Tela preta, "(continua...)".
-// Por enquanto (teste), qualquer tecla no final recomeça esta cena. Atalho de teste: F5 abre esta cena direto.
+// No final, qualquer tecla leva para dentro do telão (levels/pacman.tscn). Atalho de teste: F5 abre esta cena direto.
 //
 // Tudo é montado por código (blocos 3D simples com texturas em pixel art de sprites/3d/), e a imagem é desenhada
 // em resolução baixa (StretchShrink) para combinar com o resto do jogo.
@@ -395,7 +395,7 @@ public partial class Auditorio3D : Node
 		if (_state == State.End)
 		{
 			if (@event is InputEventKey { Pressed: true, Echo: false } || @event is InputEventMouseButton { Pressed: true })
-				GetTree().ReloadCurrentScene();
+				GetTree().ChangeSceneToFile("res://levels/pacman.tscn");   // dentro do telão: o Pac-Man da S.I.A.
 			return;
 		}
 
@@ -542,6 +542,6 @@ public partial class Auditorio3D : Node
 
 		_state = State.End;
 		Input.MouseMode = Input.MouseModeEnum.Visible;
-		_endText.Text = "Você foi puxado para dentro do sistema da S.I.A.\n\n(continua...)\n\n\n[teste] aperte qualquer tecla para ver de novo";
+		_endText.Text = "Você foi puxado para dentro do sistema da S.I.A.\n\n\naperte qualquer tecla";
 	}
 }
