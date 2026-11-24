@@ -38,11 +38,11 @@ public partial class Door : StaticBody2D
 	[Export] public Texture2D LockedSprite;
 	[Export] public Texture2D UnlockedSprite;
 
-	// Porta de verdade (ex.: laboratórios da Fase 3): destrancada, continua desenhada fechada (ClosedSprite)
-	// e só aparece aberta (UnlockedSprite) com o jogador perto. Dá para passar do mesmo jeito.
+	// Porta de verdade (ex.: laboratórios da Fase 3): destrancada, fica fechada (ClosedSprite, e segura tiros)
+	// e só abre (UnlockedSprite, sem colisão) com o jogador encostando nela.
 	[Export] public bool AutoOpen;
 	[Export] public Texture2D ClosedSprite;
-	private const float AutoOpenDistance = 150f;
+	private const float AutoOpenDistance = 28f;   // distância do jogador até a borda da porta (quase encostando)
 	private bool _playerNear;
 	private Node2D _player;
 
@@ -121,10 +121,19 @@ public partial class Door : StaticBody2D
 
 		if (!IsInstanceValid(_player))
 			_player = GetTree().GetFirstNodeInGroup("player") as Node2D;
-		bool near = _player != null && _player.GlobalPosition.DistanceTo(GlobalPosition + new Vector2(0, -Size.Y / 2)) < AutoOpenDistance;
+		Rect2 door = new(GlobalPosition + new Vector2(-Size.X / 2, -Size.Y), Size);
+		bool near = _player != null && DistanceToRect(door, _player.GlobalPosition) < AutoOpenDistance;
 		if (near == _playerNear) return;
 		_playerNear = near;
+		// fechada, a porta volta a ser sólida: segura os tiros (e quem está do outro lado)
+		_collision.SetDeferred(CollisionShape2D.PropertyName.Disabled, near);
 		QueueRedraw();
+	}
+
+	private static float DistanceToRect(Rect2 rect, Vector2 point)
+	{
+		Vector2 closest = new(Mathf.Clamp(point.X, rect.Position.X, rect.End.X), Mathf.Clamp(point.Y, rect.Position.Y, rect.End.Y));
+		return closest.DistanceTo(point);
 	}
 
 	public void Lock() => SetLocked(true);
@@ -140,7 +149,8 @@ public partial class Door : StaticBody2D
 	private void SetLocked(bool locked)
 	{
 		IsLocked = locked;
-		_collision.SetDeferred(CollisionShape2D.PropertyName.Disabled, !locked);
+		bool solid = locked || (AutoOpen && !_playerNear);   // porta automática destrancada: sólida enquanto fechada
+		_collision.SetDeferred(CollisionShape2D.PropertyName.Disabled, !solid);
 		QueueRedraw();
 	}
 

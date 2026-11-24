@@ -162,8 +162,6 @@ L.nodes[-1] += "\nrotation = 1.5708"     # girada 90°, encostada na parede da d
 for i, ty in enumerate(range(45, 55, 2)):
     L.prop(f"Armario{i+1}", ".", 4 * T + 22, (ty + 2) * T - 4, 44, 2 * T - 8, col(0.25, 0.4, 0.6), depth=2 * T - 8,
            tall=True, inner=col(0.3, 0.47, 0.68))
-L.prop("Bebedouro", ".", 7 * T + 44, 51 * T, 32, 64, col(0.7, 0.72, 0.75), depth=24, sprite="bebedouro",
-       folder="props/fase1")
 
 # ---------- hall estreito: dois elevadores na parede da direita (não são usados) ----------
 for i, feet in enumerate([32, 36]):
@@ -195,7 +193,9 @@ def laboratorio(name, r, door_x, door_y, label_x, wall_side):
         edge = (r[2] + 1) * T
         rows = [(edge - 36, (("E", -64),)), (edge - 36 - STEP, both), (edge - 36 - 2 * STEP, both)]
     for i, (bx, sides) in enumerate(rows):
-        L.prop(f"Bancada{i+1}", name, bx - ox, bottom * T - oy, 72, (bottom - top) * T, PC, "", depth=(bottom - top) * T)
+        kind = "dupla" if len(sides) == 2 else ("esq" if sides[0][0] == "E" else "dir")   # para onde os PCs olham
+        L.prop(f"Bancada{i+1}", name, bx - ox, bottom * T - oy, 72, (bottom - top) * T, PC, "", depth=(bottom - top) * T,
+               sprite=f"bancada_{kind}", folder="props/fase3")
         # cadeiras do lado da bancada, uma a cada computador
         for j, ty in enumerate(range(top, bottom, 2)):
             for side, dx in sides:
@@ -262,8 +262,8 @@ for i, (side, ty) in enumerate(CAMERAS):
 # Os fantasmas só surgem nos pontos Spawn (no corredor), nunca dentro dos laboratórios.
 AL = (CORR[0], CORR[1])
 L.node("Alarme", inst="room", props={"position": v(AL[0] * T, AL[1] * T), "Size": v(8 * T, (CORR[3] - CORR[1] + 1) * T),
-       "Waves": "0", "SurviveTime": "100000", "SurviveSpawnInterval": "1.4", "SurviveMaxAlive": "8",
-       "EnemySpeedScale": "1.1",
+       "Waves": "0", "SurviveTime": "100000", "SurviveSpawnInterval": "2.2", "SurviveMaxAlive": "5",
+       "EnemySpeedScale": "0.95",
        "StartOnEnter": "false", "StartBanner": '"ALARME!"', "ClearBanner": '"ALARME DESLIGADO"',
        "RespawnPoint": 'NodePath("Volta")'}, node_paths=["RespawnPoint"])
 L.node("Volta", "Alarme", type="Marker2D", props={"position": v((10 - AL[0]) * T, (47.5 - AL[1]) * T)})

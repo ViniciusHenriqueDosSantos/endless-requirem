@@ -52,6 +52,7 @@ public partial class Fase3 : LevelBase
 
 	// Atraso entre os bipes das câmeras e a sirene.
 	private const float SirenDelay = 0.75f;
+	private const int FirstGhosts = 2;
 
 	private const float AlarmVolume = -9f;
 	private const float AlarmTintMax = 0.13f;
@@ -187,6 +188,9 @@ public partial class Fase3 : LevelBase
 		_alarmOn = true;
 		Hud.HidePointer();
 		Alarme.StartFight();
+		// os primeiros fantasmas já surgem junto com o alarme (estão lá quando o jogador sai do teclado)
+		for (int i = 0; i < FirstGhosts; i++)
+			Alarme.SpawnExtraEnemy();
 		PortaLab1.Unlock();
 		PortaLab2.Unlock();
 		SetCameras(true);

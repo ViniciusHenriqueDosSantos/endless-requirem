@@ -31,12 +31,14 @@
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/cadeira_espera.png" id="tex_props_fase2_cadeira_espera"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/pingpong.png" id="tex_props_fase3_pingpong"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase1/lixeiras.png" id="tex_props_fase1_lixeiras"]
-[ext_resource type="Texture2D" path="res://sprites/props/fase1/bebedouro.png" id="tex_props_fase1_bebedouro"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/elevador.png" id="tex_props_fase2_elevador"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase3/bancada_dir.png" id="tex_props_fase3_bancada_dir"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase3/bancada_dupla.png" id="tex_props_fase3_bancada_dupla"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/lousa1.png" id="tex_props_fase3_lousa1"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/porta_lab_trancada.png" id="tex_props_fase3_porta_lab_trancada"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/porta_lab_fechada.png" id="tex_props_fase3_porta_lab_fechada"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/porta_lab_aberta.png" id="tex_props_fase3_porta_lab_aberta"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase3/bancada_esq.png" id="tex_props_fase3_bancada_esq"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/lousa2.png" id="tex_props_fase3_lousa2"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/elevador_quebrado.png" id="tex_props_fase2_elevador_quebrado"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/porta_escada.png" id="tex_props_fase2_porta_escada"]
@@ -776,13 +778,6 @@ Tall = true
 InnerColor = Color(0.3, 0.47, 0.68, 1)
 Depth = 120
 
-[node name="Bebedouro" parent="." instance=ExtResource("prop")]
-position = Vector2(492, 3264)
-Size = Vector2(32, 64)
-Color = Color(0.7, 0.72, 0.75, 1)
-Texture = ExtResource("tex_props_fase1_bebedouro")
-Depth = 24
-
 [node name="ElevadorHall1" parent="." instance=ExtResource("prop")]
 position = Vector2(744, 2112)
 Size = Vector2(48, 192)
@@ -832,6 +827,7 @@ Waves = 0
 position = Vector2(36, 640)
 Size = Vector2(72, 512)
 Color = Color(0.75, 0.75, 0.72, 1)
+Texture = ExtResource("tex_props_fase3_bancada_dir")
 Depth = 512
 
 [node name="Cadeira1D1" parent="Lab1" instance=ExtResource("prop")]
@@ -859,6 +855,7 @@ Depth = 22
 position = Vector2(286, 640)
 Size = Vector2(72, 512)
 Color = Color(0.75, 0.75, 0.72, 1)
+Texture = ExtResource("tex_props_fase3_bancada_dupla")
 Depth = 512
 
 [node name="Cadeira2E1" parent="Lab1" instance=ExtResource("prop")]
@@ -907,6 +904,7 @@ Depth = 22
 position = Vector2(536, 640)
 Size = Vector2(72, 512)
 Color = Color(0.75, 0.75, 0.72, 1)
+Texture = ExtResource("tex_props_fase3_bancada_dupla")
 Depth = 512
 
 [node name="Cadeira3E1" parent="Lab1" instance=ExtResource("prop")]
@@ -989,6 +987,7 @@ Waves = 0
 position = Vector2(732, 640)
 Size = Vector2(72, 512)
 Color = Color(0.75, 0.75, 0.72, 1)
+Texture = ExtResource("tex_props_fase3_bancada_esq")
 Depth = 512
 
 [node name="Cadeira1E1" parent="Lab2" instance=ExtResource("prop")]
@@ -1016,6 +1015,7 @@ Depth = 22
 position = Vector2(482, 640)
 Size = Vector2(72, 512)
 Color = Color(0.75, 0.75, 0.72, 1)
+Texture = ExtResource("tex_props_fase3_bancada_dupla")
 Depth = 512
 
 [node name="Cadeira2E1" parent="Lab2" instance=ExtResource("prop")]
@@ -1064,6 +1064,7 @@ Depth = 22
 position = Vector2(232, 640)
 Size = Vector2(72, 512)
 Color = Color(0.75, 0.75, 0.72, 1)
+Texture = ExtResource("tex_props_fase3_bancada_dupla")
 Depth = 512
 
 [node name="Cadeira3E1" parent="Lab2" instance=ExtResource("prop")]
@@ -1349,9 +1350,9 @@ position = Vector2(256, 1728)
 Size = Vector2(512, 3136)
 Waves = 0
 SurviveTime = 100000
-SurviveSpawnInterval = 1.4
-SurviveMaxAlive = 8
-EnemySpeedScale = 1.1
+SurviveSpawnInterval = 2.2
+SurviveMaxAlive = 5
+EnemySpeedScale = 0.95
 StartOnEnter = false
 StartBanner = "ALARME!"
 ClearBanner = "ALARME DESLIGADO"
