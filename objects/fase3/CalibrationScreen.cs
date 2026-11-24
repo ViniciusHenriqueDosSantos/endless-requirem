@@ -2,7 +2,7 @@ using Godot;
 
 // Tela 2D do distribuidor de energia do Laboratório 1 (Fase 3): calibrar os três mostradores (CalibrationBoard).
 // Botão CALIBRAR (ou Espaço/Enter) quando o pedaço colorido passa pela marca. Com os três: dispara Solved e fecha.
-// Se sair no meio, os mostradores já calibrados continuam calibrados.
+// Errar um mostrador faz os três recomeçarem. Se sair no meio, os já calibrados continuam calibrados.
 public partial class CalibrationScreen : OverlayScreen
 {
 	private const float CloseDelay = 1.1f;

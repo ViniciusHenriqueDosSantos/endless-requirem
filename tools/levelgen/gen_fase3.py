@@ -262,7 +262,7 @@ for i, (side, ty) in enumerate(CAMERAS):
 # Os fantasmas só surgem nos pontos Spawn (no corredor), nunca dentro dos laboratórios.
 AL = (CORR[0], CORR[1])
 L.node("Alarme", inst="room", props={"position": v(AL[0] * T, AL[1] * T), "Size": v(8 * T, (CORR[3] - CORR[1] + 1) * T),
-       "Waves": "0", "SurviveTime": "100000", "SurviveSpawnInterval": "2.2", "SurviveMaxAlive": "5",
+       "Waves": "0", "SurviveTime": "100000", "SurviveSpawnInterval": "2.0", "SurviveMaxAlive": "6",
        "EnemySpeedScale": "0.95",
        "StartOnEnter": "false", "StartBanner": '"ALARME!"', "ClearBanner": '"ALARME DESLIGADO"',
        "RespawnPoint": 'NodePath("Volta")'}, node_paths=["RespawnPoint"])
@@ -314,11 +314,16 @@ L.node("PisoAuditorio", type="ColorRect", props={"z_index": "-6", "offset_left":
        "mouse_filter": "2", "color": col(0.66, 0.5, 0.34, 1)})
 L.prop("Tapete", ".", AISLE * T + 32, PALCO[1] * T, 56, (PALCO[1] - AUD[1]) * T, col(0.42, 0.1, 0.12), solid=False,
        z=-5)
-for row, ty in enumerate(range(AUD[1] + 1, AUD[3] - 3, 2)):          # fileiras de poltronas, corredores dos lados e no meio
-    for tx in range(AUD[0] + 1, AUD[2]):
-        if tx == AISLE: continue
-        L.prop(f"Poltrona{row+1}_{tx}", ".", tx * T + 32, ty * T + 56, 40, 46, col(0.45, 0.12, 0.14), depth=22,
-               sprite="poltrona", folder="props/fase3")
+# fileiras de poltronas coladas umas nas outras (como as cadeiras pretas da parede), em dois blocos: um de cada lado
+# do tapete, com corredores livres nas laterais
+SEAT = 40
+for row, ty in enumerate(range(AUD[1] + 1, AUD[3] - 3, 2)):
+    for side, (x0, x1) in enumerate([(AUD[0] + 1, AISLE), (AISLE + 1, AUD[2])]):   # tiles [x0, x1)
+        count = (x1 - x0) * T // SEAT
+        start = (x0 + x1) * T / 2 - count * SEAT / 2 + SEAT / 2
+        for k in range(count):
+            L.prop(f"Poltrona{row+1}_{side}_{k}", ".", start + k * SEAT, ty * T + 56, SEAT, 46, col(0.45, 0.12, 0.14),
+                   depth=22, sprite="poltrona", folder="props/fase3")
 L.prop("PlacaAuditorio", ".", AUD_CX, AUD[1] * T - 40, 240, 26, col(0, 0, 0, 0), "AUDITÓRIO", font=13,
        text_color=col(1, 0.85, 0.6), solid=False, z=1)
 LIG_H = LIGACAO[1]

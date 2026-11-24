@@ -16,6 +16,12 @@ public partial class OverlayScreen : CanvasLayer
 	protected Control Root;
 	protected bool CloseWithInteract = true;
 
+	// Desligado: a tela abre sem pausar o jogo (o mundo continua por trás, ex.: fantasmas chegando no teclado de senha).
+	public bool PausesGame = true;
+
+	// Quanto o fundo escurece (0 = nada, 1 = preto).
+	protected virtual float DimAlpha => 0.86f;
+
 	private AudioStreamPlayer _sound;
 	private ulong _openedAt;
 
@@ -31,7 +37,7 @@ public partial class OverlayScreen : CanvasLayer
 		Root.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 		AddChild(Root);
 
-		ColorRect dim = new() { Color = new Color(0.01f, 0.012f, 0.02f, 0.86f) };
+		ColorRect dim = new() { Color = new Color(0.01f, 0.012f, 0.02f, DimAlpha) };
 		dim.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 		Root.AddChild(dim);
 
@@ -51,7 +57,8 @@ public partial class OverlayScreen : CanvasLayer
 	{
 		if (Visible) return;
 		Visible = true;
-		GetTree().Paused = true;
+		if (PausesGame)
+			GetTree().Paused = true;
 		_openedAt = Time.GetTicksMsec();
 		OnOpened();
 	}
@@ -60,7 +67,8 @@ public partial class OverlayScreen : CanvasLayer
 	{
 		if (!Visible) return;
 		Visible = false;
-		GetTree().Paused = false;
+		if (PausesGame)
+			GetTree().Paused = false;
 		EmitSignal(SignalName.Closed);
 	}
 

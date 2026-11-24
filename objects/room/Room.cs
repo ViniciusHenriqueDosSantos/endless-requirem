@@ -41,6 +41,9 @@ public partial class Room : Node2D
 
 	[Export] public bool SpawnAnywhere;
 
+	// Fantasma nunca surge mais perto do jogador que isto (pixels). O roteiro pode mudar durante a luta.
+	[Export] public float MinSpawnDistance = 260f;
+
 	// Última onda traz um fantasma grande (Tank) a mais. Onde ele caiu fica em FinalEnemyPosition.
 	[Export] public bool FinalWaveTank;
 	[Export] public string FinalWaveMessage = "";
@@ -61,7 +64,7 @@ public partial class Room : Node2D
 	// O jogador precisa estar este tanto para dentro da sala para ela perceber.
 	private const float EntryMargin = 64f;
 	private const float SpawnMargin = 96f;
-	private const float MinSpawnDistance = 260f;
+	
 	private const float SpawnInterval = 0.35f;
 	private const float StartDelay = 0.8f;
 	private const float TimeBetweenWaves = 1.2f;
