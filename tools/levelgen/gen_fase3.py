@@ -121,10 +121,10 @@ for ty in range(TATAME[1], TATAME[3] + 1, 2):
         cor = "eva_azul" if ((tx + ty) // 2) % 2 == 0 else "eva_verde"
         L.prop(f"Placa_{tx}_{ty}", "Tatame", (tx + 1) * T, (ty + 2) * T, 2 * T, 2 * T, col(0, 0, 0, 0), solid=False,
                sprite=cor, folder="props/fase3", z=-5)
-for i, (tx, ty, cor) in enumerate([(1, 1, "vermelho"), (2, 3, "azul"), (6, 1, "amarelo"), (9, 2, "verde"),
-                                   (12, 1, "turquesa"), (2, 5, "roxo"), (5, 4, "laranja"), (8, 5, "cinza"),
-                                   (11, 4, "rosa"), (1, 8, "amarelo"), (4, 7, "verde"), (7, 8, "vermelho"),
-                                   (10, 7, "azul"), (12, 8, "roxo")]):
+# puffs em grupinhos encostados nas bordas do tatame (cantos e paredes), o meio fica livre
+for i, (tx, ty, cor) in enumerate([(0.6, 0.4, "vermelho"), (1.7, 0.5, "azul"), (0.5, 1.6, "amarelo"),
+                                   (7.5, 0.4, "verde"), (8.7, 0.5, "laranja"),
+                                   (0.5, 7.4, "roxo"), (0.6, 8.5, "rosa"), (1.8, 8.6, "turquesa")]):
     L.prop(f"Puff{i+1}", ".", tx * T + 32, (ty + CY) * T + 60, 72, 56, col(0, 0, 0, 0), depth=28,
            sprite=f"puff_{cor}", folder="props/fase3")
 L.prop("PlacaTatame", ".", 4 * T + 32, (TATAME[1] + 2) * T + 40, 260, 30, col(0, 0, 0, 0), "TATAME", font=16,
@@ -163,7 +163,7 @@ L.nodes[-1] += "\nrotation = 1.5708"     # girada 90°, encostada na parede da d
 # armários encostados na parede da esquerda do corredor, entre os dois laboratórios
 for i, ty in enumerate(range(45, 55, 2)):
     L.prop(f"Armario{i+1}", ".", 4 * T + 22, (ty + 2) * T - 4, 44, 2 * T - 8, col(0.25, 0.4, 0.6), depth=2 * T - 8,
-           tall=True, sprite=f"armario{(i * 2) % 3}", folder="props/fase3")
+           tall=True, blocks_ghosts=True, sprite=f"armario{(i * 2) % 3}", folder="props/fase3")   # fantasma não atravessa
 
 # ---------- hall estreito: dois elevadores na parede da direita (não são usados) ----------
 for i, feet in enumerate([32, 36]):

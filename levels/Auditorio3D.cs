@@ -23,7 +23,7 @@ public partial class Auditorio3D : Node
 	// Plateia em degraus: cada fileira fica num degrau mais alto que a da frente (o auditório "sobe" para o fundo),
 	// então o jogador entra lá em cima e vai descendo até o palco.
 	private const int Rows = 5;
-	private const float FirstRowZ = -10.5f;
+	private const float FirstRowZ = -9.5f;     // deixa um corredor largo na frente do palco
 	private const float RowStep = 2.2f;
 	private const float TierRise = 0.35f;
 	private static float TierTop(int row) => TierRise * (row + 1);
@@ -213,8 +213,8 @@ public partial class Auditorio3D : Node
 		(float left, float right, float zStart)[] aisles =
 		{
 			(CenterAisleLeft, CenterAisleRight, FirstRowZ - RowStep),
-			(-HalfWidth, -HalfWidth + 0.9f, StageFrontZ + 2f),
-			(HalfWidth - 0.88f, HalfWidth, StageFrontZ + 2f),
+			(-HalfWidth, -HalfWidth + 0.9f, FirstRowZ - RowStep),
+			(HalfWidth - 0.88f, HalfWidth, FirstRowZ - RowStep),
 		};
 		foreach ((float left, float right, float zStart) in aisles)
 		{
@@ -232,21 +232,28 @@ public partial class Auditorio3D : Node
 		Block(world, new Vector3(0, StageHeight / 2, (StageFrontZ + StageBackZ) / 2), new Vector3(HalfWidth * 2, StageHeight, depth), wood, true);
 		Block(world, new Vector3(0, StageHeight - 0.03f, StageFrontZ - 0.05f), new Vector3(HalfWidth * 2, 0.06f, 0.1f), Plain(new Color(0.9f, 0.75f, 0.45f)), false);
 
-		// escadinhas nas duas laterais do palco (4 degraus) com rampa invisível para subir
-		const float stepRise = 0.25f, stepDepth = 0.5f, stairWidth = 1.2f;
+		// escadinhas nas duas laterais do palco, encostadas na frente dele: sobem de lado (do meio para a parede),
+		// a partir do corredor na frente da primeira fileira; lá em cima, um patamar na altura do palco
+		const float stepRise = 0.25f, stepWidth = 0.5f, stairDepth = 1.2f, bottomX = 3.3f;
+		float stairZ = StageFrontZ + stairDepth / 2;
+		float topX = bottomX + 4 * stepWidth;
 		foreach (float side in new[] { -1f, 1f })
 		{
-			float x = side * (HalfWidth - 0.75f);
 			for (int k = 0; k < 4; k++)
 			{
 				float height = stepRise * (k + 1);
-				float z = StageFrontZ + 2 * stepDepth - stepDepth * (k + 0.5f);
-				Block(world, new Vector3(x, height / 2, z), new Vector3(stairWidth, height, stepDepth), wood, false);
+				float x = side * (bottomX + stepWidth * (k + 0.5f));
+				Block(world, new Vector3(x, height / 2, stairZ), new Vector3(stepWidth, height, stairDepth), wood, false);
 			}
-			float run = 4 * stepDepth;
+			float landingWidth = HalfWidth - topX;
+			Block(world, new Vector3(side * (topX + landingWidth / 2), StageHeight / 2, stairZ),
+				new Vector3(landingWidth, StageHeight, stairDepth), wood, true);
+			float run = 4 * stepWidth;
 			float angle = Mathf.Atan2(StageHeight, run);
-			Collider(world, new Vector3(x, StageHeight / 2 - 0.05f, StageFrontZ + run / 2),
-				new Vector3(stairWidth, 0.1f, Mathf.Sqrt(run * run + StageHeight * StageHeight)), new Vector3(angle, 0, 0));
+			Collider(world, new Vector3(side * (bottomX + run / 2), StageHeight / 2 - 0.05f, stairZ),
+				new Vector3(Mathf.Sqrt(run * run + StageHeight * StageHeight), 0.1f, stairDepth), new Vector3(0, 0, side * angle));
+			// luzinha de degrau, para o jogador achar a escada no escuro
+			world.AddChild(new OmniLight3D { Position = new Vector3(side * (bottomX + run / 2), 1.6f, stairZ + 0.8f), LightColor = new Color(1f, 0.8f, 0.5f), LightEnergy = 0.8f, OmniRange = 3f });
 		}
 
 		// telão atrás do palco (desligado; é onde a S.I.A. está escondida), com moldura e cortinas

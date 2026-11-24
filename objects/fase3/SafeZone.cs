@@ -60,6 +60,15 @@ public partial class SafeZone : Node2D
 		return _everSafe && now - _lastSafeMs < ExitGraceMs;
 	}
 
+	// O ponto está em qualquer parte de uma área segura (inclusive na beirada)?
+	public static bool InsideAny(Node anyNode, Vector2 globalPoint)
+	{
+		foreach (Node node in anyNode.GetTree().GetNodesInGroup("safe_zones"))
+			if (node is SafeZone zone && zone.GlobalRect.Grow(WallThickness).HasPoint(globalPoint))
+				return true;
+		return false;
+	}
+
 	// O ponto está dentro de alguma área segura da fase?
 	public static bool Contains(Node anyNode, Vector2 globalPoint)
 	{
