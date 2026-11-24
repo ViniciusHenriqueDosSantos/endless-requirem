@@ -7,6 +7,7 @@
 #   ok.wav      senha certa / tarefa concluída (dois tons subindo)
 #   fio.wav     fio encaixado (estalo elétrico curto)
 #   clique.wav  clique de link no computador
+#   camera.wav  as câmeras do corredor apitando (três bipes agudos) logo antes do alarme
 import os
 import numpy as np
 from scipy.io import wavfile
@@ -63,4 +64,9 @@ save("fio.wav", zap, 0.5)
 
 x = t(0.03)
 save("clique.wav", rng.standard_normal(len(x)) * np.exp(-x * 200), 0.35)
+beeps = []
+for k in range(3):
+    x = t(0.09)
+    beeps += [square(np.full(len(x), 1760.0), x) * 0.5 * env(len(x), 0.002, 0.02), np.zeros(int(SR * 0.07))]
+save("camera.wav", np.concatenate(beeps), 0.45)
 print("sons em", os.path.abspath(OUT))
