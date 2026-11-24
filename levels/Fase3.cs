@@ -52,9 +52,9 @@ public partial class Fase3 : LevelBase
 
 	// Atraso entre os bipes das câmeras e a sirene.
 	private const float SirenDelay = 0.75f;
-	private const int FirstGhosts = 2;
+	private const int FirstGhosts = 3;
 	private const int KeypadMaxGhosts = 3;
-	private const float KeypadSpawnDistance = 600f;
+	private const float KeypadSpawnDistance = 380f;
 	private int _corridorMaxGhosts;
 	private float _corridorSpawnDistance;
 
@@ -88,7 +88,8 @@ public partial class Fase3 : LevelBase
 	public override void _Ready()
 	{
 		base._Ready();
-		TrackRooms(Alarme);
+		// o alarme não entra no "recomeço do trecho": reprovado, o jogador volta no último laboratório
+		// e os fantasmas continuam onde estão (morrer não limpa o corredor; só a vida volta cheia)
 
 		// senha nova a cada partida (sem números repetidos em sequência, para ficar fácil de ler)
 		RandomNumberGenerator rng = new();
@@ -117,8 +118,9 @@ public partial class Fase3 : LevelBase
 		AbrirAuditorio.Interacted += OpenAuditorium;
 		EntradaAuditorio.PlayerEntered += RevealAuditorium;
 
-		Hud.SetObjective("Vá até a porta da área final, no alto do corredor");
-		Hud.ShowMessage("4º andar. A porta da área final fica lá no alto do corredor.", 4f);
+		// sem objetivo fixo na tela: só uma fala rápida ligada ao objetivo do personagem (o diploma)
+		Hud.SetObjective("");
+		Hud.ShowMessage("4º andar... Meu diploma tem que estar em algum lugar por aqui. Aquela porta de vidro no fim do corredor parece importante.", 6f);
 	}
 
 	private void CreateScreens()
@@ -143,7 +145,7 @@ public partial class Fase3 : LevelBase
 		_site.Closed += () =>
 		{
 			if (_codeFound && !_doorOpen)
-				Hud.ShowMessage("Decore a senha que você viu no site e volte para a porta da área final!", 5f);
+				Hud.ShowMessage("Não esqueça da senha...", 3.5f);
 		};
 	}
 
@@ -172,7 +174,7 @@ public partial class Fase3 : LevelBase
 
 		// antes de tentar a porta: seta para a área final
 		if (!_alarmOn && !_doorOpen)
-			Hud.PointTo(Fechadura.GlobalPosition, "SENHA");
+			Hud.PointTo(Fechadura.GlobalPosition, "PORTA");
 
 		if (_alarmOn)
 		{
@@ -210,6 +212,7 @@ public partial class Fase3 : LevelBase
 
 	private void StartAlarm()
 	{
+		SetRespawn(VoltaLab2);   // reprovado antes de entrar num laboratório: volta no Lab 2, o mais perto
 		_alarmOn = true;
 		Hud.HidePointer();
 		Alarme.StartFight();
@@ -263,7 +266,7 @@ public partial class Fase3 : LevelBase
 
 		if (_codeFound)
 		{
-			Hud.SetObjective("Digite na porta a senha que você viu no site");
+			Hud.ShowMessage("Não esqueça da senha...", 3f);
 			return;
 		}
 		// sem objetivo fixo: só um aviso rápido (o jogador descobre o resto sozinho)
@@ -280,7 +283,6 @@ public partial class Fase3 : LevelBase
 		PortaFinal.Unlock();
 		Fechadura.Enabled = false;
 		LuzFechadura.GlowColor = new Color(0.3f, 1f, 0.5f);
-		Hud.SetObjective("Entre na área final");
 		Hud.ShowMessage("Acesso liberado. O alarme parou... e os fantasmas sumiram.", 4f);
 	}
 
@@ -306,8 +308,6 @@ public partial class Fase3 : LevelBase
 	{
 		if (PowerRestored) return;
 		Hud.ShowMessage("O computador ainda funciona, mas está sem energia: conserte o quadro e o distribuidor do outro laboratório.", 5f);
-		if (_alarmOn)
-			Hud.SetObjective("Restaure a energia no Laboratório 1 (quadro e distribuidor)");
 	}
 
 	private void OnWiresFixed()
@@ -339,29 +339,19 @@ public partial class Fase3 : LevelBase
 		Computador.Enabled = true;
 		Monitor.SetTextures(GD.Load<Texture2D>("res://sprites/props/fase3/monitor1.png"), null, 0f);
 		Hud.ShowMessage("Energia restaurada! O computador do outro laboratório voltou a funcionar.", 4f);
-		if (!_doorOpen && !_codeFound)
-			Hud.SetObjective("Use o computador do Laboratório 2");
 	}
 
 	private void OnNoticeFound()
 	{
 		_codeFound = true;
-		if (!_doorOpen)
-			Hud.SetObjective("Volte à porta da área final e digite a senha do site (decore!)");
 	}
 
 	// ---------- reprovado ----------
 
-	// O alarme recomeça do laboratório onde o jogador esteve por último.
+	// Reprovado: volta dentro do laboratório onde esteve por último (LevelBase usa StartPosition).
 	private void SetRespawn(Marker2D point)
 	{
-		if (Alarme.RespawnPoint != null && point != null)
-			Alarme.RespawnPoint.GlobalPosition = point.GlobalPosition;
-	}
-
-	protected override void OnRoomReset(Room room)
-	{
-		if (room == Alarme && _alarmOn)
-			Alarme.StartFight();
+		if (point != null)
+			StartPosition = point.GlobalPosition;
 	}
 }

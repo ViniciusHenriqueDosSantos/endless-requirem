@@ -31,6 +31,9 @@
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/cadeira_espera.png" id="tex_props_fase2_cadeira_espera"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/pingpong.png" id="tex_props_fase3_pingpong"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase1/lixeiras.png" id="tex_props_fase1_lixeiras"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase3/armario0.png" id="tex_props_fase3_armario0"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase3/armario2.png" id="tex_props_fase3_armario2"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase3/armario1.png" id="tex_props_fase3_armario1"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/elevador.png" id="tex_props_fase2_elevador"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/bancada_dir.png" id="tex_props_fase3_bancada_dir"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/bancada_dupla.png" id="tex_props_fase3_bancada_dupla"]
@@ -742,40 +745,40 @@ rotation = 1.5708
 position = Vector2(278, 3004)
 Size = Vector2(44, 120)
 Color = Color(0.25, 0.4, 0.6, 1)
+Texture = ExtResource("tex_props_fase3_armario0")
 Tall = true
-InnerColor = Color(0.3, 0.47, 0.68, 1)
 Depth = 120
 
 [node name="Armario2" parent="." instance=ExtResource("prop")]
 position = Vector2(278, 3132)
 Size = Vector2(44, 120)
 Color = Color(0.25, 0.4, 0.6, 1)
+Texture = ExtResource("tex_props_fase3_armario2")
 Tall = true
-InnerColor = Color(0.3, 0.47, 0.68, 1)
 Depth = 120
 
 [node name="Armario3" parent="." instance=ExtResource("prop")]
 position = Vector2(278, 3260)
 Size = Vector2(44, 120)
 Color = Color(0.25, 0.4, 0.6, 1)
+Texture = ExtResource("tex_props_fase3_armario1")
 Tall = true
-InnerColor = Color(0.3, 0.47, 0.68, 1)
 Depth = 120
 
 [node name="Armario4" parent="." instance=ExtResource("prop")]
 position = Vector2(278, 3388)
 Size = Vector2(44, 120)
 Color = Color(0.25, 0.4, 0.6, 1)
+Texture = ExtResource("tex_props_fase3_armario0")
 Tall = true
-InnerColor = Color(0.3, 0.47, 0.68, 1)
 Depth = 120
 
 [node name="Armario5" parent="." instance=ExtResource("prop")]
 position = Vector2(278, 3516)
 Size = Vector2(44, 120)
 Color = Color(0.25, 0.4, 0.6, 1)
+Texture = ExtResource("tex_props_fase3_armario2")
 Tall = true
-InnerColor = Color(0.3, 0.47, 0.68, 1)
 Depth = 120
 
 [node name="ElevadorHall1" parent="." instance=ExtResource("prop")]
@@ -1365,24 +1368,27 @@ position = Vector2(384, 1312)
 position = Vector2(128, 256)
 
 [node name="Spawn2" type="Marker2D" parent="Alarme"]
-position = Vector2(128, 768)
+position = Vector2(128, 512)
 
 [node name="Spawn3" type="Marker2D" parent="Alarme"]
-position = Vector2(128, 1280)
+position = Vector2(128, 768)
 
 [node name="Spawn4" type="Marker2D" parent="Alarme"]
-position = Vector2(128, 1792)
+position = Vector2(128, 1280)
 
 [node name="Spawn5" type="Marker2D" parent="Alarme"]
-position = Vector2(128, 2304)
+position = Vector2(128, 1792)
 
 [node name="Spawn6" type="Marker2D" parent="Alarme"]
-position = Vector2(128, 2816)
+position = Vector2(128, 2304)
 
 [node name="Spawn7" type="Marker2D" parent="Alarme"]
-position = Vector2(384, 384)
+position = Vector2(128, 2816)
 
 [node name="Spawn8" type="Marker2D" parent="Alarme"]
+position = Vector2(384, 384)
+
+[node name="Spawn9" type="Marker2D" parent="Alarme"]
 position = Vector2(384, 2944)
 
 [node name="SeguroLab1" type="Node2D" parent="."]

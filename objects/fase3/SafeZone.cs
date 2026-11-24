@@ -41,6 +41,25 @@ public partial class SafeZone : Node2D
 		body.AddChild(new CollisionShape2D { Shape = new RectangleShape2D { Size = size }, Position = center });
 	}
 
+	// Depois de sair de uma área segura, o jogador ainda conta como seguro por este tempo
+	// (os fantasmas continuam afastados e dá para escapar pela porta).
+	private const ulong ExitGraceMs = 2500;
+	private static ulong _lastSafeMs;
+	private static bool _everSafe;
+
+	// O jogador (neste ponto) está seguro: dentro de uma área segura ou acabou de sair de uma.
+	public static bool PlayerIsSafe(Node anyNode, Vector2 playerPosition)
+	{
+		ulong now = Time.GetTicksMsec();
+		if (Contains(anyNode, playerPosition))
+		{
+			_lastSafeMs = now;
+			_everSafe = true;
+			return true;
+		}
+		return _everSafe && now - _lastSafeMs < ExitGraceMs;
+	}
+
 	// O ponto está dentro de alguma área segura da fase?
 	public static bool Contains(Node anyNode, Vector2 globalPoint)
 	{

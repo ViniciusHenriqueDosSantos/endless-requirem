@@ -161,7 +161,7 @@ L.nodes[-1] += "\nrotation = 1.5708"     # girada 90°, encostada na parede da d
 # armários encostados na parede da esquerda do corredor, entre os dois laboratórios
 for i, ty in enumerate(range(45, 55, 2)):
     L.prop(f"Armario{i+1}", ".", 4 * T + 22, (ty + 2) * T - 4, 44, 2 * T - 8, col(0.25, 0.4, 0.6), depth=2 * T - 8,
-           tall=True, inner=col(0.3, 0.47, 0.68))
+           tall=True, sprite=f"armario{(i * 2) % 3}", folder="props/fase3")
 
 # ---------- hall estreito: dois elevadores na parede da direita (não são usados) ----------
 for i, feet in enumerate([32, 36]):
@@ -267,7 +267,7 @@ L.node("Alarme", inst="room", props={"position": v(AL[0] * T, AL[1] * T), "Size"
        "StartOnEnter": "false", "StartBanner": '"ALARME!"', "ClearBanner": '"ALARME DESLIGADO"',
        "RespawnPoint": 'NodePath("Volta")'}, node_paths=["RespawnPoint"])
 L.node("Volta", "Alarme", type="Marker2D", props={"position": v((10 - AL[0]) * T, (47.5 - AL[1]) * T)})
-spawns = [(6, ty) for ty in (31, 39, 47, 55, 63, 71)] + [(10, 33), (10, 73)]
+spawns = [(6, ty) for ty in (31, 35, 39, 47, 55, 63, 71)] + [(10, 33), (10, 73)]
 for i, (gx, gy) in enumerate(spawns):
     L.node(f"Spawn{i+1}", "Alarme", type="Marker2D", props={"position": v((gx - AL[0]) * T, (gy - AL[1]) * T)})
 

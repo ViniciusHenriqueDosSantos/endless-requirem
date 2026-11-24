@@ -44,7 +44,7 @@ public partial class Enemy : CharacterBody2D
 	// O dano vem do contato com a HitBox. Para não ficarem presos num balcão ou na borda,
 	// seguem o mapa de caminhos (GhostNav) quando há algo no meio.
 	// Com o jogador numa área segura, o fantasma se afasta até esta distância (pixels).
-	private const float SafeRetreatDistance = 360f;
+	private const float SafeRetreatDistance = 460f;
 	private const uint GhostLayer = 4;
 
 	// De perto, vão direto no jogador; de longe, seguem o caminho e recalculam de tempos em tempos.
@@ -213,7 +213,7 @@ public partial class Enemy : CharacterBody2D
 
 		// Jogador numa área segura (laboratório da Fase 3): o fantasma desiste e se afasta um pouco pelo corredor
 		// (para o jogador conseguir sair), depois fica rondando onde está.
-		if (SafeZone.Contains(this, _player.GlobalPosition))
+		if (SafeZone.PlayerIsSafe(this, _player.GlobalPosition))
 		{
 			Vector2 away = GlobalPosition - _player.GlobalPosition;
 			Vector2 drift = away.Length() < SafeRetreatDistance ? away.Normalized() * _stats.Speed * 0.6f : Vector2.Zero;
