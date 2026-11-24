@@ -48,11 +48,12 @@
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/monitor0.png" id="tex_props_fase3_monitor0"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/monitor1.png" id="tex_props_fase3_monitor1"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/quadro_energia.png" id="tex_props_fase3_quadro_energia"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase3/distribuidor.png" id="tex_props_fase3_distribuidor"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/palco.png" id="tex_props_fase3_palco"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/pulpito.png" id="tex_props_fase3_pulpito"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase3/poltrona.png" id="tex_props_fase3_poltrona"]
 
-[node name="Fase3" type="Node2D" node_paths=PackedStringArray("Player", "Hud", "Screen", "Lab1", "Lab2", "Convivencia", "Alarme", "PortaFinal", "Fechadura", "LuzFechadura", "Computador", "Monitor", "QuadroEnergia", "Quadro", "VoltaLab1", "VoltaLab2", "PortaLab1", "PortaLab2", "PortaAuditorio", "AbrirAuditorio", "EntradaAuditorio", "CoberturaAuditorio")]
+[node name="Fase3" type="Node2D" node_paths=PackedStringArray("Player", "Hud", "Screen", "Lab1", "Lab2", "Convivencia", "Alarme", "PortaFinal", "Fechadura", "LuzFechadura", "Computador", "Monitor", "QuadroEnergia", "Quadro", "VoltaLab1", "VoltaLab2", "PortaLab1", "PortaLab2", "PortaAuditorio", "AbrirAuditorio", "EntradaAuditorio", "CoberturaAuditorio", "CalibrarDistribuidor", "Distribuidor")]
 y_sort_enabled = true
 script = ExtResource("fase3")
 Player = NodePath("Player")
@@ -77,6 +78,8 @@ PortaAuditorio = NodePath("PortaAuditorio")
 AbrirAuditorio = NodePath("AbrirAuditorio")
 EntradaAuditorio = NodePath("EntradaAuditorio")
 CoberturaAuditorio = NodePath("CoberturaAuditorio")
+CalibrarDistribuidor = NodePath("CalibrarDistribuidor")
+Distribuidor = NodePath("Distribuidor")
 
 [node name="Floor" type="TileMapLayer" parent="." groups=["floor"]]
 z_index = -10
@@ -1429,6 +1432,20 @@ script = ExtResource("interactable")
 Size = Vector2(192, 160)
 Prompt = "Consertar fiação"
 PromptHeight = 120
+
+[node name="Distribuidor" type="Node2D" parent="."]
+position = Vector2(96, 4348)
+script = ExtResource("glow")
+Texture = ExtResource("tex_props_fase3_distribuidor")
+GlowColor = Color(1, 0.75, 0.3, 1)
+GlowRadius = 60
+
+[node name="CalibrarDistribuidor" type="Area2D" parent="."]
+position = Vector2(96, 4288)
+script = ExtResource("interactable")
+Size = Vector2(192, 160)
+Prompt = "Calibrar distribuidor"
+PromptHeight = 130
 
 [node name="Palco" parent="." instance=ExtResource("prop")]
 z_index = -4

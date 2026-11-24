@@ -10,8 +10,9 @@ using Godot;
 //      e os fantasmas começam a surgir no corredor (sala "Alarme", sem fim). Os laboratórios destrancam.
 //   3. Ao sair do teclado: "Descubra a senha nos laboratórios". Os laboratórios são áreas seguras.
 //   4. Laboratório 2 (direita): o computador pisca. Chegando perto, avisa que precisa da fiação do Laboratório 1.
-//   5. Laboratório 1 (esquerda): o quadro de energia, com o desafio dos fios (dá para fazer antes, em qualquer ordem).
-//   6. De volta ao computador: o site da universidade (paródia). Em Assuntos Acadêmicos -> Diplomas está o aviso:
+//   5. Laboratório 1 (esquerda): o quadro de energia (fios) e, do outro lado da sala, o distribuidor (calibrar).
+//      Os dois, em qualquer ordem (dá para fazer antes de ver o computador).
+//   6. De volta ao computador: login (usuário aluno, senha unifesp) e o site da universidade (paródia). Em Assuntos Acadêmicos -> Diplomas está o aviso:
 //      o diploma está no auditório, e a senha da porta (sorteada a cada partida).
 //   7. Senha certa: a porta abre, o alarme para e todos os fantasmas somem.
 // Reprovado com o alarme tocando: volta dentro do último laboratório visitado, com o que já fez guardado.
@@ -29,6 +30,10 @@ public partial class Fase3 : LevelBase
 	[Export] public Interactable Computador;
 	[Export] public GlowingDevice Monitor;
 	[Export] public Interactable QuadroEnergia;
+
+	// Lab 1, do lado oposto ao quadro (parede de baixo): o distribuidor de energia, com o desafio de calibrar.
+	[Export] public Interactable CalibrarDistribuidor;
+	[Export] public GlowingDevice Distribuidor;
 	[Export] public GlowingDevice Quadro;
 
 	// Onde o jogador volta se for reprovado (dentro de cada laboratório).
@@ -55,10 +60,13 @@ public partial class Fase3 : LevelBase
 	private bool _alarmOn;
 	private bool _doorOpen;
 	private bool _wiresFixed;
+	private bool _calibrated;
+	private bool PowerRestored => _wiresFixed && _calibrated;
 	private bool _codeFound;
 
 	private KeypadScreen _keypad;
 	private WirePuzzle _wires;
+	private CalibrationScreen _calibration;
 	private IntranetScreen _site;
 	private AudioStreamPlayer _alarmSound;
 	private ColorRect _alarmTint;
@@ -88,9 +96,10 @@ public partial class Fase3 : LevelBase
 
 		Fechadura.Interacted += OpenKeypad;
 		Computador.PlayerEntered += OnComputerApproached;
-		Computador.Interacted += () => { if (_wiresFixed) _site.Open(); };
+		Computador.Interacted += () => { if (PowerRestored) _site.Open(); };
 		Computador.Enabled = false;
 		QuadroEnergia.Interacted += () => _wires.Open();
+		CalibrarDistribuidor.Interacted += () => _calibration.Open();
 		Lab1.Entered += () => SetRespawn(VoltaLab1);
 		Lab2.Entered += () => SetRespawn(VoltaLab2);
 
@@ -107,6 +116,9 @@ public partial class Fase3 : LevelBase
 	{
 		_keypad = new KeypadScreen { Code = _code };
 		_wires = new WirePuzzle();
+		_calibration = new CalibrationScreen();
+		AddChild(_calibration);
+		_calibration.Solved += OnCalibrated;
 		_site = new IntranetScreen { Code = _code };
 		AddChild(_keypad);
 		AddChild(_wires);
@@ -260,10 +272,10 @@ public partial class Fase3 : LevelBase
 
 	private void OnComputerApproached()
 	{
-		if (_wiresFixed) return;
-		Hud.ShowMessage("O computador ainda funciona, mas está sem rede: a fiação do outro laboratório precisa ser consertada.", 5f);
+		if (PowerRestored) return;
+		Hud.ShowMessage("O computador ainda funciona, mas está sem energia: conserte o quadro e o distribuidor do outro laboratório.", 5f);
 		if (_alarmOn)
-			Hud.SetObjective("Conserte a fiação no Laboratório 1");
+			Hud.SetObjective("Restaure a energia no Laboratório 1 (quadro e distribuidor)");
 	}
 
 	private void OnWiresFixed()
@@ -272,6 +284,26 @@ public partial class Fase3 : LevelBase
 		QuadroEnergia.Enabled = false;
 		Quadro.SetTextures(GD.Load<Texture2D>("res://sprites/props/fase3/quadro_energia_ok.png"), null, 0f);
 		Quadro.GlowColor = new Color(0.3f, 1f, 0.5f);
+		CheckPower("Fiação consertada! Ainda falta calibrar o distribuidor, na parede de baixo.");
+	}
+
+	private void OnCalibrated()
+	{
+		_calibrated = true;
+		CalibrarDistribuidor.Enabled = false;
+		Distribuidor.SetTextures(GD.Load<Texture2D>("res://sprites/props/fase3/distribuidor_ok.png"), null, 0f);
+		Distribuidor.GlowColor = new Color(0.3f, 1f, 0.5f);
+		CheckPower("Distribuidor calibrado! Ainda falta consertar a fiação do quadro, na parede de cima.");
+	}
+
+	// Com as duas partes prontas, o computador do Lab 2 liga de vez. Senão, avisa o que falta.
+	private void CheckPower(string missingMessage)
+	{
+		if (!PowerRestored)
+		{
+			Hud.ShowMessage(missingMessage, 4f);
+			return;
+		}
 		Computador.Enabled = true;
 		Monitor.SetTextures(GD.Load<Texture2D>("res://sprites/props/fase3/monitor1.png"), null, 0f);
 		Hud.ShowMessage("Energia restaurada! O computador do outro laboratório voltou a funcionar.", 4f);
