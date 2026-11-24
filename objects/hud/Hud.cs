@@ -137,7 +137,8 @@ public partial class Hud : CanvasLayer
 	}
 
 	// Atalhos de teste (só ao rodar pelo editor, nunca no jogo exportado):
-	// F1 = Fase 1, F2 = Fase 2, F3 = escada, F4 = Fase 3. Começam com o equipamento padrão daquela fase.
+	// F1 = Fase 1, F2 = Fase 2, F3 = escada, F4 = Fase 3, F5 = auditório 3D (fim da Fase 3).
+	// Começam com o equipamento padrão daquela fase.
 	public override void _UnhandledInput(InputEvent @event)
 	{
 		if (!OS.IsDebugBuild() || @event is not InputEventKey { Pressed: true, Echo: false } key) return;
@@ -148,6 +149,7 @@ public partial class Hud : CanvasLayer
 			Key.F2 => "res://levels/fase_2.tscn",
 			Key.F3 => "res://levels/escada.tscn",
 			Key.F4 => "res://levels/fase_3.tscn",
+			Key.F5 => "res://levels/auditorio_3d.tscn",
 			_ => "",
 		};
 		if (scene == "") return;

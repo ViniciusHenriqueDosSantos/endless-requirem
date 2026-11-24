@@ -52,6 +52,8 @@ public partial class Fase3 : LevelBase
 
 	// Atraso entre os bipes das câmeras e a sirene.
 	private const float SirenDelay = 0.75f;
+	private const float AuditoriumLookTime = 1.3f;
+	private const string Auditorium3DScene = "res://levels/auditorio_3d.tscn";
 	private const int FirstGhosts = 3;
 	private const int KeypadMaxGhosts = 3;
 	private const float KeypadSpawnDistance = 380f;
@@ -116,7 +118,6 @@ public partial class Fase3 : LevelBase
 		// a cobertura ignora as luzes (senão a luz do auditório e a lanterna revelariam o que tem dentro)
 		CoberturaAuditorio.Material = new CanvasItemMaterial { LightMode = CanvasItemMaterial.LightModeEnum.Unshaded };
 		AbrirAuditorio.Interacted += OpenAuditorium;
-		EntradaAuditorio.PlayerEntered += RevealAuditorium;
 
 		// sem objetivo fixo na tela: só uma fala rápida ligada ao objetivo do personagem (o diploma)
 		Hud.SetObjective("");
@@ -171,6 +172,7 @@ public partial class Fase3 : LevelBase
 	public override void _Process(double delta)
 	{
 		base._Process(delta);
+		CheckAuditoriumEntered();
 
 		// antes de tentar a porta: seta para a área final
 		if (!_alarmOn && !_doorOpen)
@@ -293,6 +295,24 @@ public partial class Fase3 : LevelBase
 		PortaAuditorio.Unlock();
 		AbrirAuditorio.Enabled = false;
 		Hud.ShowMessage("A porta do auditório destrancou...", 3f);
+	}
+
+	// Entrou no auditório (o jogador dentro do retângulo escuro, por qualquer ponto da porta): a escuridão some,
+	// ele vê o auditório por um instante, a tela escurece e o jogo vai para a cena em 3D (primeira pessoa).
+	private bool _auditoriumRevealed;
+
+	private void CheckAuditoriumEntered()
+	{
+		if (_auditoriumRevealed || CoberturaAuditorio is not Control cover) return;
+		if (!cover.GetGlobalRect().HasPoint(Player.GlobalPosition)) return;
+
+		_auditoriumRevealed = true;
+		RevealAuditorium();
+		GetTree().CreateTimer(AuditoriumLookTime, false).Timeout += () =>
+		{
+			GameState.Save(Player, ElapsedTime);
+			GetNode<SceneTransition>("/root/SceneTransition").ChangeScene(Auditorium3DScene);
+		};
 	}
 
 	private void RevealAuditorium()

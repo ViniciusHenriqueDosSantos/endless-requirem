@@ -20,6 +20,8 @@
 #   distribuidor / distribuidor_ok  distribuidor de energia do Lab 1 (16 x 18): mostradores vermelhos / verdes
 #   bancada_dupla / bancada_esq / bancada_dir  bancada comprida dos laboratórios (vista de cima, 18 x 128 = 8 tiles):
 #       monitores, teclados e mouses; dupla = computadores dos dois lados, esq/dir = virados só para um lado
+#   escada_palco    escadinha de madeira na lateral do palco (16 x 16)
+#   diploma_palco   o diploma enrolado com fita vermelha, num suporte em cima do palco (12 x 10)
 #   armario0..2     armário de aço do corredor, encostado na parede da esquerda (vista de cima, 11 x 30):
 #       tampo, a frente virada para o corredor com as aberturas de ventilação, o puxador e o número; variações
 #       (amassado, porta entreaberta, adesivo)
@@ -456,6 +458,33 @@ def armario(variant):
 
 for v in range(3):
     armario(v).save(OUT + f"armario{v}.png")
+
+
+def escada_palco():
+    """Escadinha de madeira (vista de cima) que sobe da plateia para o palco: degraus de baixo para cima."""
+    cv = Canvas(16, 16)
+    for i in range(4):
+        y = i * 4
+        cv.rect(0, y, 16, 4, shade(C["wood"], 0.15 - i * 0.08)); cv.hline(0, y + 3, 16, C["wood_d"])
+    cv.vline(0, 0, 16, C["steel_d"]); cv.vline(15, 0, 16, C["steel_d"])          # corrimão dos lados
+    cv.outline(INK)
+    return cv
+
+
+def diploma_palco():
+    """O diploma: canudo de papel enrolado com fita vermelha, num suporte dourado, brilhando."""
+    cv = Canvas(12, 10)
+    cv.rect(2, 7, 8, 3, hexc("b08a2e")); cv.hline(2, 7, 8, hexc("e2c25a"))       # suporte
+    cv.rect(1, 3, 10, 4, hexc("f4ecd6")); cv.hline(1, 3, 10, hexc("ffffff")); cv.hline(1, 6, 10, hexc("cfc4a6"))
+    cv.vline(5, 3, 4, hexc("c8322b")); cv.vline(6, 3, 4, hexc("c8322b"))          # fita
+    cv.put(4, 7, hexc("c8322b")); cv.put(7, 7, hexc("c8322b"))
+    cv.put(10, 1, hexc("fff6a0")); cv.put(1, 0, hexc("fff6a0"))                   # brilho
+    cv.outline(INK)
+    return cv
+
+
+escada_palco().save(OUT + "escada_palco.png")
+diploma_palco().save(OUT + "diploma_palco.png")
 distribuidor(False).save(OUT + "distribuidor.png")
 distribuidor(True).save(OUT + "distribuidor_ok.png")
 eva(hexc("2d5d95")).save(OUT + "eva_azul.png")
