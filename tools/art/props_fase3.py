@@ -17,6 +17,7 @@
 #   poltrona        poltrona vermelha do auditório, vista de trás (10 x 12)
 #   palco           palco de madeira com a cortina no fundo (176 x 32 = 11 x 2 tiles)
 #   pulpito         púlpito de madeira com o microfone (12 x 14)
+#   distribuidor / distribuidor_ok  distribuidor de energia do Lab 1 (16 x 18): mostradores vermelhos / verdes
 from pix import Canvas, rng, shade, hexc, text, text_center
 from palette import C
 
@@ -284,6 +285,26 @@ def pulpito():
     return cv
 
 
+# ======================================================================== DISTRIBUIDOR
+def distribuidor(ok):
+    """Armário do distribuidor de energia (encostado na parede de baixo): três mostradores redondos e a faixa
+    de perigo. Descalibrado: ponteiros vermelhos tortos. Calibrado: verdes e alinhados."""
+    cv = Canvas(16, 18)
+    cv.rect(0, 0, 16, 18, C["steel"]); cv.hline(0, 0, 16, C["steel_l"]); cv.rect(0, 16, 16, 2, C["steel_d"])
+    for i in range(3):
+        cy = 3 + i * 4
+        cv.ellipse(5, cy + 1, 2.2, 1.8, hexc("1d1e22"))
+        cv.put(5, cy + 1, GREEN if ok else RED)
+        cv.put(5 + (0 if ok else 1), cy, GREEN if ok else RED)
+        cv.rect(9, cy, 5, 2, hexc("3b4048")); cv.rect(9, cy, 2 + (3 if ok else i), 2, GREEN if ok else YEL)   # barrinha
+    for x in range(16):                                                         # faixa de perigo
+        cv.put(x, 15, YEL if (x // 2) % 2 == 0 else INK)
+    cv.outline(INK)
+    return cv
+
+
+distribuidor(False).save(OUT + "distribuidor.png")
+distribuidor(True).save(OUT + "distribuidor_ok.png")
 eva(hexc("2d5d95")).save(OUT + "eva_azul.png")
 eva(hexc("2e7a4e")).save(OUT + "eva_verde.png")
 for name, color in [("vermelho", "d1453b"), ("amarelo", "e8be2e"), ("roxo", "8a4fc9"), ("laranja", "ec8a2f"),

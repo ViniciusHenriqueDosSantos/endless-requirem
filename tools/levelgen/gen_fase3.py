@@ -292,6 +292,13 @@ L.node("Quadro", type="Node2D", props={"position": v((LAB1[0] + 0.5) * T, LAB1[1
        "Texture": L.tex("quadro_energia", "props/fase3"), "GlowColor": col(1, 0.75, 0.3), "GlowRadius": "60"})
 L.node("QuadroEnergia", type="Area2D", props={"position": v((LAB1[0] + 1) * T, (LAB1[1] + 1) * T), "script": 'ExtResource("interactable")',
        "Size": v(3 * T, 2.5 * T), "Prompt": '"Consertar fiação"', "PromptHeight": "120"})
+# ... e, do lado oposto da sala, encostado na parede de baixo, o distribuidor de energia (desafio de calibrar)
+L.node("Distribuidor", type="Node2D", props={"position": v((LAB1[2] - 0.5) * T, (LAB1[3] + 1) * T - 4),
+       "script": 'ExtResource("glow")', "Texture": L.tex("distribuidor", "props/fase3"), "GlowColor": col(1, 0.75, 0.3),
+       "GlowRadius": "60"})
+L.node("CalibrarDistribuidor", type="Area2D", props={"position": v((LAB1[2] - 0.5) * T, LAB1[3] * T),
+       "script": 'ExtResource("interactable")', "Size": v(3 * T, 2.5 * T), "Prompt": '"Calibrar distribuidor"',
+       "PromptHeight": "130"})
 
 # ---------- auditório (planta NOVA_AREA_FINAL): plateia virada para o palco, embaixo ----------
 # Área restrita: por fora não se vê nada (CoberturaAuditorio). A porta fica trancada até o jogador apertar E nela;
@@ -374,6 +381,7 @@ paths = {"Player": "Player", "Hud": "Hud", "Screen": "MessageScreen", "Lab1": "L
          "QuadroEnergia": "QuadroEnergia", "Quadro": "Quadro", "VoltaLab1": "VoltaLab1", "VoltaLab2": "VoltaLab2",
          "PortaLab1": "PortaLab1", "PortaLab2": "PortaLab2", "PortaAuditorio": "PortaAuditorio",
          "AbrirAuditorio": "AbrirAuditorio", "EntradaAuditorio": "EntradaAuditorio",
-         "CoberturaAuditorio": "CoberturaAuditorio"}
+         "CoberturaAuditorio": "CoberturaAuditorio", "CalibrarDistribuidor": "CalibrarDistribuidor",
+         "Distribuidor": "Distribuidor"}
 L.write(sys.argv[1], root_node("Fase3", "fase3", paths))
 print("chão", len(L.floor), "paredes dentro", len(L.inner_walls), "fora", len(L.outer_walls))

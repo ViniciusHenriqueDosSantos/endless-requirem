@@ -6,6 +6,9 @@ using System.Collections.Generic;
 //   (menu) Assuntos Acadêmicos -> Diplomas e Certificados   (3 páginas contando a primeira).
 // O aviso é um quadro amarelo grande com a senha em destaque.
 // Ao abrir a página do aviso, dispara NoticeFound (uma vez). Esc ou o × do navegador fecham.
+// Antes do site, a tela de login dos computadores da universidade (foto borrada do campus ao fundo):
+// primeiro o usuário (aluno), Enter, depois a senha (unifesp). Depois de entrar, o computador fica logado.
+// Errando duas vezes, aparece uma dica.
 // Fonte: Inter (fonts/Inter-*.otf, licença OFL). Todo o conteúdo é inventado; só o visual lembra o site de verdade.
 public partial class IntranetScreen : OverlayScreen
 {
@@ -74,6 +77,18 @@ public partial class IntranetScreen : OverlayScreen
 	private ScrollContainer _scroll;
 	private Button _back;
 
+	// ---------- login ----------
+	public const string User = "aluno";
+	public const string Password = "unifesp";
+	private Control _site;
+	private Control _login;
+	private Label _loginLabel;
+	private LineEdit _loginField;
+	private Label _loginError;
+	private bool _loggedIn;
+	private bool _askingPassword;
+	private int _loginErrors;
+
 	protected override void BuildUi()
 	{
 		CloseWithInteract = false;
@@ -85,6 +100,7 @@ public partial class IntranetScreen : OverlayScreen
 		site.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 		site.OffsetLeft = 36; site.OffsetTop = 24; site.OffsetRight = -36; site.OffsetBottom = -24;
 		Root.AddChild(site);
+		_site = site;
 
 		PanelContainer window = new();
 		window.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
@@ -104,6 +120,7 @@ public partial class IntranetScreen : OverlayScreen
 		body.AddChild(BuildMain());
 
 		BuildPages();
+		BuildLogin(theme);
 	}
 
 	// ---------- montagem ----------
@@ -216,10 +233,153 @@ public partial class IntranetScreen : OverlayScreen
 		return main;
 	}
 
+	// ---------- login ----------
+
+	private void BuildLogin(Theme theme)
+	{
+		_login = new Control { Theme = theme };
+		_login.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		Root.AddChild(_login);
+
+		TextureRect photo = new()
+		{
+			Texture = GD.Load<Texture2D>("res://sprites/ui/login_fundo.png"),
+			ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+			StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
+			TextureFilter = CanvasItem.TextureFilterEnum.Linear,
+			MouseFilter = Control.MouseFilterEnum.Ignore,
+		};
+		photo.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		_login.AddChild(photo);
+
+		CenterContainer center = new();
+		center.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		_login.AddChild(center);
+
+		// caixa branca de cantos redondos com contorno escuro; a faixa verde (escura, como o site) fica em cima
+		PanelContainer box = new() { CustomMinimumSize = new Vector2(440, 0) };
+		StyleBoxFlat boxStyle = Box(Colors.White, 0, 0, 22);
+		boxStyle.BorderColor = new Color("1d1e22");
+		boxStyle.SetBorderWidthAll(3);
+		boxStyle.ShadowColor = new Color(0, 0, 0, 0.35f);
+		boxStyle.ShadowSize = 10;
+		boxStyle.SetContentMarginAll(3);   // a faixa verde fica por dentro do contorno
+		box.AddThemeStyleboxOverride("panel", boxStyle);
+		center.AddChild(box);
+
+		VBoxContainer column = new();
+		column.AddThemeConstantOverride("separation", 0);
+		box.AddChild(column);
+
+		PanelContainer header = new() { CustomMinimumSize = new Vector2(0, 46) };
+		StyleBoxFlat headerStyle = Box(Green, 20, 8);
+		headerStyle.CornerRadiusTopLeft = 19;
+		headerStyle.CornerRadiusTopRight = 19;
+		header.AddThemeStyleboxOverride("panel", headerStyle);
+		Label title = Plain("U.N.I.F.E.S.P.  •  Laboratório 2", 15, Colors.White, true);
+		title.VerticalAlignment = VerticalAlignment.Center;
+		header.AddChild(title);
+		column.AddChild(header);
+
+		MarginContainer body = Margins(30, 24, 30, 26);
+		column.AddChild(body);
+		VBoxContainer fields = new();
+		fields.AddThemeConstantOverride("separation", 10);
+		body.AddChild(fields);
+
+		_loginLabel = Plain("Usuário:", 20, Ink, true);
+		fields.AddChild(_loginLabel);
+
+		_loginField = new LineEdit { CustomMinimumSize = new Vector2(0, 46), CaretBlink = true };
+		_loginField.AddThemeFontOverride("font", _font);
+		_loginField.AddThemeFontSizeOverride("font_size", 18);
+		_loginField.AddThemeColorOverride("font_color", Ink);
+		_loginField.AddThemeColorOverride("caret_color", Ink);
+		StyleBoxFlat fieldStyle = Box(Colors.White, 16, 6, 14);
+		fieldStyle.BorderColor = new Color("1d1e22");
+		fieldStyle.SetBorderWidthAll(3);
+		_loginField.AddThemeStyleboxOverride("normal", fieldStyle);
+		_loginField.AddThemeStyleboxOverride("focus", fieldStyle);
+		_loginField.TextSubmitted += OnLoginSubmitted;
+		fields.AddChild(_loginField);
+
+		_loginError = Paragraph("", 14, new Color("c62828"));
+		fields.AddChild(_loginError);
+		fields.AddChild(Plain("Digite e aperte Enter  •  Esc: sair", 12, InkSoft));
+	}
+
+	private void AskUser()
+	{
+		_askingPassword = false;
+		_loginLabel.Text = "Usuário:";
+		_loginField.Secret = false;
+		_loginField.Text = "";
+		_loginField.CallDeferred(Control.MethodName.GrabFocus);
+	}
+
+	private void AskPassword()
+	{
+		_askingPassword = true;
+		_loginLabel.Text = "Senha:";
+		_loginField.Secret = true;
+		_loginField.Text = "";
+		_loginError.Text = "";
+		_loginField.CallDeferred(Control.MethodName.GrabFocus);
+	}
+
+	private void OnLoginSubmitted(string text)
+	{
+		string typed = text.Trim().ToLower();
+		if (!_askingPassword)
+		{
+			if (typed == User)
+			{
+				PlaySound("clique");
+				AskPassword();
+				return;
+			}
+			LoginFailed("Usuário não encontrado.");
+			AskUser();
+			return;
+		}
+
+		if (typed == Password)
+		{
+			PlaySound("ok");
+			_loggedIn = true;
+			_loginField.ReleaseFocus();
+			_login.Visible = false;
+			_site.Visible = true;
+			_history.Clear();
+			ShowPage(StartPage, false);
+			return;
+		}
+		LoginFailed("Senha incorreta.");
+		AskUser();
+	}
+
+	private void LoginFailed(string message)
+	{
+		_loginErrors++;
+		PlaySound("erro");
+		_loginError.Text = _loginErrors >= 2
+			? message + "\nDica: os computadores dos laboratórios usam o usuário e a senha padrão da universidade."
+			: message;
+		if (_loginErrors >= 4)
+			_loginError.Text = message + "\nDica: usuário \"aluno\", senha \"unifesp\".";
+	}
+
 	// ---------- navegação ----------
 
 	protected override void OnOpened()
 	{
+		_site.Visible = _loggedIn;
+		_login.Visible = !_loggedIn;
+		if (!_loggedIn)
+		{
+			AskUser();
+			return;
+		}
 		_history.Clear();
 		ShowPage(StartPage, false);
 	}
