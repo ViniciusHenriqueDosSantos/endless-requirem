@@ -18,6 +18,10 @@
 #   palco           palco de madeira com a cortina no fundo (176 x 32 = 11 x 2 tiles)
 #   pulpito         púlpito de madeira com o microfone (12 x 14)
 #   distribuidor / distribuidor_ok  distribuidor de energia do Lab 1 (16 x 18): mostradores vermelhos / verdes
+#   bancada_dupla / bancada_esq / bancada_dir  bancada comprida dos laboratórios (vista de cima, 18 x 128 = 8 tiles):
+#       monitores, teclados e mouses; dupla = computadores dos dois lados, esq/dir = virados só para um lado
+#   painel_fios     fundo da tela dos fios: chapa de metal, parafusos, réguas de bornes e adesivo de alta tensão (140 x 95)
+#   painel_calibrar fundo da tela de calibrar: chapa com os três mostradores cromados e as plaquinhas (140 x 105)
 from pix import Canvas, rng, shade, hexc, text, text_center
 from palette import C
 
@@ -303,6 +307,121 @@ def distribuidor(ok):
     return cv
 
 
+# ======================================================================== BANCADA DO LABORATÓRIO
+def bancada(kind, seed):
+    """Bancada comprida (vista de cima): tampo de fórmica cinza claro, com um computador por cadeira.
+    Cada computador: monitor de lado (fino, com a tela virada para a cadeira), teclado e mouse na frente.
+    Alguns monitores estão acesos, outros apagados, e um ou outro lugar está vazio (laboratório abandonado)."""
+    w, h = 18, 128
+    cv = Canvas(w, h)
+    r = rng(900 + seed)
+    top, top_d, top_l = hexc("c9c4b8"), hexc("9e988b"), hexc("dedad0")
+    cv.rect(1, 0, w - 2, h, top); cv.vline(1, 0, h, top_l); cv.vline(w - 2, 0, h, top_d)
+    for _ in range(30):                                                     # riscos e manchas do tampo
+        cv.put(r.randrange(2, w - 2), r.randrange(0, h), hexc("bdb7aa"))
+    sides = {"dupla": ("E", "D"), "esq": ("E",), "dir": ("D",)}[kind]
+    for slot in range(4):
+        y = 14 + slot * 32                                                  # na altura de cada cadeira
+        for side in sides:
+            if r.random() < 0.1: continue                                   # lugar vazio
+            lit = r.random() < 0.35
+            screen = hexc("63d0ff") if lit else hexc("16243a")
+            if kind == "dupla":
+                mx = 7 if side == "E" else 10                               # monitores de costas um pro outro
+            else:
+                mx = 10 if side == "E" else 6
+            face = -1 if side == "E" else 1                                  # para que lado a tela olha
+            cv.rect(mx, y - 7, 2, 14, hexc("2b2d30"))                        # monitor de lado
+            cv.vline(mx + (1 if face > 0 else 0) + face, y - 6, 12, screen)  # a tela (borda virada pra cadeira)
+            cv.rect(mx - (1 if face < 0 else 0), y - 1, 2, 3, hexc("3b4048")) # pé
+            kx = mx + face * 4 if face > 0 else mx - 5
+            kx = max(2, min(w - 5, kx))
+            cv.rect(kx, y - 4, 3, 8, hexc("e7e8ea"))                         # teclado
+            for k in range(3):
+                cv.put(kx + 1, y - 3 + k * 3, hexc("b8bcc2"))
+            cv.put(kx + (1 if face > 0 else 1), y + 6, hexc("e7e8ea"))      # mouse
+        if r.random() < 0.5:                                                 # fio solto
+            cv.line(w // 2, y + 8, w // 2 + r.choice((-2, 2)), y + 12, hexc("1d1e22"))
+    cv.outline(INK)
+    return cv
+
+
+# ======================================================================== FUNDOS DAS TELAS DE ENERGIA
+def chapa(cv, r):
+    """Chapa de metal escovado com degradê, parafusos nos cantos e sujeira."""
+    w, h = cv.w, cv.h
+    for y in range(h):
+        base = shade(hexc("6d737b"), 0.12 - 0.25 * y / h)
+        cv.hline(0, y, w, base)
+        for x in range(0, w, 3):
+            if r.random() < 0.25: cv.put(x + r.randrange(0, 3), y, shade(base, 0.08))   # escovado
+    for _ in range(60):
+        cv.put(r.randrange(0, w), r.randrange(0, h), hexc("4b4f55"))                    # sujeira
+    cv.frame(0, 0, w, h, hexc("2b2d30")); cv.frame(1, 1, w - 2, h - 2, hexc("9aa0a8"))
+    for x, y in ((4, 4), (w - 5, 4), (4, h - 5), (w - 5, h - 5)):                       # parafusos
+        cv.ellipse(x, y, 2, 2, hexc("c9cdd3")); cv.put(x - 1, y, hexc("5a5f66")); cv.put(x + 1, y, hexc("5a5f66"))
+
+
+def adesivo(cv, x, y):
+    """Adesivo amarelo de alta tensão (triângulo com raio)."""
+    cv.rect(x, y, 34, 9, YEL); cv.frame(x, y, 34, 9, INK)
+    for i in range(4):
+        cv.hline(x + 4 - i, y + 7 - i * 2, 1 + i * 2, INK)
+    cv.put(x + 4, y + 3, YEL); cv.put(x + 4, y + 5, YEL)
+    text(cv, "PERIGO", x + 9, y + 2, INK)
+
+
+def faixa(cv, x, y, w):
+    """Faixa zebrada amarela e preta de perigo."""
+    for k in range(w):
+        for j in range(4):
+            cv.put(x + k, y + j, YEL if ((k + j) // 3) % 2 == 0 else INK)
+
+
+def painel_fios():
+    """Fundo da tela dos fios (140 x 95 = 560 x 380): régua de bornes dos dois lados, canaleta, adesivo."""
+    cv = Canvas(140, 95)
+    r = rng(1200)
+    chapa(cv, r)
+    for x0 in (4, 118):                                                   # réguas de bornes
+        cv.rect(x0, 8, 18, 79, hexc("26282c")); cv.frame(x0, 8, 18, 79, hexc("111214"))
+        for i in range(4):
+            y = int(17.5 + i * 20.5)
+            cv.rect(x0 + 2, y - 5, 14, 10, hexc("3a3d42"))
+            cv.ellipse(x0 + 9, y, 3, 3, hexc("b9bdc4")); cv.hline(x0 + 7, y, 5, hexc("5a5f66"))   # parafuso do borne
+    cv.rect(30, 4, 80, 5, hexc("8d939b")); cv.frame(30, 4, 80, 5, hexc("4b4f55"))              # canaleta
+    adesivo(cv, 72, 82)
+    cv.rect(30, 82, 30, 9, hexc("e8eaee")); cv.frame(30, 82, 30, 9, INK); text(cv, "QDF-L1", 32, 84, INK)  # etiqueta
+    for i in range(6):                                                    # disjuntores pequenos no alto
+        cv.rect(34 + i * 12, 12, 8, 12, hexc("e4e6ea")); cv.frame(34 + i * 12, 12, 8, 12, INK)
+        cv.rect(37 + i * 12, 15 + (i % 2) * 4, 2, 3, hexc("3b4048"))
+    return cv
+
+
+def painel_calibrar():
+    """Fundo da tela de calibrar (140 x 105 = 560 x 420): três aros cromados para os mostradores e plaquinhas."""
+    cv = Canvas(140, 105)
+    r = rng(1300)
+    chapa(cv, r)
+    for i in range(3):
+        cx, cy = 27.5, 20 + i * 32.5
+        cv.ellipse(cx, cy, 16, 16, hexc("2b2d30"))
+        cv.ellipse(cx, cy, 15, 15, hexc("d9dde3"))                          # aro cromado
+        cv.ellipse(cx - 1, cy - 1, 14, 14, hexc("f4f6f8"))
+        cv.ellipse(cx, cy, 13.5, 13.5, hexc("101114"))
+        cv.rect(48, int(cy) - 4, 28, 9, hexc("e8eaee")); cv.frame(48, int(cy) - 4, 28, 9, INK)
+        text(cv, f"FASE {i + 1}", 50, int(cy) - 2, INK)
+        cv.put(80, int(cy), RED)                                           # luz de cada fase
+    faixa(cv, 0, 100, 140)
+    adesivo(cv, 100, 89)
+    return cv
+
+
+bancada("dupla", 1).save(OUT + "bancada_dupla.png")
+bancada("esq", 2).save(OUT + "bancada_esq.png")
+bancada("dir", 3).save(OUT + "bancada_dir.png")
+painel_fios().save(OUT + "painel_fios.png")
+painel_calibrar().save(OUT + "painel_calibrar.png")
 distribuidor(False).save(OUT + "distribuidor.png")
 distribuidor(True).save(OUT + "distribuidor_ok.png")
 eva(hexc("2d5d95")).save(OUT + "eva_azul.png")

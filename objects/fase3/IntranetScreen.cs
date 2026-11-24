@@ -185,8 +185,9 @@ public partial class IntranetScreen : OverlayScreen
 		list.AddChild(head);
 		foreach ((string text, string page) in new[]
 		{
-			("Início", "inicio"), ("Assuntos Acadêmicos", "academicos"), ("Tecnologia da Informação", "intranet"),
-			("Disponibilidade dos sistemas", "sistemas"),
+			// o catálogo com o aviso fica no meio da lista (o jogador navega um pouco antes de achar)
+			("Início", "inicio"), ("Tecnologia da Informação", "intranet"), ("Assuntos Acadêmicos", "academicos"),
+			("Ouvidoria", "ouvidoria"), ("Disponibilidade dos sistemas", "sistemas"),
 		})
 		{
 			string target = page;
@@ -659,8 +660,8 @@ public partial class IntranetScreen : OverlayScreen
 					Heading = "Serviços",
 					Links = new[]
 					{
-						new Link("Diplomas e Certificados", NoticePage),
 						new Link("Histórico escolar", "historico"),
+						new Link("Diplomas e Certificados", NoticePage),
 						new Link("Rematrícula", "indisponivel"),
 					},
 				},
@@ -708,6 +709,19 @@ public partial class IntranetScreen : OverlayScreen
 					Heading = "Situação",
 					Body = "E-mail institucional — instável\nSistema acadêmico — fora do ar\nElevadores — sem energia\n" +
 						"Câmeras do 4º andar — ONLINE (S.I.A.)",
+				},
+			},
+		};
+
+		_pages["ouvidoria"] = new Page
+		{
+			Path = "ouvidoria", Title = "Ouvidoria", Subtitle = "Elogios, sugestões e reclamações",
+			Sections = new[]
+			{
+				new Section
+				{
+					Heading = "Sua manifestação",
+					Body = "Sua reclamação foi registrada com o protocolo nº 000000001.\nPrazo de resposta: 4 anos.",
 				},
 			},
 		};

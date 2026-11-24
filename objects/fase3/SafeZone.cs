@@ -13,6 +13,10 @@ public partial class SafeZone : Node2D
 
 	private const float WallThickness = 24f;
 
+	// Só conta como "dentro" a partir desta distância da borda: quem fica na porta não está seguro
+	// (senão dava para atirar de lá nos fantasmas parados do lado de fora).
+	private const float InnerMargin = 56f;
+
 	public Rect2 GlobalRect => new(GlobalPosition, _size);
 
 	public override void _Ready()
@@ -41,7 +45,7 @@ public partial class SafeZone : Node2D
 	public static bool Contains(Node anyNode, Vector2 globalPoint)
 	{
 		foreach (Node node in anyNode.GetTree().GetNodesInGroup("safe_zones"))
-			if (node is SafeZone zone && zone.GlobalRect.HasPoint(globalPoint))
+			if (node is SafeZone zone && zone.GlobalRect.Grow(-InnerMargin).HasPoint(globalPoint))
 				return true;
 		return false;
 	}

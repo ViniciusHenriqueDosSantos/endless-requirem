@@ -28,12 +28,15 @@ public partial class CalibrationBoard : Control
 	private readonly Button[] _buttons = new Button[Dials];
 	private int _current;
 	private float _missFlash;
+	private Texture2D _panel;
 
 	public bool IsComplete => _current >= Dials;
 
 	public override void _Ready()
 	{
 		CustomMinimumSize = BoardSize;
+		TextureFilter = TextureFilterEnum.Nearest;
+		_panel = GD.Load<Texture2D>("res://sprites/props/fase3/painel_calibrar.png");
 		for (int i = 0; i < Dials; i++)
 		{
 			int index = i;
@@ -45,6 +48,14 @@ public partial class CalibrationBoard : Control
 				Size = new Vector2(200, 56),
 			};
 			button.AddThemeFontSizeOverride("font_size", 22);
+			// botão industrial: vermelho de borda escura (verde quando calibrado, apagado quando não é a vez)
+			button.AddThemeStyleboxOverride("normal", ButtonBox(new Color(0.75f, 0.16f, 0.14f)));
+			button.AddThemeStyleboxOverride("hover", ButtonBox(new Color(0.88f, 0.22f, 0.18f)));
+			button.AddThemeStyleboxOverride("pressed", ButtonBox(new Color(0.55f, 0.1f, 0.1f)));
+			button.AddThemeStyleboxOverride("disabled", ButtonBox(new Color(0.3f, 0.31f, 0.33f)));
+			button.AddThemeColorOverride("font_color", Colors.White);
+			button.AddThemeColorOverride("font_hover_color", Colors.White);
+			button.AddThemeColorOverride("font_disabled_color", new Color(1, 1, 1, 0.45f));
 			button.Pressed += () => Press(index);
 			AddChild(button);
 			_buttons[i] = button;
@@ -53,6 +64,16 @@ public partial class CalibrationBoard : Control
 	}
 
 	private static float RowCenterY(int row) => 80f + row * RowHeight;
+
+	private static StyleBoxFlat ButtonBox(Color color)
+	{
+		StyleBoxFlat box = new() { BgColor = color, BorderColor = new Color(0.08f, 0.08f, 0.1f) };
+		box.SetBorderWidthAll(4);
+		box.SetCornerRadiusAll(10);
+		box.ShadowColor = new Color(0, 0, 0, 0.4f);
+		box.ShadowSize = 4;
+		return box;
+	}
 
 	// O mostrador da vez (o de cima que ainda não travou).
 	public void PressCurrent()
@@ -105,8 +126,8 @@ public partial class CalibrationBoard : Control
 
 	public override void _Draw()
 	{
-		DrawRect(new Rect2(Vector2.Zero, BoardSize), new Color(0.18f, 0.19f, 0.21f));
-		DrawRect(new Rect2(Vector2.Zero, BoardSize), new Color(0.45f, 0.47f, 0.5f), false, 4f);
+		// chapa com os aros cromados dos mostradores e as plaquinhas (sprite)
+		DrawTextureRect(_panel, new Rect2(Vector2.Zero, BoardSize), false);
 
 		for (int i = 0; i < Dials; i++)
 		{
@@ -116,8 +137,12 @@ public partial class CalibrationBoard : Control
 				: active && _missFlash > 0 ? new Color(1f, 0.25f, 0.2f)
 				: active ? new Color(0.85f, 0.87f, 0.9f) : new Color(0.4f, 0.42f, 0.45f);
 
-			DrawCircle(center, Radius + 6, ring);
-			DrawCircle(center, Radius, new Color(0.08f, 0.08f, 0.1f));
+			DrawArc(center, Radius + 2, 0, Mathf.Tau, 48, ring, 4f);
+			for (int t = 0; t < 12; t++)   // risquinhos da escala
+			{
+				Vector2 dir = Vector2.FromAngle(t * Mathf.Tau / 12);
+				DrawLine(center + dir * (Radius - 10), center + dir * (Radius - 3), new Color(0.55f, 0.57f, 0.6f), 2f);
+			}
 
 			// o pedaço colorido girando
 			Color segment = _locked[i] ? new Color(0.35f, 1f, 0.55f) : DialColors[i];
