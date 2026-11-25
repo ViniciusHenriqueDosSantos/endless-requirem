@@ -42,9 +42,6 @@ public partial class Player : CharacterBody2D
 	private const float RollEndSpeedFactor = 0.35f; // velocidade no fim da rolagem, em relação ao começo
 	private const float RollInputBuffer = 0.15f;     // apertou um pouco antes de poder rolar: rola assim que der
 
-	// A origem do jogador fica nos pés (visão 3/4). O tiro sai da altura do corpo.
-	private static readonly Vector2 MuzzleOffset = new(0, -32);
-
 	public event Action StatsChanged;
 
 	// Avisado quando a vida zera. Se ninguém estiver ouvindo, a cena recomeça.
@@ -253,6 +250,13 @@ public partial class Player : CharacterBody2D
 	public override void _UnhandledInput(InputEvent @event)
 	{
 		if (InputLocked) return;
+		if (@event.IsActionPressed("reload"))
+		{
+			if (Weapon != null && !IsReloading && Ammo < Weapon.MagazineSize)
+				StartReload();
+			return;
+		}
+
 		if (@event.IsActionPressed("weapon_next"))
 		{
 			SelectWeapon(_ownedWeapons.IndexOf(Weapon) + 1);
@@ -460,9 +464,11 @@ public partial class Player : CharacterBody2D
 
 	private void Shoot()
 	{
-		Vector2 muzzle = GlobalPosition + MuzzleOffset;
-		Vector2 aim = (GetGlobalMousePosition() - muzzle).Normalized();
+		Vector2 hand = GlobalPosition + HandOffset;
+		Vector2 aim = (GetGlobalMousePosition() - hand).Normalized();
 		if (aim == Vector2.Zero) aim = Vector2.Right;
+		float gunLength = _gun.Texture != null ? (_gun.Texture.GetWidth() - 3) * 4f : 0f;
+		Vector2 muzzle = hand + aim * (GunDistance + gunLength);
 
 		_fireCooldown = Weapon.Cooldown;
 
@@ -479,18 +485,23 @@ public partial class Player : CharacterBody2D
 
 		_ammo[Weapon]--;
 		if (_ammo[Weapon] <= 0)
-		{
-			_reloadTimer = Weapon.ReloadTime;
-			GetNode<AudioStreamPlayer>("Recarga").Play();
-		}
-		StatsChanged?.Invoke();
+			StartReload();
+		else
+			StatsChanged?.Invoke();
 
 		TriggerShake(Weapon.Shake);
 		AudioStreamPlayer shot = GetNode<AudioStreamPlayer>("Tiro");
-		shot.Stream = Weapon.ShotSound;
+		if (shot.Stream != Weapon.ShotSound) shot.Stream = Weapon.ShotSound;
 		shot.VolumeDb = Weapon.ShotVolumeDb;
 		shot.Play();
 		Fired?.Invoke();
+	}
+
+	private void StartReload()
+	{
+		_reloadTimer = Weapon.ReloadTime;
+		GetNode<AudioStreamPlayer>("Recarga").Play();
+		StatsChanged?.Invoke();
 	}
 
 	private void UpdateMovement(float dt)
