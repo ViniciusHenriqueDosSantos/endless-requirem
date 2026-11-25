@@ -38,6 +38,7 @@ Na primeira vez, o Godot compila o código C# e pode demorar alguns segundos.
 | Andar | **W A S D** ou **setas** |
 | Mirar | Mouse |
 | Atirar | **Botão esquerdo** do mouse (segure) |
+| Recarregar arma | **R** |
 | Cambalhota (rola e fica invencível) | **Espaço** (rola para onde está andando; parado, para onde mira) |
 | Trocar de arma | **1**, **2**, **3** ou **roda do mouse** |
 | Interagir (fechadura, computador, quadro de energia) | **E** |

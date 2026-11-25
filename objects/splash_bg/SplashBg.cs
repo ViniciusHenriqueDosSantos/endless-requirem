@@ -4,6 +4,8 @@ public partial class SplashBg : Control
 {
 	private static readonly Vector2 DesignSize = new(1152, 648);
 
+	[Export] public bool Storm = true;
+
 	private Sprite2D farClouds;
 	private Sprite2D nearClouds;
 	private Sprite2D bolt;
@@ -39,7 +41,7 @@ public partial class SplashBg : Control
 		MoveClouds(nearClouds, 10f);
 
 		nextStrike -= (float)delta;
-		if (nextStrike <= 0)
+		if (Storm && nextStrike <= 0)
 			Strike();
 	}
 
