@@ -1,19 +1,19 @@
 [gd_resource type="Resource" script_class="Weapon" format=3]
 
 [ext_resource type="Script" path="res://objects/weapon/Weapon.cs" id="1_script"]
-[ext_resource type="Texture2D" path="res://sprites/weapons/laser.png" id="2_sprite"]
+[ext_resource type="Texture2D" path="res://sprites/weapons/pistola.png" id="2_sprite"]
 [ext_resource type="Texture2D" path="res://sprites/fx/bolt.png" id="3_bullet"]
-[ext_resource type="AudioStream" path="res://sounds/player/tiro_laser.ogg" id="4_sound"]
+[ext_resource type="AudioStream" path="res://sounds/player/tiro_pistola.ogg" id="4_sound"]
 
 [resource]
 script = ExtResource("1_script")
-Name = "Laser"
+Name = "Pistola"
 Cooldown = 0.16
 BulletSpeed = 600.0
 BulletScale = 0.14
 Damage = 1
 Piercing = false
-Color = Color(0.8, 0.72, 0.16, 1)
+Color = Color(1, 0.85, 0.45, 1)
 Shake = 2.0
 Recoil = 80.0
 Pellets = 1
@@ -23,4 +23,4 @@ SpreadDegrees = 0.0
 Sprite = ExtResource("2_sprite")
 BulletSprite = ExtResource("3_bullet")
 ShotSound = ExtResource("4_sound")
-ShotVolumeDb = -24.0
+ShotVolumeDb = -16.0

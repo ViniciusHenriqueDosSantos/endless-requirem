@@ -13,8 +13,8 @@ public partial class Rain : Node2D
 	[Export] public Vector2 LightningInterval = new(14f, 32f);
 	[Export] public AudioStream RainSound;
 	[Export] public AudioStream[] ThunderSounds = System.Array.Empty<AudioStream>();
-	[Export] public float RainVolumeOutside = -6f;
-	[Export] public float RainVolumeInside = -15f;
+	[Export] public float RainVolumeOutside = -7.4f;
+	[Export] public float RainVolumeInside = -16.4f;
 	// Fase toda dentro do prédio: não desenha pingos, o som fica sempre abafado e o relâmpago entra pelas janelas.
 	[Export] public bool AlwaysInside;
 

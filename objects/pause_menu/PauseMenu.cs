@@ -21,7 +21,7 @@ public partial class PauseMenu : CanvasLayer
 
 	private bool CanPause()
 	{
-		bool inGame = GetTree().CurrentScene is not MainMenu;
+		bool inGame = GetTree().CurrentScene is not MainMenu and not Intro;
 		bool alreadyPaused = GetTree().Paused;
 		return inGame && !alreadyPaused;
 	}

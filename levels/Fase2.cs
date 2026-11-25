@@ -227,7 +227,7 @@ public partial class Fase2 : LevelBase
 		Biblioteca.FinishFight();
 		Hud.HideBoss();
 		RevealRewards(Bibliotecario.GlobalPosition);
-		Hud.ShowMessage("A Bibliotecária caiu! Ela deixou o Canhão e uma chave.", 4f);
+		Hud.ShowMessage("A Bibliotecária caiu! Ela deixou o Rifle de Precisão e uma chave.", 4f);
 	}
 
 	private void RevealRewards(Vector2 around)

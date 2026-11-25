@@ -1,19 +1,19 @@
 [gd_resource type="Resource" script_class="Weapon" format=3]
 
 [ext_resource type="Script" path="res://objects/weapon/Weapon.cs" id="1_script"]
-[ext_resource type="Texture2D" path="res://sprites/weapons/canhao.png" id="2_sprite"]
-[ext_resource type="Texture2D" path="res://sprites/fx/orb.png" id="3_bullet"]
-[ext_resource type="AudioStream" path="res://sounds/player/tiro_canhao.ogg" id="4_sound"]
+[ext_resource type="Texture2D" path="res://sprites/weapons/rifle.png" id="2_sprite"]
+[ext_resource type="Texture2D" path="res://sprites/fx/bolt.png" id="3_bullet"]
+[ext_resource type="AudioStream" path="res://sounds/player/tiro_rifle.ogg" id="4_sound"]
 
 [resource]
 script = ExtResource("1_script")
-Name = "Canhão Perfurante"
+Name = "Rifle de Precisão"
 Cooldown = 0.85
 BulletSpeed = 450.0
 BulletScale = 0.28
 Damage = 3
 Piercing = true
-Color = Color(0.24, 0.72, 0.8, 1)
+Color = Color(1, 0.92, 0.7, 1)
 Shake = 7.0
 Recoil = 300.0
 Pellets = 1
