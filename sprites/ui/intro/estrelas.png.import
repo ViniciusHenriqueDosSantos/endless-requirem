@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://df2ur3flllok0"
-path="res://.godot/imported/canhao.png-22c0f8dd2eef93fe19de75a3ae3fd48b.ctex"
+uid="uid://2e88odyxofgb"
+path="res://.godot/imported/estrelas.png-0e4b28b1242ec6345e8abe18a8b0ed63.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://sprites/weapons/canhao.png"
-dest_files=["res://.godot/imported/canhao.png-22c0f8dd2eef93fe19de75a3ae3fd48b.ctex"]
+source_file="res://sprites/ui/intro/estrelas.png"
+dest_files=["res://.godot/imported/estrelas.png-0e4b28b1242ec6345e8abe18a8b0ed63.ctex"]
 
 [params]
 

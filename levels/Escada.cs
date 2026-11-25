@@ -185,7 +185,7 @@ void fragment() {
 		Player.SetPhysicsProcess(false);
 		Player.TriggerShake(14f);
 		_rumble.Play();
-		Hud.ShowMessage("A escada está desabando! CORRA!  (o Canhão derruba as barricadas)", 3f);
+		Hud.ShowMessage("A escada está desabando! CORRA!  (o Rifle derruba as barricadas)", 3f);
 	}
 
 	// ---------- quadro a quadro ----------

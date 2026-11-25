@@ -208,7 +208,10 @@ public partial class PacMan : Node2D
 		if (_phase is Phase.Won or Phase.Lost)
 		{
 			if (_phaseTimer <= 0 && (@event is InputEventKey { Pressed: true, Echo: false } || @event is InputEventMouseButton { Pressed: true }))
-				GetTree().ReloadCurrentScene();
+			{
+				if (_phase == Phase.Won) GetNode<SceneTransition>("/root/SceneTransition").ChangeScene("res://objects/ending/ending.tscn");
+				else GetTree().ReloadCurrentScene();
+			}
 			return;
 		}
 
@@ -687,7 +690,7 @@ public partial class PacMan : Node2D
 		if (_phase is Phase.Won or Phase.Lost && _phaseTimer <= 0)
 		{
 			string hint = _phase == Phase.Won
-				? "Você limpou o módulo da S.I.A.  (continua...)   [teste] aperte uma tecla para jogar de novo"
+				? "Você limpou o módulo da S.I.A.!  Aperte uma tecla para continuar"
 				: "Aperte uma tecla para tentar de novo";
 			DrawString(_font, new Vector2(0, view.Y - 24), hint, HorizontalAlignment.Center, view.X, Mathf.RoundToInt(big * 0.8f), Colors.White);
 		}

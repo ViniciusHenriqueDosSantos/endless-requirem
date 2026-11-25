@@ -60,7 +60,7 @@ public partial class Fase3 : LevelBase
 	private int _corridorMaxGhosts;
 	private float _corridorSpawnDistance;
 
-	private const float AlarmVolume = -9f;
+	private const float AlarmVolume = -21f;
 	private const float AlarmTintMax = 0.13f;
 
 	private string _code;

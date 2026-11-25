@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://f44geokx563h"
-path="res://.godot/imported/laser.png-26e61c97691de2094ca4802d91e39d1c.ctex"
+uid="uid://0xh84h2ql6bt"
+path="res://.godot/imported/placa_tutorial.png-108b1d827f4c54f45c9b585e85d8eb0e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://sprites/weapons/laser.png"
-dest_files=["res://.godot/imported/laser.png-26e61c97691de2094ca4802d91e39d1c.ctex"]
+source_file="res://sprites/props/fase1/placa_tutorial.png"
+dest_files=["res://.godot/imported/placa_tutorial.png-108b1d827f4c54f45c9b585e85d8eb0e.ctex"]
 
 [params]
 

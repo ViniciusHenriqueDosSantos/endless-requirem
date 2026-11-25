@@ -125,9 +125,9 @@ public partial class Room : Node2D
 		_banner.AddThemeFontSizeOverride("font_size", 40);
 		_banner.AddThemeConstantOverride("outline_size", 8);
 		_banner.AddThemeColorOverride("font_outline_color", Colors.Black);
-		_banner.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.TopWide);
-		_banner.OffsetTop = 180;
-		_banner.OffsetBottom = 240;
+		_banner.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.BottomWide);
+		_banner.OffsetTop = -260;
+		_banner.OffsetBottom = -200;
 		layer.AddChild(_banner);
 		AddChild(layer);
 	}
