@@ -47,8 +47,14 @@ public partial class Fase1 : Node2D
 		Screen.Closed += OnScreenClosed;
 
 		HideBadgeInRandomPile();
+		// tutorial: o quadro de comandos fica na tela até o jogador passar pela catraca (H mostra de novo)
+		Hud.ShowControls(true);
 		Cracha.PickedUp += _ => Hud.SetObjective("Passe pela catraca da portaria");
-		Catraca.Unlocked += () => Hud.SetObjective("Vá ao RU (porta à esquerda do corredor)");
+		Catraca.Unlocked += () =>
+		{
+			Hud.ShowControls(false);
+			Hud.SetObjective("Vá ao RU (porta à esquerda do corredor)");
+		};
 		Ru.Entered += OnRuEntered;
 		Marmita.PickedUp += _ =>
 		{

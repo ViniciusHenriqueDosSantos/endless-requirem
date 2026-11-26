@@ -581,6 +581,9 @@ for name, x, text in (("TutorialSign", 1399, "ESPAÇO: rolar\nR: recarregar\nE: 
          "offset_bottom": "-52.0", "theme_override_colors/font_color": col(0.95, 0.97, 0.92),
          "theme_override_font_sizes/font_size": "16", "text": '"' + text + '"', "horizontal_alignment": "1",
          "vertical_alignment": "1"})
+    # luz em cima da placa: sem ela a noite (CanvasModulate) deixa o texto escuro demais para ler
+    node("Luz", name, type="PointLight2D", props={"position": v(0, -90), "color": col(1, 0.95, 0.8),
+         "energy": "1.3", "texture": tex("radial", "lights"), "texture_scale": "1.4"})
 
 node("Player", inst="player", props={"position": v(18 * T, 64 * T + 16), "StartWithAllWeapons": "false"})
 node("Hud", inst="hud", props={"Player": 'NodePath("../Player")'}, node_paths=["Player"])
