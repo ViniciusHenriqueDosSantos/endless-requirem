@@ -4,13 +4,23 @@ using Godot;
 // e são geradas por tools/audio/music.py:
 //   tema     intro, menu, final e o auditório (cutscenes)
 //   explorar andando pelas fases
-//   luta     ondas de fantasmas, chefes e a escada desabando
+//   luta       ondas de fantasmas, chefes e a escada desabando
+//   biblioteca Bibliotecária patrulhando (furtividade): quase silêncio
+//   cacada     Bibliotecária te caçando ou na luta aberta
 // Music.Play("faixa") troca com fade (pedir a que já está tocando não faz nada).
 // As salas avisam quando uma luta começa e termina (FightStarted/FightEnded): com alguma luta acontecendo,
 // toca "luta"; sem nenhuma, volta para a música da fase (a última pedida com Play).
+// Music.Override("faixa") passa na frente de tudo (ex.: a luta da Bibliotecária, que muda com o que ela faz);
+// Music.Override("") devolve para a música normal.
 public partial class Music : Node
 {
 	private const float Volume = -11f;        // dB: baixo o bastante para os efeitos e a chuva aparecerem
+
+	// Ajuste por faixa (dB), somado ao Volume: a da biblioteca é para ser quase silêncio.
+	private static readonly System.Collections.Generic.Dictionary<string, float> TrackGain = new()
+	{
+		["biblioteca"] = -3f,
+	};
 	private const float Silent = -60f;
 	private const float FadeTime = 1.2f;
 
@@ -20,6 +30,7 @@ public partial class Music : Node
 	private AudioStreamPlayer _other;
 	private string _playing = "";
 	private string _levelTrack = "";
+	private string _override = "";
 	private int _fights;
 
 	public override void _Ready()
@@ -43,22 +54,35 @@ public partial class Music : Node
 		if (_instance == null) return;
 		_instance._levelTrack = track;
 		_instance._fights = 0;   // cena nova: nenhuma luta em andamento
+		_instance._override = "";
 		_instance.SwitchTo(track);
 	}
+
+	// Faixa que passa na frente da música da fase e da de luta ("" = volta ao normal).
+	// Pode chamar a cada quadro: só troca quando muda.
+	public static void Override(string track)
+	{
+		if (_instance == null || track == _instance._override) return;
+		_instance._override = track;
+		_instance.SwitchTo(track != "" ? track : _instance.NormalTrack());
+	}
+
+	private string NormalTrack() => _fights > 0 ? "luta" : _levelTrack;
 
 	// Uma sala começou a luta (ondas, chefe, alarme): toca "luta" até a última acabar.
 	public static void FightStarted()
 	{
 		if (_instance == null) return;
 		_instance._fights++;
-		_instance.SwitchTo("luta");
+		if (_instance._override == "")
+			_instance.SwitchTo("luta");
 	}
 
 	public static void FightEnded()
 	{
 		if (_instance == null || _instance._fights == 0) return;
 		_instance._fights--;
-		if (_instance._fights == 0 && _instance._levelTrack != "")
+		if (_instance._fights == 0 && _instance._levelTrack != "" && _instance._override == "")
 			_instance.SwitchTo(_instance._levelTrack);
 	}
 
@@ -77,7 +101,8 @@ public partial class Music : Node
 		_current.Play();
 
 		Tween tween = CreateTween().SetParallel();
-		tween.TweenProperty(_current, "volume_db", Volume, FadeTime).SetTrans(Tween.TransitionType.Sine);
+		float volume = Volume + (TrackGain.TryGetValue(track, out float gain) ? gain : 0f);
+		tween.TweenProperty(_current, "volume_db", volume, FadeTime).SetTrans(Tween.TransitionType.Sine);
 		tween.TweenProperty(_other, "volume_db", Silent, FadeTime).SetTrans(Tween.TransitionType.Sine);
 		tween.Chain().TweenCallback(Callable.From(() => { if (_other.VolumeDb <= Silent + 1) _other.Stop(); }));
 	}

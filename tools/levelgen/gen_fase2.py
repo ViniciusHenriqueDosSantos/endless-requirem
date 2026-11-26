@@ -41,6 +41,7 @@ for name, path in [('player', 'player/player'), ('hud', 'hud/hud'), ('message_sc
 L.res('Resource', 'res://objects/librarian/bibliotecario.tres', 'bib')
 L.res('Script', 'res://objects/decor/Signatures.cs', 'sig')
 L.res('Script', 'res://objects/fase3/Interactable.cs', 'interactable')
+L.res('Script', 'res://objects/librarian/NoiseMaker.cs', 'noise_maker')
 L.res('Resource', 'res://objects/weapon/cannon.tres', 'cannon')
 for name, path in [('night_overlay', 'night/night_overlay'), ('flicker_light', 'night/flicker_light'),
                    ('rain', 'weather/rain'), ('item_inspect', 'inspect/item_inspect')]:
@@ -228,6 +229,11 @@ for i, x in enumerate(STUDY_DOORS):
     L.node(f"PortaSala{i+1}", type="ColorRect", props={"z_index": "-4", "offset_left": f"{x * T + 8}.0",
            "offset_top": f"{5 * T}.0", "offset_right": f"{x * T + 56}.0", "offset_bottom": f"{6 * T}.0",
            "mouse_filter": "2", "color": col(0.55, 0.38, 0.22, 1)})
+# objetos que fazem barulho ([E]): cada um num banquinho na frente de uma estante, para ela parar bem ali
+# (objects/librarian/NoiseMaker.cs). Kind: 0 campainha, 1 rádio, 2 despertador.
+for name, kind, (gx, gy) in [("Radio", 1, (420, 1160)), ("Despertador", 2, (780, 1415)), ("Campainha", 0, (230, 1540))]:
+    L.node(name, "Biblioteca", type="Area2D", props={"position": v(gx - bib[0], gy - bib[1]), "script": 'ExtResource("noise_maker")',
+           "Size": v(150, 130), "Kind": str(kind), "Texture": L.tex(name.lower(), "props/fase2")})
 # patrulha da Bibliotecária
 L.node("Patrulha", "Biblioteca", type="Node2D")
 for i, (tx, ty) in enumerate([(7, 11), (13, 10), (17, 19), (11, 22), (16, 29), (8, 30), (-1, 27), (10, 16), (-1, 12)]):
@@ -236,9 +242,9 @@ for i, (tx, ty) in enumerate([(7, 11), (13, 10), (17, 19), (11, 22), (16, 29), (
 L.node("Bibliotecario", "Biblioteca", inst="librarian", props={"position": v(-1 * T + 32 - bib[0], 18 * T - bib[1]),
        "Config": 'ExtResource("bib")', "Patrol": 'NodePath("../Patrulha")', "Shelves": 'NodePath("../Estantes")'},
        node_paths=["Patrol", "Shelves"])
-L.node("Canhao", inst="pickup", props={"position": v(14 * T, 21 * T), "ItemId": '"canhao"', "DisplayName": '"Rifle de Precisão"',
-       "Color": col(1, 0.85, 0.45, 1), "WeaponReward": 'ExtResource("cannon")', "StartsHidden": "true",
-       "Texture": L.tex("rifle", "weapons")})
+L.node("Canhao", inst="pickup", props={"position": v(14 * T, 21 * T), "ItemId": '"canhao"', "DisplayName": '"Rifle do Silêncio"',
+       "Color": col(0.8, 0.65, 1, 1), "WeaponReward": 'ExtResource("cannon")', "StartsHidden": "true",
+       "Texture": L.tex("rifle_silencio", "weapons")})
 L.node("ChaveEscada", inst="pickup", props={"position": v(15 * T, 21 * T), "ItemId": '"chave_escada"',
        "DisplayName": '"Chave da escada"', "Color": col(1, 0.85, 0.2, 1), "StartsHidden": "true",
        "Texture": L.tex("chave_escada", "items"), "InspectTexture": L.tex("chave_escada", "items/inspecao"),

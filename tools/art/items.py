@@ -78,6 +78,43 @@ def canhao():
     return cv
 
 
+def rifle_silencio():
+    """Rifle do Silêncio (o que a Bibliotecária deixa): coronha de madeira de estante, silenciador roxo
+    (o cardigã dela), luneta feita dos óculos dela com a correntinha dourada. Aponta para a direita."""
+    cv = Canvas(19, 9)
+    WOOD, WOOD_D, WOOD_L = hexc("7a5230"), hexc("553820"), hexc("9c6c40")
+    METAL, METAL_L = hexc("3a3e46"), hexc("5d6672")
+    PURPLE, PURPLE_D, PURPLE_L = hexc("6a5a8a"), hexc("4a3e66"), hexc("8a7aac")
+    GOLD = hexc("d9a62e")
+    # coronha e empunhadura
+    cv.rect(0, 4, 5, 3, WOOD); cv.hline(0, 4, 5, WOOD_L); cv.hline(0, 6, 5, WOOD_D)
+    cv.rect(4, 5, 2, 3, WOOD_D)
+    # corpo e cano
+    cv.rect(5, 4, 6, 2, METAL); cv.hline(5, 4, 6, METAL_L)
+    cv.rect(11, 4, 3, 1, METAL)
+    # silenciador roxo, grosso, com anéis
+    cv.rect(13, 3, 6, 3, PURPLE); cv.hline(13, 3, 6, PURPLE_L); cv.hline(13, 5, 6, PURPLE_D)
+    cv.vline(15, 3, 3, PURPLE_D); cv.vline(17, 3, 3, PURPLE_D)
+    # luneta: os óculos dela (duas lentes redondas) e a corrente caindo
+    cv.rect(6, 1, 5, 1, METAL)
+    for x in (5, 9):
+        cv.frame(x, 0, 3, 3, hexc("2a2b30")); cv.put(x + 1, 1, hexc("ffe9a0"))
+    cv.put(8, 1, hexc("2a2b30"))
+    for i, (x, y) in enumerate([(5, 3), (4, 4), (4, 5)]):
+        cv.put(x, y, GOLD)
+    cv.outline(INK)
+    return cv
+
+
+def marcador():
+    """Bala do Rifle do Silêncio: um marcador de página (fita com a ponta em V). Branco: a cor vem da arma."""
+    cv = Canvas(9, 3)
+    cv.rect(0, 0, 7, 3, hexc("ffffff", 230)); cv.hline(1, 1, 6, hexc("ffffff"))
+    cv.put(7, 0, hexc("ffffff", 230)); cv.put(8, 0, hexc("ffffff", 200))
+    cv.put(7, 2, hexc("ffffff", 230)); cv.put(8, 2, hexc("ffffff", 200))
+    return cv
+
+
 # ---------------------------------------------------------------- projéteis (brancos: a cor vem da arma)
 def bolt():
     cv = Canvas(7, 3)
@@ -348,6 +385,8 @@ if __name__ == "__main__":
         fn().save(f"sprites/items/{name}.png".replace("sprites", "sprites", 1))
     for name, fn in {"laser": laser, "escopeta": escopeta, "canhao": canhao}.items():
         fn().save(f"sprites/weapons/{name}.png")
+    rifle_silencio().save("sprites/weapons/rifle_silencio.png")
+    marcador().save("sprites/fx/marcador.png")
     for name, fn in {"bolt": bolt, "pellet": pellet, "orb": orb}.items():
         fn().save(f"sprites/fx/{name}.png")
     salgados().save("sprites/fx/salgados.png")

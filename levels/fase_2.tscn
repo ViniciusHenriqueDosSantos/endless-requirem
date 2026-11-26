@@ -15,6 +15,7 @@
 [ext_resource type="Resource" path="res://objects/librarian/bibliotecario.tres" id="bib"]
 [ext_resource type="Script" path="res://objects/decor/Signatures.cs" id="sig"]
 [ext_resource type="Script" path="res://objects/fase3/Interactable.cs" id="interactable"]
+[ext_resource type="Script" path="res://objects/librarian/NoiseMaker.cs" id="noise_maker"]
 [ext_resource type="Resource" path="res://objects/weapon/cannon.tres" id="cannon"]
 [ext_resource type="PackedScene" path="res://objects/night/night_overlay.tscn" id="night_overlay"]
 [ext_resource type="PackedScene" path="res://objects/night/flicker_light.tscn" id="flicker_light"]
@@ -49,7 +50,10 @@
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/luminaria.png" id="tex_props_fase2_luminaria"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/luminaria_apagada.png" id="tex_props_fase2_luminaria_apagada"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/mesa_sala.png" id="tex_props_fase2_mesa_sala"]
-[ext_resource type="Texture2D" path="res://sprites/weapons/rifle.png" id="tex_weapons_rifle"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase2/radio.png" id="tex_props_fase2_radio"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase2/despertador.png" id="tex_props_fase2_despertador"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase2/campainha.png" id="tex_props_fase2_campainha"]
+[ext_resource type="Texture2D" path="res://sprites/weapons/rifle_silencio.png" id="tex_weapons_rifle_silencio"]
 [ext_resource type="Texture2D" path="res://sprites/items/chave_escada.png" id="tex_items_chave_escada"]
 [ext_resource type="Texture2D" path="res://sprites/items/inspecao/chave_escada.png" id="tex_items_inspecao_chave_escada"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/elevador_quebrado.png" id="tex_props_fase2_elevador_quebrado"]
@@ -688,6 +692,27 @@ offset_bottom = 384.0
 mouse_filter = 2
 color = Color(0.55, 0.38, 0.22, 1)
 
+[node name="Radio" type="Area2D" parent="Biblioteca"]
+position = Vector2(548, 1032)
+script = ExtResource("noise_maker")
+Size = Vector2(150, 130)
+Kind = 1
+Texture = ExtResource("tex_props_fase2_radio")
+
+[node name="Despertador" type="Area2D" parent="Biblioteca"]
+position = Vector2(908, 1287)
+script = ExtResource("noise_maker")
+Size = Vector2(150, 130)
+Kind = 2
+Texture = ExtResource("tex_props_fase2_despertador")
+
+[node name="Campainha" type="Area2D" parent="Biblioteca"]
+position = Vector2(358, 1412)
+script = ExtResource("noise_maker")
+Size = Vector2(150, 130)
+Kind = 0
+Texture = ExtResource("tex_props_fase2_campainha")
+
 [node name="Patrulha" type="Node2D" parent="Biblioteca"]
 
 [node name="Ponto1" type="Marker2D" parent="Biblioteca/Patrulha"]
@@ -726,11 +751,11 @@ Shelves = NodePath("../Estantes")
 [node name="Canhao" parent="." instance=ExtResource("pickup")]
 position = Vector2(896, 1344)
 ItemId = "canhao"
-DisplayName = "Rifle de Precisão"
-Color = Color(1, 0.85, 0.45, 1)
+DisplayName = "Rifle do Silêncio"
+Color = Color(0.8, 0.65, 1, 1)
 WeaponReward = ExtResource("cannon")
 StartsHidden = true
-Texture = ExtResource("tex_weapons_rifle")
+Texture = ExtResource("tex_weapons_rifle_silencio")
 
 [node name="ChaveEscada" parent="." instance=ExtResource("pickup")]
 position = Vector2(960, 1344)
