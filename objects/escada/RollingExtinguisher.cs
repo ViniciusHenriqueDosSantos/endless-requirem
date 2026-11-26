@@ -95,7 +95,7 @@ public partial class RollingExtinguisher : Area2D, IHittable
 
 		if (body is Player player)
 		{
-			player.TakeHit(GlobalPosition + new Vector2(0, -60), 650f);
+			player.TakeHit(GlobalPosition + new Vector2(0, -60), 650f, true);   // o dash não atravessa o extintor
 			Pop();
 		}
 		else if (body is Barricade barricade && !barricade.IsDestroyed)

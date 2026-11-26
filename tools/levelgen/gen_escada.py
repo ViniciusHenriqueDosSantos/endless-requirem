@@ -11,7 +11,9 @@ from lib import Level, T, v, col, px, root_node, CONCRETE
 
 L = Level()
 TOP, FOOT = 3, 17              # linhas dos lances (de cima para baixo)
-A, B = (0, 2), (4, 6)          # colunas dos lances
+A, B = (0, 3), (5, 8)          # colunas dos lances (4 tiles de largura cada)
+WIDTH = A[1] - A[0] + 1
+CA, CB = (A[0] + A[1] + 1) / 2, (B[0] + B[1] + 1) / 2   # meio de cada coluna (em tiles)
 L.add_floor(A[0], TOP, A[1], FOOT)            # lance da coluna A
 L.add_floor(B[0], TOP, B[1], FOOT)            # lance da coluna B
 L.add_floor(A[0], FOOT + 1, A[1], FOOT + 3)   # patamar do térreo (começo), embaixo da coluna A
@@ -51,24 +53,24 @@ L.node("Fundo", type="ColorRect", props={"z_index": "-12", "offset_left": f"{-14
        "color": col(0.03, 0.035, 0.045, 1)})
 
 # número do andar pintado no chão (o roteiro troca a figura e a coluna a cada andar) e o "4" no patamar final
-L.prop("NumeroAndar", ".", 1.5 * T, (FOOT + 1) * T - 12, 96, 112, col(0, 0, 0, 0), solid=False, sprite="andar0",
+L.prop("NumeroAndar", ".", CA * T, (FOOT + 1) * T - 12, 96, 112, col(0, 0, 0, 0), solid=False, sprite="andar0",
        folder="props/escada", z=-7)
-L.prop("Andar4", ".", 5.5 * T, (EXIT[3] + 1) * T - 8, 96, 112, col(0, 0, 0, 0), solid=False, sprite="andar4",
+L.prop("Andar4", ".", CB * T, (EXIT[3] + 1) * T - 8, 96, 112, col(0, 0, 0, 0), solid=False, sprite="andar4",
        folder="props/escada", z=-7)
 
 # no alto de cada coluna, no lugar da parede: os degraus seguem para cima no escuro (sensação de seguir em frente)
-for name, cx in (("ContinuacaoA", 1.5), ("ContinuacaoB", 5.5)):
-    L.prop(name, ".", cx * T, TOP * T + 8, 3 * T, 160, col(0, 0, 0, 0), solid=False, sprite="continuacao",
+for name, cx in (("ContinuacaoA", CA), ("ContinuacaoB", CB)):
+    L.prop(name, ".", cx * T, TOP * T + 8, WIDTH * T, 160, col(0, 0, 0, 0), solid=False, sprite="continuacao",
            folder="props/escada")
 
 # ---------- o que desaba, os obstáculos (criados pelo roteiro), começo e saída ----------
 L.node("Desabamento", type="Node2D", props={"z_index": "-6", "script": 'ExtResource("collapse")'})
 L.node("Obstaculos", type="Node2D", props={"y_sort_enabled": "true"})
-L.node("Inicio", inst="area_trigger", props={"position": v(A[0] * T, FOOT * T), "Size": v(3 * T, T),
+L.node("Inicio", inst="area_trigger", props={"position": v(A[0] * T, FOOT * T), "Size": v(WIDTH * T, T),
        "Color": col(0, 0, 0, 0)})
 L.prop("PortaEscadaEntrada", ".", (A[1] + 1) * T - 24, (FOOT + 4) * T, 48, 3 * T, col(0.5, 0.42, 0.3), depth=3 * T,
        solid=False, sprite="porta_escada", flip=True)
-L.node("PortaSaida", inst="door", props={"position": v(5.5 * T, TOP * T), "Size": v(3 * T, 64), "StartsLocked": "true",
+L.node("PortaSaida", inst="door", props={"position": v(CB * T, TOP * T), "Size": v(WIDTH * T, 64), "StartsLocked": "true",
        "WallStyle": "true", "Color": col(0.9, 0.75, 0.3, 1)})
 L.node("CoberturaSaida", type="ColorRect", props={"z_index": "20", "offset_left": f"{(EXIT[0] - 1) * T}.0",
        "offset_top": f"{(EXIT[1] - 1) * T}.0", "offset_right": f"{(EXIT[2] + 2) * T}.0",
@@ -82,18 +84,18 @@ L.node("NightOverlay", inst="night_overlay")
 L.node("Chuva", inst="rain", props={"AlwaysInside": "true", "LightningInterval": v(12, 26)})
 L.node("Luzes", type="Node2D")
 n = 0
-for cx in (1.5, 5.5):
+for cx in (CA, CB):
     for ty in (5, 10, 15):
         n += 1
         L.node(f"Emergencia{n}", "Luzes", inst="flicker_light", props={
             "position": v(cx * T, ty * T), "color": col(1, 0.82, 0.55), "texture_scale": "1.9", "BaseEnergy": "0.8",
             "Behavior": str(1 if n % 2 else 2), "Seed": str(500 + n), "texture": 'ExtResource("light_tubo")'})
-L.node("Terreo", "Luzes", inst="flicker_light", props={"position": v(1.5 * T, 19.5 * T), "color": col(1, 0.82, 0.55),
+L.node("Terreo", "Luzes", inst="flicker_light", props={"position": v(CA * T, 19.5 * T), "color": col(1, 0.82, 0.55),
        "texture_scale": "1.6", "BaseEnergy": "0.8", "Behavior": "0", "Seed": "520", "texture": 'ExtResource("light_tubo")'})
-L.node("LuzSaida", "Luzes", inst="flicker_light", props={"position": v(5.5 * T, (TOP - 2) * T),
+L.node("LuzSaida", "Luzes", inst="flicker_light", props={"position": v(CB * T, (TOP - 2) * T),
        "color": col(0.2, 1, 0.45), "texture_scale": "1.2", "BaseEnergy": "0.8", "Behavior": "0", "Seed": "540"})
 
-L.node("Player", inst="player", props={"position": v(1.5 * T, 19.5 * T + 16), "StartWithAllWeapons": "false"})
+L.node("Player", inst="player", props={"position": v(CA * T, 19.5 * T + 16), "StartWithAllWeapons": "false"})
 L.node("Hud", inst="hud", props={"Player": 'NodePath("../Player")'}, node_paths=["Player"])
 L.node("MessageScreen", inst="message_screen")
 
@@ -101,7 +103,7 @@ paths = {"Player": "Player", "Hud": "Hud", "Screen": "MessageScreen", "PortaSaid
          "Inicio": "Inicio", "CoberturaSaida": "CoberturaSaida", "Desabamento": "Desabamento", "Obstaculos": "Obstaculos",
          "NumeroAndar": "NumeroAndar", "ContinuacaoB": "ContinuacaoB"}
 root = root_node("Escada", "escada", paths)
-root += f"\nColunaA = {1.5 * T:g}\nColunaB = {5.5 * T:g}\nFaixa = {3 * T:g}\nPeDoLance = {(FOOT + 1) * T:g}"
+root += f"\nColunaA = {CA * T:g}\nColunaB = {CB * T:g}\nFaixa = {WIDTH * T:g}\nPeDoLance = {(FOOT + 1) * T:g}"
 root += f"\nAltoDoLance = {TOP * T:g}\nFundoDoTerreo = {(FOOT + 4) * T:g}"
 root += '\nSomDesabamento = ExtResource("som_desabamento")'
 L.write(sys.argv[1], root)

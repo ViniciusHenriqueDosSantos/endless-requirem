@@ -47,6 +47,13 @@ public partial class Room : Node2D
 	// Última onda traz um fantasma grande (Tank) a mais. Onde ele caiu fica em FinalEnemyPosition.
 	[Export] public bool FinalWaveTank;
 	[Export] public string FinalWaveMessage = "";
+
+	// O inimigo especial da última onda (ex.: o zelador): desenho próprio, vida (multiplica a do fantasma pesado,
+	// sem o ajuste da sala), quanto ele recua com os tiros e o nome com os pontos de vida mostrados em cima dele.
+	[Export] public Texture2D FinalEnemySprite;
+	[Export] public float FinalEnemyHealthScale = 1f;
+	[Export] public float FinalEnemyKnockbackScale = 1f;
+	[Export] public string FinalEnemyName = "";
 	[Export] public bool HasBoss;
 
 	// Faixas que aparecem quando a luta começa e quando a sala fica limpa (vazio = não mostra).
@@ -289,7 +296,7 @@ public partial class Room : Node2D
 		{
 			// Inimigo especial da última onda (ex.: o zelador). Guarda onde ele caiu.
 			_spawnFinalEnemy = false;
-			Enemy special = CreateEnemy(Enemy.Kind.Tank, PickSpawnPoint());
+			Enemy special = CreateEnemy(Enemy.Kind.Tank, PickSpawnPoint(), true);
 			special.TreeExiting += () => FinalEnemyPosition = special.GlobalPosition;
 			return;
 		}
@@ -300,12 +307,19 @@ public partial class Room : Node2D
 	// Cria um fantasma num ponto do mundo (ex.: saindo de uma caixa). Some se a sala reiniciar.
 	public Enemy SpawnEnemyAt(Vector2 globalPosition, Enemy.Kind kind) => CreateEnemy(kind, ToLocal(globalPosition));
 
-	private Enemy CreateEnemy(Enemy.Kind kind, Vector2 localPosition)
+	private Enemy CreateEnemy(Enemy.Kind kind, Vector2 localPosition, bool final = false)
 	{
 		Enemy enemy = EnemyScene.Instantiate<Enemy>();
 		enemy.Type = kind;
 		enemy.HealthScale = EnemyHealthScale;
 		enemy.SpeedScale = EnemySpeedScale;
+		if (final)
+		{
+			enemy.HealthScale = FinalEnemyHealthScale;
+			enemy.KnockbackScale = FinalEnemyKnockbackScale;
+			enemy.SpriteOverride = FinalEnemySprite;
+			enemy.DisplayName = FinalEnemyName;
+		}
 		enemy.Position = localPosition;
 		enemy.TreeExiting += () => _enemies.Remove(enemy);
 		_enemies.Add(enemy);

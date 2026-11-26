@@ -223,9 +223,12 @@ public partial class Player : CharacterBody2D
 	}
 
 	// Dano vindo de qualquer coisa (inimigo, projétil do chefe...).
-	public void TakeHit(Vector2 fromPosition, float knockback)
+	// ignoreRoll: o golpe pega mesmo rolando (ex.: extintor e lâmpada da escada, que não dá para atravessar com o dash).
+	public void TakeHit(Vector2 fromPosition, float knockback, bool ignoreRoll = false)
 	{
-		if (Health <= 0 || _rollTimer > 0 || _rollGraceTimer > 0 || _invulnerableTimer > 0) return;
+		if (Health <= 0 || _invulnerableTimer > 0) return;
+		if (!ignoreRoll && (_rollTimer > 0 || _rollGraceTimer > 0)) return;
+		if (ignoreRoll) { _rollTimer = 0; _rollGraceTimer = 0; }   // o tranco interrompe a rolagem
 
 		_knockback = (GlobalPosition - fromPosition).Normalized() * knockback;
 		Health--;
