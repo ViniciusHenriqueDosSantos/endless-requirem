@@ -21,6 +21,9 @@ INK = rgba("1c1a22")
 CREAM, CREAM_D = rgba("e3ddd1"), rgba("a9a191")
 RED_HI, RED, RED_D, RED_K = rgba("e8604f"), rgba("c7372f"), rgba("93412f"), rgba("5e2a23")
 GREEN, GREEN_L = rgba("2bb673"), rgba("8ff0b8")
+GOLD_HI, GOLD, GOLD_D, GOLD_K = rgba("fff0a0"), rgba("f2c230"), rgba("c08a1a"), rgba("8a5a10")
+RED_SET = (RED_HI, RED, RED_D, RED_K)
+GOLD_SET = (GOLD_HI, GOLD, GOLD_D, GOLD_K)
 GLASS = rgba("bccbd8")
 
 
@@ -63,17 +66,19 @@ def paint(canvas, mask, x, y, color):
         canvas.putpixel((x + xx, y + yy), color)
 
 
-def big_word(word, size, seed):
-    """Palavra grande vermelha: degradê, brilho em cima, sangue escorrendo, contorno e sombra."""
+def big_word(word, size, seed, colors=RED_SET, drips=True):
+    """Palavra grande: degradê, brilho em cima, contorno e sombra; vermelha com sangue escorrendo
+    (logotipo e pausa) ou dourada e limpa (parabéns do final)."""
+    hi, mid, dark, deep = colors
     rng = random.Random(seed)
     m = bold(text_mask(word, size, spacing=2))
     h, w = m.shape
-    drip_room = 10
+    drip_room = 10 if drips else 0
     body = np.zeros((h + drip_room, w), bool)
     body[:h] = m
     # escorridos: em algumas colunas da borda de baixo das letras
     bottoms = [x for x in range(w) if m[:, x].any() and m[h - 1, x]]
-    for x in rng.sample(bottoms, max(1, len(bottoms) // 5)):
+    for x in (rng.sample(bottoms, max(1, len(bottoms) // 5)) if drips else []):
         length = rng.randint(2, drip_room - 2)
         body[h:h + length, x] = True
         if rng.random() < 0.6:
@@ -87,12 +92,12 @@ def big_word(word, size, seed):
     for yy, xx in zip(*np.nonzero(pad)):
         y0 = yy - 1
         if y0 >= h:
-            c = RED_D                                   # sangue escorrendo
+            c = dark                                    # sangue escorrendo
         elif y0 > 0 and not pad[yy - 1, xx]:
-            c = RED_HI                                  # brilho na borda de cima
+            c = hi                                      # brilho na borda de cima
         else:
             t = y0 / max(1, h - 1)
-            c = RED if t < 0.55 else (RED_D if t < 0.85 else RED_K)
+            c = mid if t < 0.55 else (dark if t < 0.85 else deep)
         img.putpixel((1 + xx, 1 + yy), c)
     return img
 
@@ -144,9 +149,9 @@ def ghost():
     return sheet.crop((0, 0, 16, fh))
 
 
-def compose(top, word, seed, with_ghost=True):
+def compose(top, word, seed, with_ghost=True, colors=RED_SET, drips=True, bottom=None):
     head = small_line(top, 8, CREAM)
-    big = big_word(word, 32, seed)
+    big = big_word(word, 32, seed, colors, drips)
     icon = flask()
     gap = 18 if with_ghost else 0
     width = max(head.width + icon.width + 4, big.width + 2 * gap) + 6
@@ -160,6 +165,12 @@ def compose(top, word, seed, with_ghost=True):
         g = ghost()
         img.alpha_composite(g, (bx + big.width + 1, head.height + 4))   # fantasma flutuando ao lado do R
     img.alpha_composite(big, (bx, head.height + 1))
+    if bottom:   # linha pequena embaixo da palavra grande
+        foot = small_line(bottom, 8, CREAM)
+        out = Image.new("RGBA", (max(width, foot.width), height + foot.height + 3), (0, 0, 0, 0))
+        out.alpha_composite(img, ((out.width - width) // 2, 0))
+        out.alpha_composite(foot, ((out.width - foot.width) // 2, height + 3))
+        img = out
     return img
 
 
@@ -167,6 +178,9 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     compose("INSTITUTO DE CIÊNCIA", "E TERROR", 13).save(os.path.join(OUT, "logo.png"))
     compose("INSTITUTO DE CIÊNCIA E TERROR", "PAUSADO", 7, with_ghost=False).save(os.path.join(OUT, "logo_pausado.png"))
+    # final: "PARABÉNS!" dourado (sem sangue), com o fantasma formando de capelo e "VOCÊ SE FORMOU!" embaixo
+    compose("INSTITUTO DE CIÊNCIA E TERROR", "PARABÉNS!", 3, colors=GOLD_SET, drips=False,
+            bottom="VOCÊ SE FORMOU!").save(os.path.join(OUT, "logo_parabens.png"))
     print("logo ok")
 
 
