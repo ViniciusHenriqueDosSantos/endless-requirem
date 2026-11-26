@@ -70,7 +70,7 @@ public partial class Auditorio3D : Node
 
 	public override void _Ready()
 	{
-		Music.Play("tema");
+		Music.Play("sia");
 		// continua rodando com o jogo pausado só para soltar o mouse no menu de pausa
 		ProcessMode = ProcessModeEnum.Always;
 

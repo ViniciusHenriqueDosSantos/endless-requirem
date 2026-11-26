@@ -40,6 +40,7 @@ public partial class Fase1 : Node2D
 	public override void _Ready()
 	{
 		Music.Play("explorar");
+		Cantina.FightMusic = "chefe";   // a Tia tem música própria
 		GameState.Clear();
 		_startPosition = Player.GlobalPosition;
 		Player.Died += OnPlayerDied;

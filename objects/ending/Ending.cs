@@ -4,7 +4,7 @@ public partial class Ending : Control
 {
 	public override void _Ready()
 	{
-		Music.Play("tema");
+		Music.Play("final");
 		Input.MouseMode = Input.MouseModeEnum.Visible;
 		GetNode<Button>("Buttons/Menu").GrabFocus();
 	}

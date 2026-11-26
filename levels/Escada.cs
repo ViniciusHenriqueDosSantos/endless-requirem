@@ -103,7 +103,7 @@ public partial class Escada : LevelBase
 	public override void _Ready()
 	{
 		base._Ready();
-		Music.Play("luta");   // a escada inteira é uma fuga
+		Music.Play("fuga");   // a escada inteira é uma fuga
 
 		Inicio.PlayerEntered += OnClimbStarted;
 		Saida.PlayerEntered += OnReachedTop;

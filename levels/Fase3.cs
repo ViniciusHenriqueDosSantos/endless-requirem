@@ -90,6 +90,8 @@ public partial class Fase3 : LevelBase
 	public override void _Ready()
 	{
 		base._Ready();
+		Music.Play("laboratorio");
+		Alarme.FightMusic = "alarme";
 		// o alarme não entra no "recomeço do trecho": reprovado, o jogador volta no último laboratório
 		// e os fantasmas continuam onde estão (morrer não limpa o corredor; só a vida volta cheia)
 

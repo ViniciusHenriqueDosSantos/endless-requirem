@@ -7,6 +7,13 @@ using Godot;
 //   luta       ondas de fantasmas, chefes e a escada desabando
 //   biblioteca Bibliotecária patrulhando (furtividade): quase silêncio
 //   cacada     Bibliotecária te caçando ou na luta aberta
+//   chefe      Tia da Cantina (Room.FightMusic da Cantina)
+//   fuga       escada desabando
+//   laboratorio Fase 3 (4º andar)
+//   alarme     Fase 3 com o alarme tocando (Room.FightMusic do corredor)
+//   sia        auditório 3D, a S.I.A. no telão
+//   arcade     Pac-Man dentro do telão
+//   final      tela final (o diploma)
 // Music.Play("faixa") troca com fade (pedir a que já está tocando não faz nada).
 // As salas avisam quando uma luta começa e termina (FightStarted/FightEnded): com alguma luta acontecendo,
 // toca "luta"; sem nenhuma, volta para a música da fase (a última pedida com Play).
@@ -31,6 +38,7 @@ public partial class Music : Node
 	private string _playing = "";
 	private string _levelTrack = "";
 	private string _override = "";
+	private string _fightTrack = "luta";
 	private int _fights;
 
 	public override void _Ready()
@@ -67,15 +75,17 @@ public partial class Music : Node
 		_instance.SwitchTo(track != "" ? track : _instance.NormalTrack());
 	}
 
-	private string NormalTrack() => _fights > 0 ? "luta" : _levelTrack;
+	private string NormalTrack() => _fights > 0 ? _fightTrack : _levelTrack;
 
 	// Uma sala começou a luta (ondas, chefe, alarme): toca "luta" até a última acabar.
-	public static void FightStarted()
+	// track: a música desta luta (cada sala escolhe a sua, Room.FightMusic; o padrão é "luta").
+	public static void FightStarted(string track = "luta")
 	{
 		if (_instance == null) return;
 		_instance._fights++;
+		_instance._fightTrack = track == "" ? "luta" : track;
 		if (_instance._override == "")
-			_instance.SwitchTo("luta");
+			_instance.SwitchTo(_instance._fightTrack);
 	}
 
 	public static void FightEnded()
