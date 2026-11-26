@@ -76,6 +76,7 @@
 [ext_resource type="Texture2D" path="res://sprites/props/fase1/porta_elevador.png" id="tex_props_fase1_porta_elevador"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase1/caixa_dagua.png" id="tex_props_fase1_caixa_dagua"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase1/placa_tutorial.png" id="tex_props_fase1_placa_tutorial"]
+[ext_resource type="Texture2D" path="res://sprites/lights/radial.png" id="tex_lights_radial"]
 
 [node name="Fase1" type="Node2D" node_paths=PackedStringArray("Player", "Hud", "Screen", "Cracha", "Pilhas", "Catraca", "Ru", "PortaEntradaRu", "Marmita", "Microondas", "BrilhoMicroondas", "Corredor", "Cantina", "CantinaPorta1", "CantinaPorta2", "Tia", "Escopeta", "PortaElevador", "Elevador")]
 y_sort_enabled = true
@@ -1346,6 +1347,13 @@ E: usar"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="Luz" type="PointLight2D" parent="TutorialSign"]
+position = Vector2(0, -90)
+color = Color(1, 0.95, 0.8, 1)
+energy = 1.3
+texture = ExtResource("tex_lights_radial")
+texture_scale = 1.4
+
 [node name="TutorialSign2" parent="." instance=ExtResource("prop")]
 position = Vector2(905, 4112)
 Size = Vector2(184, 136)
@@ -1365,6 +1373,13 @@ MOUSE: mirar / atirar
 1 2 3: armas"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Luz" type="PointLight2D" parent="TutorialSign2"]
+position = Vector2(0, -90)
+color = Color(1, 0.95, 0.8, 1)
+energy = 1.3
+texture = ExtResource("tex_lights_radial")
+texture_scale = 1.4
 
 [node name="Player" parent="." instance=ExtResource("player")]
 position = Vector2(1152, 4112)

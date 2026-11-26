@@ -23,6 +23,20 @@ public partial class Hud : CanvasLayer
 	private ScreenPointer _pointer;
 	private Label _counter;
 
+	// Quadro de comandos (tecla + para que serve), à esquerda. A Fase 1 mostra no começo; H mostra/esconde.
+	private static readonly (string Key, string Use)[] Controls =
+	{
+		("W A S D", "andar"),
+		("MOUSE", "mirar"),
+		("CLIQUE", "atirar"),
+		("ESPAÇO", "rolar: desvia de tiros e fantasmas"),
+		("R", "recarregar a arma"),
+		("E", "pegar itens, usar portas e aparelhos"),
+		("1 2 3 / RODA", "trocar de arma"),
+		("ESC", "pausar"),
+	};
+	private Control _controls;
+
 	public override void _Ready()
 	{
 		AddToGroup("hud");
@@ -57,9 +71,60 @@ public partial class Hud : CanvasLayer
 		_pointer.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 		AddChild(_pointer);
 
+		BuildControls();
+
 		Player.StatsChanged += Refresh;
 		Refresh();
 	}
+
+	private void BuildControls()
+	{
+		PanelContainer panel = new() { MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
+		StyleBoxFlat box = new()
+		{
+			BgColor = new Color(Caption.Ink, 0.85f),
+			BorderColor = Caption.Yellow,
+			ContentMarginLeft = 16, ContentMarginRight = 16, ContentMarginTop = 10, ContentMarginBottom = 10,
+		};
+		box.SetBorderWidthAll(2);
+		box.SetCornerRadiusAll(6);
+		panel.AddThemeStyleboxOverride("panel", box);
+		panel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.CenterLeft);
+		panel.GrowVertical = Control.GrowDirection.Both;
+		panel.OffsetLeft = 20;
+		AddChild(panel);
+
+		VBoxContainer column = new() { MouseFilter = Control.MouseFilterEnum.Ignore };
+		column.AddThemeConstantOverride("separation", 6);
+		panel.AddChild(column);
+		column.AddChild(ControlsLabel("COMANDOS", 18, Caption.Yellow));
+
+		GridContainer grid = new() { Columns = 2, MouseFilter = Control.MouseFilterEnum.Ignore };
+		grid.AddThemeConstantOverride("h_separation", 14);
+		grid.AddThemeConstantOverride("v_separation", 4);
+		foreach ((string key, string use) in Controls)
+		{
+			grid.AddChild(ControlsLabel(key, 15, Caption.Green));
+			grid.AddChild(ControlsLabel(use, 15, Caption.Cream));
+		}
+		column.AddChild(grid);
+		column.AddChild(ControlsLabel("H: mostrar / esconder", 12, new Color(Caption.Cream, 0.6f)));
+		_controls = panel;
+	}
+
+	private static Label ControlsLabel(string text, int size, Color color)
+	{
+		Label label = new() { Text = text, MouseFilter = Control.MouseFilterEnum.Ignore };
+		label.AddThemeFontSizeOverride("font_size", size);
+		label.AddThemeColorOverride("font_color", color);
+		label.AddThemeConstantOverride("outline_size", 4);
+		label.AddThemeColorOverride("font_outline_color", Caption.Ink);
+		return label;
+	}
+
+	public void ShowControls(bool visible) => _controls.Visible = visible;
+
+
 
 	// Barra de vida do chefe, no topo da tela (escondida fora da luta).
 	private void CreateBossBar()
@@ -135,6 +200,13 @@ public partial class Hud : CanvasLayer
 	// Começam com o equipamento padrão daquela fase.
 	public override void _UnhandledInput(InputEvent @event)
 	{
+		// H mostra/esconde o quadro de comandos em qualquer fase (unhandled: digitar "h" numa caixa de texto não conta)
+		if (@event is InputEventKey { Pressed: true, Echo: false, PhysicalKeycode: Key.H })
+		{
+			_controls.Visible = !_controls.Visible;
+			return;
+		}
+
 		if (!OS.IsDebugBuild() || @event is not InputEventKey { Pressed: true, Echo: false } key) return;
 
 		string scene = key.Keycode switch
