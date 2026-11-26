@@ -4,15 +4,13 @@ public partial class Hud : CanvasLayer
 {
 	[Export] public Player Player;
 
-	private static readonly Color ObjectiveColor = new(0.6f, 1f, 0.75f);
-
 	private TextureProgressBar lifeTube;
 	private Label lifeAmount;
 	private TextureRect gunIcon;
 	private Label gunName;
 	private Label gunAmmo;
-	private Label _objective;
-	private Label _message;
+	private Caption _objective;
+	private Caption _message;
 	private float _messageTimer;
 
 	private const float BossBarWidth = 520f;
@@ -34,18 +32,13 @@ public partial class Hud : CanvasLayer
 		gunName = GetNode<Label>("Bottom/Gun/Name");
 		gunAmmo = GetNode<Label>("Bottom/Gun/Ammo");
 
-		// Objetivo atual, no topo da tela.
-		_objective = MakeLabel(22, ObjectiveColor);
-		_objective.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.TopWide);
-		_objective.OffsetTop = 84;
-		_objective.OffsetBottom = 120;
+		// Legendas embaixo, onde o jogador está olhando (cores da paleta, ver Caption):
+		// objetivo atual (borda verde) na última linha e, logo acima, as mensagens rápidas (borda azul).
+		_objective = Caption.AtBottom(Caption.Kind.Objective, 20, 66, 22);
+		_objective.MaxWidth = 620f;   // não encosta na vida e na arma, no canto de baixo à esquerda
 		AddChild(_objective);
 
-		// Mensagens rápidas ("Você pegou: Crachá"), embaixo.
-		_message = MakeLabel(24, Colors.White);
-		_message.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.BottomWide);
-		_message.OffsetTop = -190;
-		_message.OffsetBottom = -130;
+		_message = Caption.AtBottom(Caption.Kind.Message, 22, 126, 76);
 		AddChild(_message);
 
 		CreateBossBar();

@@ -112,6 +112,9 @@ public partial class Enemy : CharacterBody2D
 		_hitBox = GetNode<Area2D>("HitBox");
 
 		_stats = StatsByKind[Type];
+		// dificuldade escolhida no menu
+		HealthScale *= GameState.EnemyHealthScale;
+		SpeedScale *= GameState.EnemySpeedScale;
 		_health = Mathf.Max(1, Mathf.RoundToInt(_stats.Health * HealthScale));
 
 		Texture2D art = Type switch { Kind.Fast => FastSprite, Kind.Tank => TankSprite, _ => NormalSprite };

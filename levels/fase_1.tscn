@@ -560,7 +560,7 @@ position = Vector2(96, 2336)
 position = Vector2(128, 1536)
 Size = Vector2(1280, 1024)
 Waves = 0
-SurviveTime = 50.0
+SurviveTime = 40.0
 SurviveSpawnInterval = 1.2
 SurviveMaxAlive = 7
 SpawnAnywhere = true
@@ -901,17 +901,17 @@ Solid = false
 
 [node name="Bebedouro" parent="Cantina" instance=ExtResource("prop")]
 position = Vector2(1224, 264)
-Size = Vector2(48, 64)
+Size = Vector2(32, 64)
 Color = Color(0, 0, 0, 0)
 Texture = ExtResource("tex_props_fase1_bebedouro")
-Depth = 28
+Solid = false
 
 [node name="Sofa" parent="Cantina" instance=ExtResource("prop")]
-position = Vector2(1056, 760)
+position = Vector2(1056, 712)
 Size = Vector2(128, 56)
 Color = Color(0, 0, 0, 0)
 Texture = ExtResource("tex_props_fase1_sofa")
-Solid = false
+Depth = 40
 
 [node name="Destrocos1" parent="Cantina" instance=ExtResource("prop")]
 position = Vector2(94, 744)

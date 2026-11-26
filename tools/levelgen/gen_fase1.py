@@ -378,7 +378,7 @@ for i, ty in enumerate([10, 15, 20, 26, 31, 41, 44]):
 # ===== RU =====
 ru = (2 * T, 24 * T)
 node("RU", inst="room", props={"position": v(*ru), "Size": v(20 * T, 16 * T), "Waves": "0",
-     "SurviveTime": "50.0", "SurviveSpawnInterval": "1.2", "SurviveMaxAlive": "7", "SpawnAnywhere": "true", "StartOnEnter": "false",
+     "SurviveTime": "40.0", "SurviveSpawnInterval": "1.2", "SurviveMaxAlive": "7", "SpawnAnywhere": "true", "StartOnEnter": "false",
      "RespawnPoint": 'NodePath("Respawn")'}, node_paths=["RespawnPoint"])
 node("Porta", "RU", inst="door", props={"position": v(12 * T + 32 - ru[0], 31 * T - ru[1]), "Size": v(3 * T, 64)})
 node("Respawn", "RU", type="Marker2D", props={"position": v(12 * T + 32 - ru[0], 28 * T - ru[1])})
@@ -455,8 +455,9 @@ prop("Sinuca2", "Cantina", 13 * T - ca[0], 19 * T + 16 - ca[1], 3 * T, 80, col(0
      depth=56, text_color=col(0.7, 0.9, 0.75), sprite="sinuca")
 # canto de convivência: lixeiras da coleta seletiva, bebedouro e sofá
 prop("LixeirasCantina", "Cantina", 19 * T - ca[0], 12 * T + 8 - ca[1], 84, 48, col(0, 0, 0, 0), solid=False, sprite="lixeiras")
-prop("Bebedouro", "Cantina", 21 * T + 8 - ca[0], 12 * T + 8 - ca[1], 48, 64, col(0, 0, 0, 0), depth=28, sprite="bebedouro")   # sólido: segura tiros
-prop("Sofa", "Cantina", 18 * T + 32 - ca[0], 19 * T + 56 - ca[1], 128, 56, col(0, 0, 0, 0), solid=False, sprite="sofa")
+prop("Bebedouro", "Cantina", 21 * T + 8 - ca[0], 12 * T + 8 - ca[1], 32, 64, col(0, 0, 0, 0), solid=False, sprite="bebedouro")
+# sofá cinza (a "geladeira"): sólido e afastado da parede, para o jogador se esconder atrás dele dos tiros da Tia
+prop("Sofa", "Cantina", 18 * T + 32 - ca[0], 19 * T + 8 - ca[1], 128, 56, col(0, 0, 0, 0), depth=40, sprite="sofa")
 for i, (cx, cy, spr) in enumerate([(3 * T + 30, 19 * T + 40, "entulho"), (11 * T, 15 * T + 20, "cadeira_caida"),
                                    (20 * T, 17 * T, "cadeira_caida")]):
     prop(f"Destrocos{i+1}", "Cantina", cx - ca[0], cy - ca[1], 48, 32, col(0, 0, 0, 0), solid=False, sprite=spr)

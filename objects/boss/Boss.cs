@@ -62,7 +62,10 @@ public partial class Boss : StaticBody2D, IHittable
 	public bool IsShielded => _phase == Phase.Shielded;
 	public bool IsDefeated => _phase == Phase.Dead;
 	public float VulnerableTimeLeft => _vulnerableTimer;
-	public float HealthRatio => Config == null ? 0f : (float)_health / Config.Health;
+	// vida total (a do BossConfig, ajustada pela dificuldade do menu)
+	private int MaxHealth => Mathf.Max(1, Mathf.RoundToInt(Config.Health * GameState.BossHealthScale));
+
+	public float HealthRatio => Config == null ? 0f : (float)_health / MaxHealth;
 	public string DisplayName => Config?.Name ?? "Chefe";
 
 	public int TargetsLeft
@@ -82,7 +85,7 @@ public partial class Boss : StaticBody2D, IHittable
 		QueueRedraw();
 		if (Engine.IsEditorHint()) return;
 
-		_health = Config.Health;
+		_health = MaxHealth;
 		_homeX = Position.X;
 
 		_collision = new CollisionShape2D
@@ -168,7 +171,7 @@ public partial class Boss : StaticBody2D, IHittable
 	}
 
 	// Vida mínima desta janela: cada janela só tira uma parte.
-	private int ChunkFloor() => Config.Health * (Config.Cycles - 1 - _chunksDone) / Config.Cycles;
+	private int ChunkFloor() => MaxHealth * (Config.Cycles - 1 - _chunksDone) / Config.Cycles;
 
 	private void Die()
 	{
@@ -193,7 +196,7 @@ public partial class Boss : StaticBody2D, IHittable
 			target.Deactivate();
 
 		_phase = Phase.Idle;
-		_health = Config.Health;
+		_health = MaxHealth;
 		_chunksDone = 0;
 		_vulnerableTimer = 0;
 		Position = new Vector2(_homeX, Position.Y);

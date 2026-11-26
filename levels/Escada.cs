@@ -233,7 +233,7 @@ void fragment() {
 
 	private void AdvanceCollapse(float dt)
 	{
-		float speed = VelocidadeInicial + AumentoPorAndar * (_flight / 2);
+		float speed = (VelocidadeInicial + AumentoPorAndar * (_flight / 2)) * GameState.EscadaSpeedScale;   // dificuldade do menu
 		float lead = _sPlayer - _sCollapse;
 		if (lead > VantagemMaxima)
 			speed += (lead - VantagemMaxima) * 2f;   // abriu vantagem: o desabamento acelera e cola de novo

@@ -92,6 +92,8 @@ public partial class Player : CharacterBody2D
 
 	public override void _Ready()
 	{
+		// dificuldade escolhida no menu: corações a mais no fácil, a menos no difícil
+		MaxHealth = Mathf.Max(1, MaxHealth + GameState.PlayerHealthBonus);
 		Health = MaxHealth;
 		foreach (Weapon weapon in Weapons)
 			_ammo[weapon] = weapon.MagazineSize;
@@ -105,6 +107,8 @@ public partial class Player : CharacterBody2D
 		Weapon = _ownedWeapons[0];
 
 		_sprite = GetNode<Sprite2D>("Sprite2D");
+		// personagem escolhido no menu (mesma folha de quadros para os dois)
+		_sprite.Texture = GD.Load<Texture2D>(GameState.PlayerSpritePath);
 		_hurtBox = GetNode<Area2D>("HurtBox");
 		_animated = _sprite.Hframes > 1;
 
