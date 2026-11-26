@@ -44,8 +44,9 @@ public partial class Room : Node2D
 	// Fantasma nunca surge mais perto do jogador que isto (pixels). O roteiro pode mudar durante a luta.
 	[Export] public float MinSpawnDistance = 260f;
 
-	// Última onda traz um fantasma grande (Tank) a mais. Onde ele caiu fica em FinalEnemyPosition.
+	// Última onda traz um fantasma especial a mais (FinalEnemyKind: Tank, ou o zelador). Onde ele caiu fica em FinalEnemyPosition.
 	[Export] public bool FinalWaveTank;
+	[Export] public Enemy.Kind FinalEnemyKind = Enemy.Kind.Tank;
 	[Export] public string FinalWaveMessage = "";
 	[Export] public bool HasBoss;
 
@@ -88,6 +89,8 @@ public partial class Room : Node2D
 
 	public int AliveEnemies => _enemies.Count;
 	public Vector2 FinalEnemyPosition { get; private set; }
+	// O inimigo especial da última onda, enquanto está vivo (para a barra de vida, a seta...).
+	public Enemy FinalEnemy { get; private set; }
 	public bool IsCleared => _state == State.Cleared;
 	public bool IsFighting => _state == State.Fighting;
 	public float TimeLeft => _timeLeft;
@@ -289,8 +292,13 @@ public partial class Room : Node2D
 		{
 			// Inimigo especial da última onda (ex.: o zelador). Guarda onde ele caiu.
 			_spawnFinalEnemy = false;
-			Enemy special = CreateEnemy(Enemy.Kind.Tank, PickSpawnPoint());
-			special.TreeExiting += () => FinalEnemyPosition = special.GlobalPosition;
+			Enemy special = CreateEnemy(FinalEnemyKind, PickSpawnPoint());
+			FinalEnemy = special;
+			special.TreeExiting += () =>
+			{
+				FinalEnemyPosition = special.GlobalPosition;
+				FinalEnemy = null;
+			};
 			return;
 		}
 

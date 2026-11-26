@@ -23,6 +23,7 @@ public partial class Hud : CanvasLayer
 	// Distância da borda da tela onde a seta aparece.
 	private const float PointerMargin = 48f;
 	private ScreenPointer _pointer;
+	private GuideArrow _guide;
 	private Label _counter;
 
 	public override void _Ready()
@@ -63,6 +64,11 @@ public partial class Hud : CanvasLayer
 		_pointer = new ScreenPointer { Visible = false, MouseFilter = Control.MouseFilterEnum.Ignore };
 		_pointer.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 		AddChild(_pointer);
+
+		_guide = new GuideArrow { Visible = false, MouseFilter = Control.MouseFilterEnum.Ignore };
+		_guide.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+		_guide.Setup(Player);
+		AddChild(_guide);
 
 		Player.StatsChanged += Refresh;
 		Refresh();
@@ -115,17 +121,20 @@ public partial class Hud : CanvasLayer
 		HidePointer();
 	}
 
-	// Mostra uma seta na borda da tela apontando para um ponto do mundo,
-	// só quando ele está fora da tela.
+	// Objetivo atual: a seta em volta do jogador mostra o caminho até ele (GuideArrow) e,
+	// com o ponto fora da tela, outra seta na borda da tela aponta para ele com o nome.
+	// As fases chamam a cada quadro com o objetivo do momento; HidePointer tira as duas.
 	public void PointTo(Vector2 globalPosition, string label)
 	{
+		_guide.SetTarget(globalPosition);
+
 		Rect2 view = GetViewport().GetVisibleRect();
 		Vector2 screen = GetViewport().GetCanvasTransform() * globalPosition;
 		Rect2 inner = view.Grow(-PointerMargin);
 
 		if (inner.HasPoint(screen))
 		{
-			HidePointer();
+			_pointer.Visible = false;
 			return;
 		}
 
@@ -169,6 +178,7 @@ public partial class Hud : CanvasLayer
 	public void HidePointer()
 	{
 		_pointer.Visible = false;
+		_guide.Clear();
 	}
 
 	private static Label MakeLabel(int fontSize, Color color)

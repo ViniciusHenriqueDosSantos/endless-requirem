@@ -174,9 +174,7 @@ public partial class Fase3 : LevelBase
 		base._Process(delta);
 		CheckAuditoriumEntered();
 
-		// antes de tentar a porta: seta para a área final
-		if (!_alarmOn && !_doorOpen)
-			Hud.PointTo(Fechadura.GlobalPosition, "PORTA");
+		UpdatePointer();
 
 		if (_alarmOn)
 		{
@@ -184,6 +182,25 @@ public partial class Fase3 : LevelBase
 			float pulse = 0.5f + 0.5f * Mathf.Sin(_alarmTime * Mathf.Tau);   // 1 pulso por segundo
 			_alarmTint.Color = new Color(_alarmTint.Color, AlarmTintMax * pulse);
 		}
+	}
+
+	// Seta de direção: sem objetivo escrito na tela, mas a seta sempre mostra o próximo passo.
+	private void UpdatePointer()
+	{
+		if (_auditoriumRevealed)
+			Hud.HidePointer();
+		else if (!_doorOpen && (!_alarmOn || _codeFound))
+			Hud.PointTo(Fechadura.GlobalPosition, "PORTA");
+		else if (!_doorOpen && !_wiresFixed)
+			Hud.PointTo(QuadroEnergia.GlobalPosition, "QUADRO DE ENERGIA");
+		else if (!_doorOpen && !_calibrated)
+			Hud.PointTo(CalibrarDistribuidor.GlobalPosition, "DISTRIBUIDOR");
+		else if (!_doorOpen)
+			Hud.PointTo(Computador.GlobalPosition, "COMPUTADOR");
+		else if (AbrirAuditorio.Enabled)
+			Hud.PointTo(AbrirAuditorio.GlobalPosition, "AUDITÓRIO");
+		else if (CoberturaAuditorio is Control cover)
+			Hud.PointTo(cover.GetGlobalRect().GetCenter(), "AUDITÓRIO");
 	}
 
 	// ---------- porta e alarme ----------
@@ -216,7 +233,6 @@ public partial class Fase3 : LevelBase
 	{
 		SetRespawn(VoltaLab2);   // reprovado antes de entrar num laboratório: volta no Lab 2, o mais perto
 		_alarmOn = true;
-		Hud.HidePointer();
 		Alarme.StartFight();
 		// os primeiros fantasmas já surgem junto com o alarme, longe (chegam enquanto o jogador ainda digita)
 		Alarme.MinSpawnDistance = KeypadSpawnDistance;

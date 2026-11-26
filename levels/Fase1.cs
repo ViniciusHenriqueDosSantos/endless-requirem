@@ -125,11 +125,59 @@ public partial class Fase1 : Node2D
 		if (Tia.IsFighting)
 		{
 			Hud.SetBoss(Tia.DisplayName, Tia.HealthRatio, Tia.IsShielded);
-			Hud.PointTo(Tia.GlobalPosition + TiaPointerOffset, "TIA");
 			Hud.SetObjective(Tia.IsShielded
 				? $"Destrua os alvos nos cantos para baixar o escudo ({Tia.TargetsLeft} restantes)"
 				: $"Escudo baixo! Atire na Tia: {Mathf.CeilToInt(Tia.VulnerableTimeLeft)} s");
 		}
+
+		UpdatePointer();
+	}
+
+	// Seta de direção: sempre aponta para o próximo lugar aonde ir. Some durante as lutas por ondas.
+	private void UpdatePointer()
+	{
+		if (_finished || Ru.IsFighting || Corredor.IsFighting)
+		{
+			Hud.HidePointer();
+			return;
+		}
+
+		if (Tia.IsFighting)
+			Hud.PointTo(Tia.GlobalPosition + TiaPointerOffset, "TIA");
+		else if (Catraca.IsLocked && !_badgeRevealed && !Player.HasItem("cracha"))
+			PointToNearestPile();
+		else if (Catraca.IsLocked && !Player.HasItem("cracha"))
+			Hud.PointTo(Cracha.GlobalPosition, "CRACHÁ");
+		else if (Catraca.IsLocked)
+			Hud.PointTo(DoorPoint(Catraca), "CATRACA");
+		else if (!Ru.IsCleared && !Player.HasItem("marmita") && !Microondas.IsUsed)
+			Hud.PointTo(Marmita.GlobalPosition, "MARMITA");
+		else if (!Ru.IsCleared)
+			Hud.PointTo(Microondas.GlobalPosition, "MICRO-ONDAS");
+		else if (!Corredor.IsCleared)
+			Hud.PointTo(Corredor.GlobalPosition + Corredor.Size / 2, "CORREDOR");
+		else if (!Tia.IsDefeated)
+			Hud.PointTo(DoorPoint(CantinaPorta1), "CANTINA");
+		else if (!Escopeta.IsCollected)
+			Hud.PointTo(Escopeta.GlobalPosition, "ESCOPETA");
+		else
+			Hud.PointTo(Elevador.GlobalPosition + Elevador.Size / 2, "ELEVADOR");
+	}
+
+	// Porta: a origem fica na base; o meio dela fica meia altura acima.
+	private static Vector2 DoorPoint(Door door) => door.GlobalPosition + new Vector2(0, -door.Size.Y / 2);
+
+	private void PointToNearestPile()
+	{
+		PaperPile best = null;
+		foreach (Node child in Pilhas.GetChildren())
+			if (child is PaperPile pile && !pile.IsDestroyed
+				&& (best == null || pile.GlobalPosition.DistanceTo(Player.GlobalPosition) < best.GlobalPosition.DistanceTo(Player.GlobalPosition)))
+				best = pile;
+		if (best != null)
+			Hud.PointTo(best.GlobalPosition, "PAPÉIS");
+		else
+			Hud.HidePointer();
 	}
 
 	private void OnRuEntered()
