@@ -46,7 +46,7 @@ Na primeira vez, o Godot compila o código C# e pode demorar alguns segundos.
 
 **Atalhos de teste** (só rodando pelo editor): **F1** = Fase 1, **F2** = Fase 2, **F3** = escada, **F4** = Fase 3, **F5** = auditório em 3D, **F6** = Pac-Man dentro do telão.
 
-Armas: 1 = Laser · 2 = Escopeta · 3 = Canhão Perfurante. Na Fase 1 você começa só com o Laser; as outras vêm dos chefes.
+Armas (cada uma tem a cara de quem te dá): 1 = Grampeador (o seu: atira grampos) · 2 = Escopeta de Café (da Tia da Cantina: a garrafa térmica dela, atira grãos de café) · 3 = Rifle do Silêncio (da Bibliotecária: silenciador, luneta com os óculos dela, atira marcadores de página). Na Fase 1 você começa só com o Grampeador; as outras vêm dos chefes.
 
 Para pegar itens (crachá, marmita), é só encostar neles. Pilhas de papel se desfazem com tiros.
 

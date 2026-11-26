@@ -161,7 +161,7 @@ public partial class Fase1 : Node2D
 		else if (!Tia.IsDefeated)
 			Hud.PointTo(DoorPoint(CantinaPorta1), "CANTINA");
 		else if (!Escopeta.IsCollected)
-			Hud.PointTo(Escopeta.GlobalPosition, "ESCOPETA");
+			Hud.PointTo(Escopeta.GlobalPosition, "ESCOPETA DE CAFÉ");
 		else
 			Hud.PointTo(Elevador.GlobalPosition + Elevador.Size / 2, "ELEVADOR");
 	}
@@ -214,7 +214,7 @@ public partial class Fase1 : Node2D
 		Escopeta.Reveal(Tia.GlobalPosition + EscopetaDropOffset);
 		PortaElevador.Unlock();
 		Hud.ShowMessage("A Tia da Cantina caiu! Ela deixou algo para trás...", 4f);
-		Hud.SetObjective("Pegue a escopeta");
+		Hud.SetObjective("Pegue a Escopeta de Café");
 	}
 
 	private void OnElevadorEntered()

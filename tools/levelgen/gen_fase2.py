@@ -229,11 +229,24 @@ for i, x in enumerate(STUDY_DOORS):
     L.node(f"PortaSala{i+1}", type="ColorRect", props={"z_index": "-4", "offset_left": f"{x * T + 8}.0",
            "offset_top": f"{5 * T}.0", "offset_right": f"{x * T + 56}.0", "offset_bottom": f"{6 * T}.0",
            "mouse_filter": "2", "color": col(0.55, 0.38, 0.22, 1)})
-# objetos que fazem barulho ([E]): cada um num banquinho na frente de uma estante, para ela parar bem ali
-# (objects/librarian/NoiseMaker.cs). Kind: 0 campainha, 1 rádio, 2 despertador.
-for name, kind, (gx, gy) in [("Radio", 1, (420, 1160)), ("Despertador", 2, (780, 1415)), ("Campainha", 0, (230, 1540))]:
+# objetos que fazem barulho ([E]): um por estante, num banquinho, para ela parar na frente da estante
+# (objects/librarian/NoiseMaker.cs). Kind: 0 campainha, 1 rádio, 2 despertador, 3 telefone, 4 pilha de livros.
+# As estantes compridas ficam coladas umas nas outras (o corredor da frente de uma é o de trás da outra), então o
+# objeto delas fica no corredor da direita, fora de onde se empurra, e o ponto de isca (lure) puxa a Bibliotecária
+# para a frente da estante. As curtas têm espaço: o objeto fica bem na frente.
+NOISE = [  # nome, tipo, sprite, posição (global), ponto de isca (a partir do objeto)
+    ("Telefone", 3, "telefone", (632, 968), (-110, 30)),      # Estante1
+    ("Radio", 1, "radio", (632, 1160), (-110, 30)),           # Estante2
+    ("Livros", 4, "livros", (632, 1352), (-110, 30)),         # Estante3
+    ("Campainha", 0, "campainha", (632, 1544), (-110, 30)),   # Estante4
+    ("Despertador", 2, "despertador", (780, 1096), (0, 20)),  # EstanteCurta1
+    ("Radio2", 1, "radio", (780, 1415), (0, 20)),             # EstanteCurta2
+    ("Telefone2", 3, "telefone", (1040, 1672), (0, 20)),      # EstanteCurta3
+    ("Despertador2", 2, "despertador", (1100, 904), (0, 20)), # EstanteCurta4
+]
+for name, kind, sprite, (gx, gy), (lx, ly) in NOISE:
     L.node(name, "Biblioteca", type="Area2D", props={"position": v(gx - bib[0], gy - bib[1]), "script": 'ExtResource("noise_maker")',
-           "Size": v(150, 130), "Kind": str(kind), "Texture": L.tex(name.lower(), "props/fase2")})
+           "Size": v(110, 110), "Kind": str(kind), "Texture": L.tex(sprite, "props/fase2"), "LureOffset": v(lx, ly)})
 # patrulha da Bibliotecária
 L.node("Patrulha", "Biblioteca", type="Node2D")
 for i, (tx, ty) in enumerate([(7, 11), (13, 10), (17, 19), (11, 22), (16, 29), (8, 30), (-1, 27), (10, 16), (-1, 12)]):

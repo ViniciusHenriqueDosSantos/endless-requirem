@@ -33,10 +33,16 @@ def marmita():
 
 
 def escopeta_item():
+    """A Escopeta de Café caída no chão (virada para a esquerda)."""
     cv = Canvas(20, 8)
-    cv.rect(1, 2, 13, 2, hexc("4a4d55")); cv.hline(1, 2, 13, hexc("7b808a"))
-    cv.rect(13, 2, 6, 4, C["wood"]); cv.hline(13, 2, 6, C["wood_l"]); cv.put(18, 5, C["wood_d"])
-    cv.rect(6, 4, 5, 2, C["wood_d"]); cv.put(12, 4, hexc("2a2b30")); cv.put(12, 5, hexc("2a2b30"))
+    RED, RED_D, RED_L = hexc("c0392b"), hexc("8a2a20"), hexc("e0604a")
+    CHROME, CHROME_D = hexc("c9ced6"), hexc("8a8e95")
+    SPOON, SPOON_D, SPOON_L = hexc("c8955a"), hexc("94683a"), hexc("e0b27a")
+    cv.rect(1, 2, 3, 3, CHROME); cv.vline(1, 2, 3, CHROME_D)
+    cv.rect(4, 2, 10, 3, RED); cv.hline(4, 2, 10, RED_L); cv.hline(4, 4, 10, RED_D)
+    cv.vline(9, 2, 3, hexc("efeadd"))
+    cv.rect(11, 5, 3, 2, SPOON_D)
+    cv.rect(14, 3, 4, 2, SPOON); cv.hline(14, 3, 4, SPOON_L); cv.rect(17, 2, 3, 4, SPOON); cv.vline(19, 3, 2, SPOON_D)
     cv.outline(INK)
     return cv
 
@@ -62,9 +68,17 @@ def laser():
 
 
 def escopeta():
-    cv = Canvas(15, 6)
-    cv.rect(4, 1, 10, 2, hexc("4a4d55")); cv.hline(4, 1, 10, hexc("7b808a"))
-    cv.rect(0, 1, 5, 3, C["wood"]); cv.hline(0, 1, 5, C["wood_l"]); cv.rect(5, 3, 4, 2, C["wood_d"])
+    """Escopeta de Café (na mão, apontando para a direita): o cano é a garrafa térmica vermelha da Tia da Cantina,
+    com a tampa cromada na boca; a coronha é uma colher de pau."""
+    cv = Canvas(16, 7)
+    RED, RED_D, RED_L = hexc("c0392b"), hexc("8a2a20"), hexc("e0604a")
+    CHROME, CHROME_D = hexc("c9ced6"), hexc("8a8e95")
+    SPOON, SPOON_D, SPOON_L = hexc("c8955a"), hexc("94683a"), hexc("e0b27a")
+    cv.rect(0, 2, 4, 2, SPOON); cv.hline(0, 2, 4, SPOON_L); cv.rect(0, 1, 2, 4, SPOON); cv.vline(0, 2, 2, SPOON_D)  # colher
+    cv.rect(4, 3, 3, 3, SPOON_D)                                         # empunhadura
+    cv.rect(4, 1, 9, 3, RED); cv.hline(4, 1, 9, RED_L); cv.hline(4, 3, 9, RED_D)   # garrafa térmica
+    cv.vline(8, 1, 3, hexc("efeadd"))                                    # faixa branca
+    cv.rect(13, 1, 3, 3, CHROME); cv.vline(15, 1, 3, CHROME_D)           # tampa cromada (a boca)
     cv.outline(INK)
     return cv
 
@@ -125,6 +139,38 @@ def bolt():
 def pellet():
     cv = Canvas(3, 3)
     cv.rect(0, 0, 3, 3, hexc("ffffff", 170)); cv.put(1, 1, hexc("ffffff"))
+    return cv
+
+
+def grao_cafe():
+    """Bala da Escopeta de Café: um grão de café (oval com o risco no meio). Claro: a cor vem da arma."""
+    cv = Canvas(4, 3)
+    cv.rect(1, 0, 2, 3, hexc("ffffff")); cv.vline(0, 1, 1, hexc("ffffff", 220)); cv.vline(3, 1, 1, hexc("ffffff", 220))
+    cv.put(1, 1, hexc("6a4a30")); cv.put(2, 1, hexc("6a4a30"))
+    return cv
+
+
+def grampeador():
+    """Grampeador (a arma do estudante, apontando para a direita): grampeador de escritório preto e vermelho,
+    com o braço de metal em cima e a empunhadura de borracha."""
+    cv = Canvas(12, 7)
+    BLACK, BLACK_L = hexc("2f3138"), hexc("4a4d55")
+    RED, RED_D = hexc("c0392b"), hexc("8a2a20")
+    METAL, METAL_L = hexc("9aa0a8"), hexc("c9ced6")
+    cv.rect(1, 1, 10, 2, RED); cv.hline(1, 1, 10, hexc("e0604a")); cv.put(10, 2, RED_D)   # braço de cima
+    cv.rect(2, 3, 10, 1, METAL); cv.hline(2, 3, 9, METAL_L)                              # trilho dos grampos
+    cv.rect(1, 4, 11, 1, BLACK); cv.hline(1, 4, 11, BLACK_L)                             # base
+    cv.rect(2, 5, 3, 2, BLACK)                                                           # empunhadura
+    cv.put(11, 3, hexc("ffffff"))                                                        # o grampo saindo
+    cv.outline(INK)
+    return cv
+
+
+def grampo():
+    """Bala do Grampeador: um grampo (U de lado). Branco: a cor vem da arma."""
+    cv = Canvas(5, 3)
+    cv.hline(0, 0, 4, hexc("ffffff")); cv.hline(0, 2, 4, hexc("ffffff")); cv.vline(4, 0, 3, hexc("ffffff"))
+    cv.hline(1, 1, 3, hexc("ffffff", 60))
     return cv
 
 
@@ -366,16 +412,26 @@ def marmita_grande():
 
 
 def escopeta_grande():
+    """Escopeta de Café, grande (tela de inspeção): garrafa térmica vermelha com o adesivo da cantina,
+    tampa cromada, colher de pau de coronha e um fio de vapor saindo da boca."""
     cv = Canvas(112, 34)
+    RED, RED_D, RED_L = hexc("c0392b"), hexc("8a2a20"), hexc("e0604a")
+    CHROME, CHROME_D = hexc("c9ced6"), hexc("8a8e95")
+    SPOON, SPOON_D, SPOON_L = hexc("c8955a"), hexc("94683a"), hexc("e0b27a")
     cv.ellipse(56, 31, 50, 2.5, hexc("000000", 60))
-    cv.rect(30, 8, 78, 6, hexc("4a4d55")); cv.hline(30, 8, 78, hexc("7b808a")); cv.hline(30, 13, 78, hexc("33363c"))
-    cv.rect(46, 14, 40, 5, hexc("2d3036")); cv.hline(46, 14, 40, hexc("5d626b"))
-    cv.rect(2, 8, 30, 14, C["wood"]); cv.hline(2, 8, 30, C["wood_l"]); cv.line(2, 21, 24, 27, C["wood_d"])
-    cv.rect(4, 20, 20, 8, C["wood"]); cv.hline(4, 27, 20, C["wood_d"])
-    cv.rect(50, 18, 24, 8, C["wood_d"]); cv.hline(50, 18, 24, C["wood"])
-    cv.rect(32, 14, 6, 8, hexc("2a2b30")); cv.put(34, 20, hexc("8a8e95"))
-    for x in range(60, 104, 8): cv.put(x, 10, hexc("9aa0a8"))
-    cv.rect(104, 7, 4, 8, hexc("33363c"))
+    # colher de pau (coronha): cabo comprido e a concha
+    cv.rect(10, 13, 26, 5, SPOON); cv.hline(10, 13, 26, SPOON_L); cv.hline(10, 17, 26, SPOON_D)
+    cv.ellipse(8, 15.5, 7, 6, SPOON); cv.ellipse(7, 14.5, 4, 3.5, SPOON_D)
+    cv.rect(36, 17, 8, 10, SPOON_D); cv.hline(36, 17, 8, SPOON)          # empunhadura
+    cv.rect(44, 18, 6, 5, hexc("2a2b30")); cv.put(46, 21, hexc("8a8e95"))  # gatilho
+    # garrafa térmica (o cano)
+    cv.rect(38, 7, 56, 12, RED); cv.hline(38, 7, 56, RED_L); cv.hline(38, 8, 56, RED_L); cv.hline(38, 18, 56, RED_D)
+    cv.rect(58, 9, 16, 8, hexc("efeadd"))                                # adesivo
+    cv.rect(60, 11, 12, 1, hexc("8a2a20")); cv.rect(60, 13, 9, 1, hexc("8a2a20"))
+    cv.rect(94, 6, 12, 14, CHROME); cv.vline(105, 6, 14, CHROME_D); cv.hline(94, 6, 12, hexc("ffffff"))   # tampa
+    cv.rect(106, 10, 3, 6, hexc("2a2b30"))                               # boca
+    for i, (x, y) in enumerate([(108, 7), (110, 4), (108, 1)]):         # vapor
+        cv.put(x, y, hexc("ffffff", 150 - i * 30))
     cv.outline(INK)
     return cv
 
@@ -386,6 +442,9 @@ if __name__ == "__main__":
     for name, fn in {"laser": laser, "escopeta": escopeta, "canhao": canhao}.items():
         fn().save(f"sprites/weapons/{name}.png")
     rifle_silencio().save("sprites/weapons/rifle_silencio.png")
+    grampeador().save("sprites/weapons/grampeador.png")
+    grampo().save("sprites/fx/grampo.png")
+    grao_cafe().save("sprites/fx/grao_cafe.png")
     marcador().save("sprites/fx/marcador.png")
     for name, fn in {"bolt": bolt, "pellet": pellet, "orb": orb}.items():
         fn().save(f"sprites/fx/{name}.png")

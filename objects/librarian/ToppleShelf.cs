@@ -55,6 +55,15 @@ public partial class ToppleShelf : Prop, IHittable
 
 	public override void _ExitTree() => All.Remove(this);
 
+	// O jogador está atrás de alguma estante de pé (o [E] vai empurrar)?
+	public static bool CanPush(Node2D player)
+	{
+		foreach (ToppleShelf shelf in All)
+			if (shelf.IsStanding && shelf.Visible && shelf.PushZone.HasPoint(player.GlobalPosition))
+				return true;
+		return false;
+	}
+
 	// Chamado pelo jogador ao apertar [E]: empurra a estante de pé que ele está atrás.
 	public static bool TryPush(Node2D player)
 	{

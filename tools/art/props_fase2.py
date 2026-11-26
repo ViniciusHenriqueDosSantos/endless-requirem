@@ -531,6 +531,38 @@ def campainha(frame):
     return cv
 
 
+def telefone(frame):
+    cv = Canvas(16, 20)
+    banquinho(cv, 2, 10)
+    dy = -1 if frame else 0
+    black, black_l = hexc("2a2b30"), hexc("4a4d55")
+    cv.rect(2, 5 + dy, 12, 5, black); cv.hline(2, 5 + dy, 12, black_l)       # corpo
+    cv.ellipse(8, 7.5 + dy, 2.6, 2, hexc("c9ced6")); cv.put(8, 7 + dy, black)  # disco
+    # o fone em cima (no toque, ele pula do gancho)
+    hy = 1 + dy - frame
+    cv.rect(2, hy + 1, 12, 2, black); cv.rect(1, hy, 3, 3, black); cv.rect(12, hy, 3, 3, black)
+    cv.hline(3, hy + 1, 10, black_l)
+    if frame:
+        for x, y in ((0, 0), (15, 0), (0, 4), (15, 5)): cv.put(x, y, hexc("ffe9a0"))
+    cv.outline(INK)
+    return cv
+
+
+def pilha_livros(frame):
+    """Pilha alta de livros: no quadro 1 ela está tombando."""
+    cv = Canvas(16, 20)
+    banquinho(cv, 2, 10)
+    cols = [hexc("b33a2e"), hexc("2f5fa8"), hexc("3f8a4a"), hexc("6a3f8f"), hexc("d9a62e")]
+    for i, c in enumerate(cols):
+        y = 8 - i * 2
+        x = 3 + (i % 2) + (i * i // 4 if frame else 0)
+        cv.rect(x, y, 9, 2, c); cv.hline(x, y, 9, shade(c, 0.3)); cv.vline(x + 8, y, 2, hexc("efeadd"))
+    if frame:
+        for x, y in ((0, 2), (15, 0), (14, 6)): cv.put(x, y, hexc("ffe9a0"))
+    cv.outline(INK)
+    return cv
+
+
 PROPS = {
     "estante_caida": estante_caida,
     "estante0": lambda: estante(0), "estante1": lambda: estante(1), "estante2": lambda: estante(2), "estante3": lambda: estante(3),
@@ -553,7 +585,8 @@ if __name__ == "__main__":
         fn().save(OUT + name + ".png")
     sheet([bibliotecaria(f) for f in range(5)], 5).save("sprites/characters/bibliotecaria.png")
     livros_voando().save("sprites/fx/livros.png")
-    for name, fn in (("radio", radio), ("despertador", despertador), ("campainha", campainha)):
+    for name, fn in (("radio", radio), ("despertador", despertador), ("campainha", campainha),
+                     ("telefone", telefone), ("livros", pilha_livros)):
         sheet([fn(0), fn(1)], 2).save(OUT + name + ".png")
     livro_item().save("sprites/items/livro.png")
     chave_item(hexc("e3b62a")).save("sprites/items/chave_achados.png")
