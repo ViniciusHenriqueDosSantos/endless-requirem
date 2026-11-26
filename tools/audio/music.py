@@ -1,7 +1,9 @@
 # Gera as músicas do jogo (chiptune simples, combinando com a pixel art). Só usa a biblioteca padrão do Python.
 # Uso (na raiz do projeto): python tools/audio/music.py
 # Saída: sounds/music/tema.wav (intro, menu, final), explorar.wav (andando pelas fases), luta.wav (ondas e chefes),
-#        biblioteca.wav (Bibliotecária patrulhando: furtividade) e cacada.wav (Bibliotecária te caçando).
+#        biblioteca.wav (Bibliotecária patrulhando: furtividade), cacada.wav (Bibliotecária te caçando),
+#        chefe.wav (Tia da Cantina), fuga.wav (escada desabando), laboratorio.wav (Fase 3), alarme.wav (Fase 3 com
+#        o alarme), sia.wav (auditório 3D com a S.I.A.), arcade.wav (Pac-Man dentro do telão) e final.wav (o final).
 # Cada música é um loop: o fim emenda no começo (o rabo do eco volta para o início).
 import math, os, random, struct, wave
 
@@ -38,6 +40,12 @@ class Track:
         self.buf = [self.buf[i] * (1 - mix) + out[i] * mix for i in range(self.n)]
 
     def save(self, name, volume=0.8):
+        # emenda do loop: os últimos milissegundos vão chegando no valor do começo (sem "tic" ao repetir)
+        seam = int(0.012 * RATE)
+        for i in range(seam):
+            w = (i + 1) / seam
+            j = self.n - seam + i
+            self.buf[j] = self.buf[j] * (1 - w) + self.buf[0] * w
         peak = max(1e-6, max(abs(v) for v in self.buf))
         k = volume / peak
         os.makedirs(OUT, exist_ok=True)
@@ -339,9 +347,240 @@ def cacada():
     tr.save("cacada.wav", 0.72)
 
 
+def glide(f0, f1, dur, vol=0.06, duty=0.5):
+    """Onda quadrada que escorrega de uma nota para outra (a "sirene")."""
+    n = int(dur * RATE)
+    out, phase = [], 0.0
+    for i in range(n):
+        k = i / n
+        f = f0 * (f1 / f0) ** (0.5 - 0.5 * math.cos(math.pi * k))
+        phase = (phase + f / RATE) % 1.0
+        out.append(vol * (1 if phase < duty else -1) * env(i, n, 0.01, 0.05))
+    return out
+
+
+def blip(f, vol=0.05):
+    """Bipe de computador."""
+    n = int(0.07 * RATE)
+    out, phase = [], 0.0
+    for i in range(n):
+        phase = (phase + f / RATE) % 1.0
+        out.append(vol * (1 if phase < 0.5 else -1) * env(i, n, 0.002, 0.02))
+    return out
+
+
+def chefe():
+    """Tia da Cantina: chefe meio cômico, meio perigoso. Lá menor, 132 bpm, baixo "tum-pá" de bandinha e
+    melodia picadinha em onda quadrada. 16 compassos."""
+    rng = random.Random(5)
+    bpm = 132
+    beat = 60 / bpm
+    bar = 4 * beat
+    prog = [("A2", "m"), ("A2", "m"), ("D2", "m"), ("E2", "M")] * 4
+    tr = Track(len(prog) * bar)
+    lead = ["A4", "C5", "E5", "C5", "B4", "G#4", "B4", "E4",
+            "A4", "C5", "E5", "A5", "G#5", "E5", "F5", "E5"]
+    for b, (root, kind) in enumerate(prog):
+        t0 = b * bar
+        notes = chord(root[:-1] + "4", kind)
+        for k in range(4):   # tum (baixo) - pá (acorde curtinho)
+            if k % 2 == 0:
+                tr.add(t0 + k * beat, bass(freq(root if k == 0 else root[:-1] + "1" if root[-1] == "2" else root), beat * 0.8, 0.22))
+                tr.add(t0 + k * beat, kick(0.4))
+            else:
+                for nm in notes:
+                    tr.add(t0 + k * beat, square(freq(nm), beat * 0.25, 0.025, 0.5))
+                tr.add(t0 + k * beat, snare(rng, 0.16))
+        for k in range(8):
+            tr.add(t0 + k * beat / 2, hat(rng, 0.04))
+        # melodia em colcheias, picadinha (staccato)
+        m = lead[b % 16]
+        for k in range(4):
+            nm = m if k % 2 == 0 else notes[k % 3]
+            tr.add(t0 + k * beat, square(freq(nm), beat * 0.35, 0.05, 0.25))
+    tr.echo(0.23, 0.25, 0.2)
+    tr.save("chefe.wav", 0.75)
+
+
+def fuga():
+    """Escada desabando: corre! Ré menor, 160 bpm, baixo em semicolcheias, caixa acelerando no fim de cada frase
+    e uma melodia que sobe. 16 compassos."""
+    rng = random.Random(8)
+    bpm = 160
+    beat = 60 / bpm
+    bar = 4 * beat
+    prog = ["D2", "D2", "A#1", "C2", "D2", "D2", "A#1", "A1"] * 2
+    tr = Track(len(prog) * bar)
+    climb = ["D5", "E5", "F5", "G5", "A5", "G5", "F5", "E5", "D5", "F5", "A5", "C6", "A#5", "A5", "G5", "A5"]
+    for b, root in enumerate(prog):
+        t0 = b * bar
+        tr.add(t0, pad(freq(root[:-1] + "3"), bar + 0.2, 0.03))
+        for k in range(16):
+            nm = root if k % 4 != 2 else root[:-1] + str(int(root[-1]) + 1)
+            tr.add(t0 + k * beat / 4, bass(freq(nm), beat / 4 * 0.8, 0.17))
+        for k in range(4):
+            tr.add(t0 + k * beat, kick(0.45) if k % 2 == 0 else snare(rng, 0.2))
+        if b % 4 == 3:   # rufo da caixa no fim da frase
+            for k in range(8):
+                tr.add(t0 + 2 * beat + k * beat / 4, snare(rng, 0.06 + 0.02 * k))
+        for k in range(8):
+            tr.add(t0 + k * beat / 2, hat(rng, 0.05))
+        tr.add(t0, square(freq(climb[b]), beat * 1.8, 0.05, 0.25, 0.01))
+        tr.add(t0 + 2 * beat, square(freq(climb[(b + 1) % 16]), beat * 1.8, 0.045, 0.25, 0.01))
+    tr.echo(0.19, 0.2, 0.15)
+    tr.save("fuga.wav", 0.78)
+
+
+def laboratorio():
+    """Fase 3 (4º andar, laboratórios): ambiente de ficção científica, calmo e frio. Si menor, 80 bpm,
+    pulso fininho de máquina, acordes longos e bipes soltos. 16 compassos."""
+    rng = random.Random(13)
+    bpm = 80
+    beat = 60 / bpm
+    bar = 4 * beat
+    prog = [("B2", "m"), ("G2", "M"), ("D3", "M"), ("A2", "M")] * 4
+    tr = Track(len(prog) * bar)
+    for b, (root, kind) in enumerate(prog):
+        t0 = b * bar
+        for nm in chord(root[:-1] + "3", kind):
+            tr.add(t0, pad(freq(nm), bar + 0.6, 0.04))
+        tr.add(t0, bass(freq(root), bar * 0.6, 0.12))
+        for k in range(16):   # pulso de máquina, bem baixinho
+            tr.add(t0 + k * beat / 4, square(freq(root[:-1] + "5"), 0.03, 0.012 if k % 4 else 0.02, 0.5))
+        for k in range(8):
+            if rng.random() < 0.22:
+                tr.add(t0 + k * beat / 2, blip(freq(rng.choice(["B5", "D6", "F#6", "A6"])), 0.035))
+        if b % 4 == 2:
+            tr.add(t0 + beat, bell(freq(rng.choice(["F#5", "B5"])), 2.6, 0.05))
+    tr.echo(0.45, 0.5, 0.4)
+    tr.save("laboratorio.wav", 0.62)
+
+
+def alarme():
+    """Fase 3 com o alarme: tensa e eletrônica. Mi frígio, 128 bpm, pulso de sintetizador, bateria seca e uma
+    "sirene" (nota escorregando) por cima. 16 compassos."""
+    rng = random.Random(17)
+    bpm = 128
+    beat = 60 / bpm
+    bar = 4 * beat
+    roots = ["E2", "E2", "F2", "E2", "E2", "E2", "G2", "F2"] * 2
+    tr = Track(len(roots) * bar)
+    for b, root in enumerate(roots):
+        t0 = b * bar
+        tr.add(t0, pad(freq(root[:-1] + "3"), bar + 0.2, 0.03))
+        for k in range(8):   # pulso de sintetizador (oitavas)
+            nm = root if k % 2 == 0 else root[:-1] + "3"
+            tr.add(t0 + k * beat / 2, square(freq(nm), beat / 2 * 0.6, 0.05, 0.3))
+        for k in range(4):
+            tr.add(t0 + k * beat, kick(0.45))
+            if k % 2 == 1:
+                tr.add(t0 + k * beat, snare(rng, 0.18))
+        for k in range(8):
+            tr.add(t0 + k * beat / 2 + beat / 4, hat(rng, 0.05))
+        # sirene: sobe e desce a cada dois compassos
+        if b % 2 == 0:
+            tr.add(t0, glide(freq("B4"), freq("E5"), bar, 0.035, 0.5))
+        else:
+            tr.add(t0, glide(freq("E5"), freq("B4"), bar, 0.035, 0.5))
+    tr.echo(0.23, 0.3, 0.2)
+    tr.save("alarme.wav", 0.72)
+
+
+def sia():
+    """Auditório 3D, a S.I.A. no telão: digital e estranho. Lá menor, 72 bpm, arpejo rápido de computador,
+    drone grave e "falhas" (glitches) de vez em quando. 12 compassos."""
+    rng = random.Random(23)
+    bpm = 72
+    beat = 60 / bpm
+    bar = 4 * beat
+    prog = [("A2", "m"), ("F2", "M"), ("D2", "m"), ("E2", "m")] * 3
+    tr = Track(len(prog) * bar)
+    tr.add(0, drone(freq("A1"), len(prog) * bar + 2, 0.08))
+    for b, (root, kind) in enumerate(prog):
+        t0 = b * bar
+        notes = chord(root[:-1] + "4", kind)
+        for nm in notes:
+            tr.add(t0, pad(freq(nm), bar + 0.5, 0.03))
+        arp = notes + [notes[0][:-1] + "5"]
+        for k in range(16):   # arpejo em semicolcheias, como um processador pensando
+            nm = arp[[0, 1, 2, 3, 2, 1][k % 6]]
+            tr.add(t0 + k * beat / 4, square(freq(nm), beat / 4 * 0.5, 0.025, 0.125))
+        # glitch: bipes em sequência maluca
+        if rng.random() < 0.6:
+            g0 = t0 + rng.choice([1, 2, 3]) * beat
+            for k in range(6):
+                tr.add(g0 + k * 0.035, blip(rng.uniform(300, 2400), 0.03))
+        if b % 4 == 3:
+            tr.add(t0 + beat, bell(freq("E6"), 2.5, 0.04))
+    tr.echo(0.4, 0.45, 0.35)
+    tr.save("sia.wav", 0.65)
+
+
+def arcade():
+    """Pac-Man dentro do telão: fliperama assombrado. Sol menor, 150 bpm, melodia rápida em onda quadrada,
+    baixo saltitante e bateria de videogame. 12 compassos."""
+    rng = random.Random(31)
+    bpm = 150
+    beat = 60 / bpm
+    bar = 4 * beat
+    prog = ["G2", "G2", "D#2", "F2", "G2", "G2", "C3", "D3"] + ["G2", "D#2", "F2", "D3"]
+    tr = Track(len(prog) * bar)
+    lead = [["G5", "A#5", "D6", "A#5"], ["C6", "A#5", "A5", "G5"], ["D#5", "G5", "A#5", "G5"], ["F5", "A5", "C6", "A5"],
+            ["G5", "D6", "G6", "D6"], ["F6", "D#6", "D6", "A#5"], ["C6", "D#6", "C6", "G5"], ["D6", "C6", "A5", "F#5"],
+            ["G5", "A#5", "D6", "G6"], ["D#6", "D6", "A#5", "G5"], ["F5", "A5", "C6", "D6"], ["D6", "A5", "F#5", "D5"]]
+    for b, root in enumerate(prog):
+        t0 = b * bar
+        for k in range(8):   # baixo saltitante (fundamental e oitava)
+            nm = root if k % 2 == 0 else root[:-1] + str(int(root[-1]) + 1)
+            tr.add(t0 + k * beat / 2, square(freq(nm), beat / 2 * 0.7, 0.05, 0.5))
+        for k in range(4):
+            tr.add(t0 + k * beat, kick(0.3) if k % 2 == 0 else snare(rng, 0.12))
+        for k, nm in enumerate(lead[b]):
+            tr.add(t0 + k * beat, square(freq(nm), beat * 0.8, 0.05, 0.25))
+    tr.echo(0.2, 0.2, 0.12)
+    tr.save("arcade.wav", 0.72)
+
+
+def final():
+    """O final (diploma na mão): emocionante e esperançoso. Dó maior, 92 bpm, acordes cheios, arpejo e um sino
+    tocando a melodia; na segunda metade entra uma bateria leve. 16 compassos."""
+    rng = random.Random(41)
+    bpm = 92
+    beat = 60 / bpm
+    bar = 4 * beat
+    prog = [("C3", "M"), ("G2", "M"), ("A2", "m"), ("F2", "M")] * 4
+    tr = Track(len(prog) * bar)
+    melody = ["E5", "D5", "C5", "C5", "E5", "G5", "A5", "F5",
+              "G5", "D5", "E5", "C5", "E5", "G5", "C6", "C6"]
+    for b, (root, kind) in enumerate(prog):
+        t0 = b * bar
+        notes = chord(root[:-1] + "4", kind)
+        for nm in notes:
+            tr.add(t0, pad(freq(nm), bar + 0.4, 0.05))
+        tr.add(t0, bass(freq(root), bar * 0.45, 0.16))
+        tr.add(t0 + 2 * beat, bass(freq(root), bar * 0.45, 0.12))
+        arp = notes + [notes[0][:-1] + "5"]
+        for k in range(8):
+            tr.add(t0 + k * beat / 2, pluck(freq(arp[[0, 1, 2, 3, 2, 1, 2, 3][k]]), 0.6, 0.07))
+        tr.add(t0, bell(freq(melody[b]), bar * 0.6, 0.1))
+        tr.add(t0 + 2.5 * beat, bell(freq(melody[(b + 1) % 16]), bar * 0.35, 0.06))
+        if b >= 8:
+            for k in range(4):
+                tr.add(t0 + k * beat, kick(0.25) if k % 2 == 0 else snare(rng, 0.08))
+    tr.echo(0.33, 0.4, 0.3)
+    tr.save("final.wav", 0.72)
+
+
 if __name__ == "__main__":
     tema()
     explorar()
     luta()
     biblioteca()
     cacada()
+    chefe()
+    fuga()
+    laboratorio()
+    alarme()
+    sia()
+    arcade()
+    final()

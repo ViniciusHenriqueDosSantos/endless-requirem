@@ -52,6 +52,9 @@ public partial class Room : Node2D
 
 	// Faixas que aparecem quando a luta começa e quando a sala fica limpa (vazio = não mostra).
 	[Export] public string StartBanner = "PORTAS TRANCADAS!";
+
+	// Música desta luta (sounds/music/<nome>.wav). O roteiro da fase pode trocar (ex.: "chefe" na Cantina).
+	public string FightMusic = "luta";
 	[Export] public string ClearBanner = "SALA LIMPA!";
 
 	// Ajuste dos fantasmas desta sala: vida e velocidade (1 = normal).
@@ -170,7 +173,7 @@ public partial class Room : Node2D
 		_timeLeft = SurviveTime;
 
 		SetDoorsLocked(true);
-		Music.FightStarted();
+		Music.FightStarted(FightMusic);
 		_player?.TriggerShake(LockShake);
 		if (StartBanner != "")
 			ShowBanner(StartBanner);
