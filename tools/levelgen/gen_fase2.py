@@ -124,9 +124,12 @@ for x, facing in ((23, "1"), (30, "2")):       # 1 = parede da esquerda, 2 = par
 
 # ---------- Hall das Caronas ----------
 hall = (2 * T, 34 * T)
-L.node("Hall", inst="room", props={"position": v(*hall), "Size": v(22 * T, 7 * T), "Waves": "3", "EnemiesPerWave": "6",
+L.node("Hall", inst="room", props={"position": v(*hall), "Size": v(22 * T, 7 * T), "Waves": "2", "EnemiesPerWave": "6",
        "FastChance": "0", "EnemyHealthScale": "0.6", "EnemySpeedScale": "1.1",  "SpawnAnywhere": "true", "FinalWaveTank": "true", "StartOnEnter": "false",
-       "FinalWaveMessage": '"O ZELADOR CHEGOU!"', "RespawnPoint": 'NodePath("Respawn")'}, node_paths=["RespawnPoint"])
+       "FinalWaveMessage": '"O ZELADOR CHEGOU!"', "RespawnPoint": 'NodePath("Respawn")',
+       # o zelador: mini-chefe com desenho próprio, muita vida (40), recua pouco e mostra a vida em cima
+       "FinalEnemySprite": L.tex("fantasma_zelador", "characters"), "FinalEnemyHealthScale": "5",
+       "FinalEnemyKnockbackScale": "0.25", "FinalEnemyName": '"ZELADOR"'}, node_paths=["RespawnPoint"])
 L.node("Barreira", "Hall", inst="door", props={"position": v(23 * T + 32 - hall[0], 39 * T - hall[1]),
        "Size": v(64, 3 * T), "ChairStyle": "true"})
 L.node("Respawn", "Hall", type="Marker2D", props={"position": v(26 * T - hall[0], 37 * T + 32 - hall[1])})
@@ -227,9 +230,9 @@ for i, (tx, ty) in enumerate([(7, 11), (13, 10), (17, 19), (11, 22), (16, 29), (
 L.node("Bibliotecario", "Biblioteca", inst="librarian", props={"position": v(14 * T - bib[0], 20 * T - bib[1]),
        "Config": 'ExtResource("bib")', "Patrol": 'NodePath("../Patrulha")', "Shelves": 'NodePath("../Estantes")'},
        node_paths=["Patrol", "Shelves"])
-L.node("Canhao", inst="pickup", props={"position": v(14 * T, 21 * T), "ItemId": '"canhao"', "DisplayName": '"Canhão"',
-       "Color": col(0.3, 0.9, 1, 1), "WeaponReward": 'ExtResource("cannon")', "StartsHidden": "true",
-       "Texture": L.tex("canhao", "weapons")})
+L.node("Canhao", inst="pickup", props={"position": v(14 * T, 21 * T), "ItemId": '"canhao"', "DisplayName": '"Rifle de Precisão"',
+       "Color": col(1, 0.85, 0.45, 1), "WeaponReward": 'ExtResource("cannon")', "StartsHidden": "true",
+       "Texture": L.tex("rifle", "weapons")})
 L.node("ChaveEscada", inst="pickup", props={"position": v(15 * T, 21 * T), "ItemId": '"chave_escada"',
        "DisplayName": '"Chave da escada"', "Color": col(1, 0.85, 0.2, 1), "StartsHidden": "true",
        "Texture": L.tex("chave_escada", "items"), "InspectTexture": L.tex("chave_escada", "items/inspecao"),
@@ -239,16 +242,16 @@ L.prop("PlacaBiblioteca", ".", 19 * T + 32, 20 * T + 8, 180, 30, col(0, 0, 0, 0)
        text_color=col(0.85, 0.8, 1), solid=False, z=1)
 
 # ---------- elevador quebrado + escada: os dois só encostados na parede da esquerda, quase grudados ----------
-L.prop("ElevadorQuebrado", ".", 24 * T + 24, -5 * T, 48, 3 * T, CONCRETE, depth=3 * T, tall=True,
+L.prop("ElevadorQuebrado", ".", 24 * T + 24, -1 * T, 48, 3 * T, CONCRETE, depth=3 * T, tall=True,
        sprite="elevador_quebrado")
-L.node("AvisoElevador", inst="item_slot", props={"position": v(25 * T, -6 * T), "Size": v(200, 220),
+L.node("AvisoElevador", inst="item_slot", props={"position": v(25 * T, -2.5 * T), "Size": v(200, 220),
        "RequiredItem": '"nunca"', "MissingMessage": '"ELEVADOR - fora de serviço desde 2049. Use a escada aqui do lado."'})
-L.prop("PortaEscada", ".", 24 * T + 24, -1 * T, 48, 3 * T, col(0.5, 0.42, 0.3), depth=3 * T, tall=True,
+L.prop("PortaEscada", ".", 24 * T + 24, -5 * T, 48, 3 * T, col(0.5, 0.42, 0.3), depth=3 * T, tall=True,
        sprite="porta_escada")
-L.prop("PlacaEscada", ".", 25 * T + 32, -4 * T + 4, 140, 30, col(0, 0, 0, 0), "ESCADA", font=16,
+L.prop("PlacaEscada", ".", 25 * T + 32, -8 * T + 4, 140, 30, col(0, 0, 0, 0), "ESCADA", font=16,
        text_color=col(0.95, 0.9, 0.6), solid=False, z=1)
 # encostar na escada com a chave leva à cena da escada; sem a chave, só a mensagem
-L.node("Escada", inst="item_slot", props={"position": v(25 * T, -2.5 * T), "Size": v(200, 220),
+L.node("Escada", inst="item_slot", props={"position": v(25 * T, -6 * T), "Size": v(200, 220),
        "RequiredItem": '"chave_escada"', "MissingMessage": '"ESCADA - trancada. A chave está com a Bibliotecária."',
        "UseMessage": '"A porta da escada abriu."'})
 
@@ -301,8 +304,8 @@ for i, (a, b) in enumerate(STUDY_ROOMS):
         light(f"LuminariaSala{i+1}", (a + b + 1) * T / 2 + 40, 5 * T + 40, col(1, 0.88, 0.55), 1.5, 0.9, FLICKER, tube=False)
 light("EmergenciaBib", 17 * T + 32, 21 * T, col(1, 0.15, 0.1), 1.4, 0.9, PULSE, tube=False)
 # fim do corredor: a luz vermelha do elevador quebrado e a placa verde da escada
-light("ElevadorQuebrado", 24 * T + 48, -6 * T, col(1, 0.15, 0.1), 1.6, 1.0, PULSE, tube=False)
-light("PlacaEscada", 24 * T + 48, -3 * T, col(0.2, 1, 0.45), 0.8, 0.8, STEADY, tube=False)
+light("ElevadorQuebrado", 24 * T + 48, -2 * T, col(1, 0.15, 0.1), 1.6, 1.0, PULSE, tube=False)
+light("PlacaEscada", 24 * T + 48, -7 * T, col(0.2, 1, 0.45), 0.8, 0.8, STEADY, tube=False)
 light("BotaoElevador", 24 * T + 40, 46 * T, col(1, 0.5, 0.25), 0.6, 0.7, STEADY, tube=False)
 saida_at = tuple(L.tiler.names["frente_interno_saida"])
 for i, (c, a) in enumerate(sorted((c, a) for c, a in {**L.wall_tiles, **L.outer_wall_tiles}.items() if a == saida_at)):

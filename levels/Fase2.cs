@@ -4,11 +4,10 @@ using System.Collections.Generic;
 // Roteiro da Fase 2 (Biblioteca). As peças ficam em levels/fase_2.tscn.
 //
 // Ordem:
-//   chegada -> porta da biblioteca (fechada: falta um livro)
-//   -> Achados e Perdidos (trancado: a chave está com o zelador)
-//   -> Hall das Caronas (as cadeiras bloqueiam a saída, 3 ondas, o zelador solta a chave)
-//   -> Achados e Perdidos (caixas: uma tem o livro, algumas têm fantasma)
-//   -> devolução do livro -> biblioteca abre
+//   chegada -> porta da biblioteca (fechada: falta um livro, que ficou com o zelador)
+//   -> Hall das Caronas (as cadeiras bloqueiam a saída, 2 ondas e o ZELADOR, mini-chefe com a vida em cima dele)
+//   -> o zelador cai e solta o livro -> devolução do livro -> biblioteca abre
+//   (MVP 8: o Achados e Perdidos saiu do caminho; a porta continua lá, trancada)
 //   -> Bibliotecária (furtividade: barulho atrai, empurrar a estante esmaga) -> Canhão + chave da escada
 //   -> porta da escada -> escada até o 4º andar (levels/escada.tscn).
 public partial class Fase2 : LevelBase
@@ -53,12 +52,9 @@ public partial class Fase2 : LevelBase
 		"Apostila de Física, toda rabiscada.",
 	};
 
-	private const string AchadosShortMessage = "ACHADOS E PERDIDOS - trancado.";
-	private const string AchadosFullMessage =
-		"ACHADOS E PERDIDOS - trancado. \"Chave com o zelador (Hall das Caronas).\"";
+	private const string AchadosShortMessage = "ACHADOS E PERDIDOS - fechado para inventário.";
 
 	private bool _libraryTold;
-	private bool _achadosTold;
 	private bool _bookRevealed;
 	private bool _libraryOpen;
 	private bool _rewardsRevealed;
@@ -79,15 +75,9 @@ public partial class Fase2 : LevelBase
 
 		TrackRooms(Hall, Biblioteca);
 
-		// Sequência da história: biblioteca (falta o livro) -> Achados (trancado) -> só então o Hall tranca.
+		// Sequência da história: biblioteca (falta o livro, que está com o zelador) -> só então o Hall tranca.
 		PortaAchados.LockedMessage = AchadosShortMessage;
 		PortaBiblioteca.LockedTouched += OnLibraryTold;
-		PortaAchados.LockedTouched += () =>
-		{
-			if (_libraryTold)
-				_achadosTold = true;
-		};
-		PortaAchados.Unlocked += () => Hud.ShowMessage("A porta rangeu e abriu. Que bagunça...", 3f);
 
 		Hall.Entered += OnHallEntered;
 		Hall.Started += OnHallStarted;
@@ -178,14 +168,15 @@ public partial class Fase2 : LevelBase
 
 	private void OnLibraryTold()
 	{
+		if (_libraryTold) return;
 		_libraryTold = true;
-		PortaAchados.LockedMessage = AchadosFullMessage;
+		Hud.ShowMessage("Um bilhete na porta: \"O zelador levou o último livro para o Hall das Caronas.\"", 5f);
 	}
 
-	// O Hall só tranca depois de o jogador ter passado pela biblioteca e pelos Achados.
+	// O Hall só tranca depois de o jogador ter passado pela biblioteca.
 	private void OnHallEntered()
 	{
-		if (_achadosTold && !Hall.IsCleared && !Hall.IsFighting)
+		if (_libraryTold && !Hall.IsCleared && !Hall.IsFighting)
 			Hall.StartFight();
 	}
 
@@ -208,8 +199,8 @@ public partial class Fase2 : LevelBase
 		Vector2 drop = Hall.FinalEnemyPosition;
 		if (drop == Vector2.Zero || !GhostNav.TryNearestFreeFloor(this, drop, out drop))
 			drop = CentroHall.GlobalPosition;
-		Chave.Reveal(drop);
-		Hud.ShowMessage("O zelador deixou cair o molho de chaves: \"ACHADOS E PERDIDOS\".", 4f);
+		Livro.Reveal(drop);
+		Hud.ShowMessage("O zelador caiu e deixou cair um livro: \"DEVOLVER NA BIBLIOTECA\".", 4f);
 	}
 
 	// ---------- Biblioteca ----------

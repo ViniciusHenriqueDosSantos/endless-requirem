@@ -34,7 +34,7 @@ public partial class Escada : LevelBase
 	// e y do fundo do patamar do térreo.
 	[Export] public float ColunaA = 96f;
 	[Export] public float ColunaB = 352f;
-	[Export] public float Faixa = 192f;
+	[Export] public float Faixa = 256f;
 	[Export] public float PeDoLance = 1152f;
 	[Export] public float AltoDoLance = 192f;
 	[Export] public float FundoDoTerreo = 1344f;
@@ -43,8 +43,8 @@ public partial class Escada : LevelBase
 	[Export] public AudioStream SomDesabamento;
 
 	// Velocidade do desabamento (pixels por segundo; o jogador anda a 240) e quanto sobe a cada andar.
-	[Export] public float VelocidadeInicial = 215f;
-	[Export] public float AumentoPorAndar = 8f;
+	[Export] public float VelocidadeInicial = 228f;
+	[Export] public float AumentoPorAndar = 10f;
 
 	// Vantagem inicial e a vantagem máxima antes de o desabamento acelerar (pixels).
 	[Export] public float VantagemInicial = 128f;
@@ -359,7 +359,7 @@ void fragment() {
 		float columnX = column == 0 ? ColunaA : ColunaB;
 		foreach ((char kind, int lane, float row) in Lances[flight])
 		{
-			float laneX = columnX + (lane - 1) * Tile;
+			float laneX = columnX + (lane - 1) * Faixa / 3;   // três faixas por lance
 			Node2D node = kind switch
 			{
 				'B' => new Barricade
@@ -368,7 +368,7 @@ void fragment() {
 					Texture = GD.Load<Texture2D>($"res://sprites/props/escada/barricada{flight % 2}.png"),
 				},
 				'D' => MakeHole(HoleX(columnX, lane, BrokenStepWidth), PeDoLance - row * Tile, BrokenStepWidth, 2 * Tile, "degrau_quebrado"),
-				'M' => MakeHole(columnX + (lane - 0.5f) * Tile, PeDoLance - row * Tile, 2 * Tile, 5 * Tile, "lance_metade"),
+				'M' => MakeHole(HoleX(columnX, lane == 0 ? 0 : 1, 2 * Tile), PeDoLance - row * Tile, 2 * Tile, 5 * Tile, "lance_metade"),
 				'L' => new FallingLamp
 				{
 					Position = new Vector2(laneX, PeDoLance - row * Tile),
