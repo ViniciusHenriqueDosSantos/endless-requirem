@@ -10,8 +10,10 @@ public static class GameState
 	// Médio = os números originais do jogo. Fácil e Difícil multiplicam esses números.
 	public static Difficulty Level = Difficulty.Medio;
 
-	// Personagem escolhido no menu: o estudante ou a estudante.
+	// Personagem escolhido no menu: Téo (o estudante) ou Lia (a estudante).
 	public static bool PlayGirl;
+
+	public static string PlayerName => PlayGirl ? "Lia" : "Téo";
 
 	public static string PlayerSpritePath => PlayGirl
 		? "res://sprites/characters/estudante_garota.png"

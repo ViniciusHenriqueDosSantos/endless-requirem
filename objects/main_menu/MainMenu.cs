@@ -1,7 +1,7 @@
 using Godot;
 
-// Menu principal: Jogar / Sair (embaixo à esquerda) e, embaixo à direita, a escolha do personagem
-// (o estudante ou a estudante) e da dificuldade (Fácil / Médio / Difícil). As escolhas ficam em GameState.
+// Menu principal: Jogar / Sair (embaixo à esquerda) e, embaixo à direita, a escolha do personagem (Téo ou Lia)
+// e da dificuldade (Fácil / Médio / Difícil). As escolhas ficam em GameState.
 public partial class MainMenu : Control
 {
 	// cores da paleta do jogo (tools/art/palette.py)
@@ -56,7 +56,7 @@ public partial class MainMenu : Control
 		characters.AddThemeConstantOverride("separation", 16);
 		column.AddChild(characters);
 		string[] sheets = { "res://sprites/characters/estudante.png", "res://sprites/characters/estudante_garota.png" };
-		string[] names = { "ELE", "ELA" };
+		string[] names = { "TÉO", "LIA" };   // os dois estudantes jogáveis
 		for (int i = 0; i < 2; i++)
 		{
 			int index = i;
