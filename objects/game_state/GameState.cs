@@ -13,6 +13,9 @@ public static class GameState
 	// Personagem escolhido no menu: Téo (o estudante) ou Lia (a estudante).
 	public static bool PlayGirl;
 
+	// Brilho da tela (opção do menu; 1 = original). Aplicado pelo autoload Brightness.
+	public static float Brightness = 1f;
+
 	public static string PlayerName => PlayGirl ? "Lia" : "Téo";
 
 	public static string PlayerSpritePath => PlayGirl

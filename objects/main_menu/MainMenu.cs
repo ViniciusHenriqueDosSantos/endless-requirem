@@ -5,7 +5,7 @@ using Godot;
 // Telas secundárias (Esc ou Voltar retornam):
 //   Jogar     -> NOVO JOGO: escolha do personagem (Téo ou Lia) e da dificuldade, e Começar
 //   Controles -> tecla e para que serve
-//   Opções    -> volume geral e tela cheia
+//   Opções    -> volume geral e brilho da tela
 // As escolhas ficam em GameState (valem até fechar o jogo).
 public partial class MainMenu : Control
 {
@@ -240,7 +240,9 @@ public partial class MainMenu : Control
 
 		HBoxContainer volumeRow = new();
 		volumeRow.AddThemeConstantOverride("separation", 16);
-		volumeRow.AddChild(MenuUi.Text("Volume", 18, MenuUi.Cream, false));
+		Label volumeLabel = MenuUi.Text("Volume", 18, MenuUi.Cream, false);
+		volumeLabel.CustomMinimumSize = new Vector2(90, 0);
+		volumeRow.AddChild(volumeLabel);
 		HSlider volume = new()
 		{
 			Name = "Primeiro",
@@ -259,17 +261,23 @@ public partial class MainMenu : Control
 		volumeRow.AddChild(volume);
 		column.AddChild(volumeRow);
 
-		CheckButton fullscreen = new()
+		HBoxContainer brightnessRow = new();
+		brightnessRow.AddThemeConstantOverride("separation", 16);
+		Label brightnessLabel = MenuUi.Text("Brilho", 18, MenuUi.Cream, false);
+		brightnessLabel.CustomMinimumSize = new Vector2(90, 0);
+		brightnessRow.AddChild(brightnessLabel);
+		HSlider brightness = new()
 		{
-			Text = "Tela cheia",
-			ButtonPressed = DisplayServer.WindowGetMode() == DisplayServer.WindowMode.Fullscreen,
+			MinValue = 0.5,
+			MaxValue = 1.6,
+			Step = 0.05,
+			Value = GameState.Brightness,
+			CustomMinimumSize = new Vector2(240, 24),
+			SizeFlagsVertical = SizeFlags.ShrinkCenter,
 		};
-		fullscreen.AddThemeFontSizeOverride("font_size", 18);
-		fullscreen.AddThemeColorOverride("font_color", MenuUi.Cream);
-		fullscreen.AddThemeColorOverride("font_hover_color", MenuUi.Yellow);
-		fullscreen.AddThemeColorOverride("font_pressed_color", MenuUi.Cream);
-		fullscreen.Toggled += on => DisplayServer.WindowSetMode(on ? DisplayServer.WindowMode.Fullscreen : DisplayServer.WindowMode.Windowed);
-		column.AddChild(fullscreen);
+		brightness.ValueChanged += v => GetNode<Brightness>("/root/Brightness").Set((float)v);
+		brightnessRow.AddChild(brightness);
+		column.AddChild(brightnessRow);
 
 		column.AddChild(BackButton());
 		return panel;
