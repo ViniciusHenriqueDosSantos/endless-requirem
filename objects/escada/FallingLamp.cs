@@ -101,7 +101,7 @@ public partial class FallingLamp : Node2D
 		SetState(State.Broken);
 		Rect2 hit = new(GlobalPosition - new Vector2(HitSize.X / 2, HitSize.Y / 2 + 8), HitSize);
 		if (_player != null && hit.HasPoint(_player.GlobalPosition))
-			_player.TakeHit(GlobalPosition + new Vector2(0, -40), 420f);
+			_player.TakeHit(GlobalPosition + new Vector2(0, -40), 420f, true);
 		_player?.TriggerShake(5f);
 	}
 

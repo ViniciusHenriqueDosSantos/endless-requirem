@@ -92,6 +92,8 @@ public partial class Player : CharacterBody2D
 
 	public override void _Ready()
 	{
+		// dificuldade escolhida no menu: corações a mais no fácil, a menos no difícil
+		MaxHealth = Mathf.Max(1, MaxHealth + GameState.PlayerHealthBonus);
 		Health = MaxHealth;
 		foreach (Weapon weapon in Weapons)
 			_ammo[weapon] = weapon.MagazineSize;
@@ -105,6 +107,8 @@ public partial class Player : CharacterBody2D
 		Weapon = _ownedWeapons[0];
 
 		_sprite = GetNode<Sprite2D>("Sprite2D");
+		// personagem escolhido no menu (mesma folha de quadros para os dois)
+		_sprite.Texture = GD.Load<Texture2D>(GameState.PlayerSpritePath);
 		_hurtBox = GetNode<Area2D>("HurtBox");
 		_animated = _sprite.Hframes > 1;
 
@@ -223,9 +227,12 @@ public partial class Player : CharacterBody2D
 	}
 
 	// Dano vindo de qualquer coisa (inimigo, projétil do chefe...).
-	public void TakeHit(Vector2 fromPosition, float knockback)
+	// ignoreRoll: o golpe pega mesmo rolando (ex.: extintor e lâmpada da escada, que não dá para atravessar com o dash).
+	public void TakeHit(Vector2 fromPosition, float knockback, bool ignoreRoll = false)
 	{
-		if (Health <= 0 || _rollTimer > 0 || _rollGraceTimer > 0 || _invulnerableTimer > 0) return;
+		if (Health <= 0 || _invulnerableTimer > 0) return;
+		if (!ignoreRoll && (_rollTimer > 0 || _rollGraceTimer > 0)) return;
+		if (ignoreRoll) { _rollTimer = 0; _rollGraceTimer = 0; }   // o tranco interrompe a rolagem
 
 		_knockback = (GlobalPosition - fromPosition).Normalized() * knockback;
 		Health--;

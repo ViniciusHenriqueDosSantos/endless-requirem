@@ -28,11 +28,21 @@ public partial class Auditorio3D : Node
 	private const float TierRise = 0.35f;
 	private static float TierTop(int row) => TierRise * (row + 1);
 	private static float RowZ(int row) => FirstRowZ + row * RowStep;
-	private static readonly float LandingZ = RowZ(Rows - 1) + RowStep / 2;   // começo do patamar do fundo
+	// Cada degrau termina logo atrás do encosto das poltronas da sua fileira: o espaço para as pernas,
+	// na frente de cada fileira, fica todo no mesmo degrau (sem quina no meio, atrás das cadeiras).
+	private const float SeatBack = 0.5f;
+	private static float TierBackZ(int row) => RowZ(row) + SeatBack;
+	private static readonly float LandingZ = TierBackZ(Rows - 1);   // começo do patamar do fundo
 	private static float LandingY => TierTop(Rows);
-	// altura do chão (aproximada, uma rampa) num ponto do corredor
-	private static float RampY(float z) => Mathf.Clamp(TierRise + (z - FirstRowZ) * TierRise / RowStep, 0f, LandingY);
+	// O chão "de verdade" (colisão) da plateia é uma rampa lisa da largura toda, do corredor da frente até o patamar:
+	// os degraus são só visuais, então o jogador nunca trava numa quina, nem nos corredores nem entre as fileiras.
+	private static readonly float RampStartZ = TierBackZ(0) - 1.5f * RowStep;   // no corredor da frente, antes do 1º degrau
+	private static float RampY(float z) => Mathf.Clamp((z - RampStartZ) * LandingY / (LandingZ - RampStartZ), 0f, LandingY);
 	private const float CenterAisleLeft = -1.28f, CenterAisleRight = 1.3f;
+	// 5 poltronas de cada lado (eram 6): os corredores das paredes ficaram com 1,6 m (eram 0,9 m)
+	private const int SeatsPerSide = 5;
+	private const float SeatWidth = 0.72f;
+	private const float LeftSeatsStart = CenterAisleLeft - SeatsPerSide * SeatWidth;
 	private static readonly Vector3 DiplomaSpot = new(0, StageHeight, -14.4f);
 	private static readonly Vector3 ScreenCenter = new(0, 3.7f, StageBackZ + 0.08f);
 
@@ -61,8 +71,8 @@ public partial class Auditorio3D : Node
 	private Node3D _diploma;
 	private SpotLight3D _diplomaLight;
 
-	private Label _prompt;
-	private Label _subtitle;
+	private Caption _prompt;
+	private Caption _subtitle;
 	private Label _endText;
 	private ColorRect _fade;
 	private AudioStreamPlayer _sound;
@@ -187,43 +197,29 @@ public partial class Auditorio3D : Node
 			}
 	}
 
-	// Os degraus da plateia (um por fileira), o patamar do fundo, o tapete vermelho descendo pelo meio e rampas
-	// invisíveis nos corredores (para andar liso, sem travar nos degraus).
+	// Os degraus da plateia (um por fileira, só visuais), o patamar do fundo (com colisão), o tapete vermelho
+	// descendo pelo meio e a rampa invisível da largura toda, que é o chão onde o jogador anda.
 	private void BuildTiers(Node3D world, Material wood)
 	{
 		Material carpet = Textured("carpete", 1f, Colors.White);
-		float[][] blocks = { new[] { -HalfWidth + 0.9f, CenterAisleLeft }, new[] { CenterAisleRight, HalfWidth - 0.88f } };
 		for (int row = 0; row <= Rows; row++)
 		{
 			bool landing = row == Rows;
-			float zFront = RowZ(row) - RowStep / 2;
-			float zBack = landing ? BackZ : zFront + RowStep;
+			float zFront = landing ? LandingZ : TierBackZ(row) - RowStep;
+			float zBack = landing ? BackZ : TierBackZ(row);
 			float top = TierTop(row);
 			float zMid = (zFront + zBack) / 2, depth = zBack - zFront;
 			Block(world, new Vector3(0, top / 2, zMid), new Vector3(HalfWidth * 2, top, depth), wood, landing);
 			Block(world, new Vector3(0, top + 0.01f, zMid), new Vector3(1.4f, 0.02f, depth), carpet, false);
-			if (landing) continue;
-			foreach (float[] b in blocks)   // colisão só debaixo das poltronas (os corredores usam a rampa)
-				Collider(world, new Vector3((b[0] + b[1]) / 2, top / 2, zMid), new Vector3(b[1] - b[0], top, depth));
 		}
-		Block(world, new Vector3(0, 0.01f, (StageFrontZ + RowZ(0) - RowStep / 2) / 2), new Vector3(1.4f, 0.02f, RowZ(0) - RowStep / 2 - StageFrontZ), carpet, false);
+		float firstFront = TierBackZ(0) - RowStep;
+		Block(world, new Vector3(0, 0.01f, (StageFrontZ + firstFront) / 2), new Vector3(1.4f, 0.02f, firstFront - StageFrontZ), carpet, false);
 
-		// rampas invisíveis: do chão da frente até o patamar do fundo
-		// (o corredor do meio começa um pouco antes; os dos lados só depois das escadinhas do palco)
-		float zEnd = LandingZ, rise = LandingY;
-		(float left, float right, float zStart)[] aisles =
-		{
-			(CenterAisleLeft, CenterAisleRight, FirstRowZ - RowStep),
-			(-HalfWidth, -HalfWidth + 0.9f, FirstRowZ - RowStep),
-			(HalfWidth - 0.88f, HalfWidth, FirstRowZ - RowStep),
-		};
-		foreach ((float left, float right, float zStart) in aisles)
-		{
-			float run = zEnd - zStart;
-			float angle = Mathf.Atan2(rise, run);
-			Collider(world, new Vector3((left + right) / 2, rise / 2 - 0.05f, (zStart + zEnd) / 2),
-				new Vector3(right - left, 0.1f, Mathf.Sqrt(run * run + rise * rise)), new Vector3(-angle, 0, 0));
-		}
+		// rampa invisível: do chão da frente até a beirada do patamar do fundo, de parede a parede
+		float run = LandingZ - RampStartZ, rise = LandingY;
+		float angle = Mathf.Atan2(rise, run);
+		Collider(world, new Vector3(0, rise / 2 - 0.05f, (RampStartZ + LandingZ) / 2),
+			new Vector3(HalfWidth * 2, 0.1f, Mathf.Sqrt(run * run + rise * rise)), new Vector3(-angle, 0, 0));
 	}
 
 	private void BuildStage(Node3D world)
@@ -308,15 +304,15 @@ public partial class Auditorio3D : Node
 	{
 		Material fabric = Textured("poltrona", 2f, Colors.White);
 		Material arm = Plain(new Color(0.22f, 0.15f, 0.12f));
-		const float seatWidth = 0.72f;
+		const float seatWidth = SeatWidth;
 		for (int row = 0; row < 5; row++)
 		{
 			float z = RowZ(row);
 			float y = TierTop(row);
 			foreach (float side in new[] { -1f, 1f })
 			{
-				float start = side < 0 ? -5.6f : 1.3f;
-				for (int k = 0; k < 6; k++)
+				float start = side < 0 ? LeftSeatsStart : CenterAisleRight;
+				for (int k = 0; k < SeatsPerSide; k++)
 				{
 					float x = start + seatWidth * (k + 0.5f);
 					Block(world, new Vector3(x, y + 0.25f, z), new Vector3(seatWidth - 0.08f, 0.5f, 0.55f), fabric, false);
@@ -324,7 +320,7 @@ public partial class Auditorio3D : Node
 					Block(world, new Vector3(x - seatWidth / 2, y + 0.55f, z + 0.05f), new Vector3(0.06f, 0.2f, 0.55f), arm, false);
 				}
 				// uma colisão só para a fileira inteira
-				Collider(world, new Vector3(start + seatWidth * 3, y + 0.5f, z + 0.1f), new Vector3(seatWidth * 6, 1f, 0.8f));
+				Collider(world, new Vector3(start + seatWidth * SeatsPerSide / 2f, y + 0.5f, z + 0.1f), new Vector3(seatWidth * SeatsPerSide, 1f, 0.8f));
 			}
 		}
 	}
@@ -356,14 +352,11 @@ public partial class Auditorio3D : Node
 		_fade.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 		layer.AddChild(_fade);
 
-		_prompt = MakeLabel(24, new Color(1f, 0.95f, 0.6f));
-		_prompt.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.CenterBottom);
-		_prompt.OffsetTop = -170; _prompt.OffsetBottom = -130; _prompt.OffsetLeft = -300; _prompt.OffsetRight = 300;
+		// legendas embaixo, nas cores da paleta (Caption)
+		_prompt = Caption.AtBottom(Caption.Kind.Prompt, 22, 160, 116);
 		layer.AddChild(_prompt);
 
-		_subtitle = MakeLabel(26, Colors.White);
-		_subtitle.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.BottomWide);
-		_subtitle.OffsetTop = -110; _subtitle.OffsetBottom = -40;
+		_subtitle = Caption.AtBottom(Caption.Kind.Message, 24, 96, 40);
 		layer.AddChild(_subtitle);
 
 		_endText = MakeLabel(30, new Color(0.6f, 0.9f, 1f));

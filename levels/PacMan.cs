@@ -130,7 +130,7 @@ public partial class PacMan : Node2D
 		Music.Play("arcade");
 		TextureFilter = TextureFilterEnum.Nearest;
 		Input.MouseMode = Input.MouseModeEnum.Visible;
-		_studentTexture = GD.Load<Texture2D>("res://sprites/characters/estudante.png");
+		_studentTexture = GD.Load<Texture2D>(GameState.PlayerSpritePath);
 		_ghostTexture = GD.Load<Texture2D>("res://sprites/characters/fantasma_normal.png");
 		_font = ThemeDB.FallbackFont;
 		_sfx = new AudioStreamPlayer { VolumeDb = -6f };
@@ -374,7 +374,7 @@ public partial class PacMan : Node2D
 			GhostMode.Frightened => FrightSpeed,
 			GhostMode.Eyes => EyesSpeed,
 			GhostMode.Leaving => LeavingSpeed,
-			_ => GhostSpeed,
+			_ => GhostSpeed * GameState.PacManGhostScale,   // dificuldade do menu
 		};
 		if (InTunnel(g.Tile) && g.Mode != GhostMode.Eyes) speed = Mathf.Min(speed, TunnelSpeed);
 

@@ -1,11 +1,13 @@
-# U.N.I.F.E.S.P.
+# Instituto de Ciência e Terror
 
 Jogo de ação e tiro top-down feito em **Godot 4.7.2 (.NET / C#)** para a disciplina de games.
 
 2061. A IA chamada MENTORA fechou as faculdades. Você volta ao campus abandonado, cheio de fantasmas de alunos que nunca se formaram, para buscar o seu diploma.
 
 > Estado atual: **Fases 1 e 2 completas em cinza**.
-> - Fase 1: Entrada → Portaria → RU → Corredor → Cantina (Tia da Cantina) → Elevador.
+> - Abertura: letreiro no espaço com fanfarra original (`tools/audio/gen_intro.py`).
+> - Menu (logotipo em `tools/art/logo.py`): Jogar → tela NOVO JOGO com o personagem (Téo ou Lia) e a dificuldade (Fácil / Médio / Difícil; Médio = valores originais, ajustes em `GameState`).
+> - Fase 1: Entrada (quadro de comandos na tela) → Portaria → RU (40 s; micro-ondas brilha quando você pega a marmita) → Cantina (Tia da Cantina; o sofá cinza serve de cobertura) → Elevador.
 > - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (ondas + o Zelador, que solta a chave) → armário dos Achados (tarefa 2D estilo Among Us: girar o cadeado com a combinação do post-it e puxar a alavanca: o livro) → devolução → Bibliotecária (ouve tudo, enxerga só pela lanterna: atraia ela com o rádio, o despertador ou a campainha até a frente de uma estante, derrube a estante nela com E e atire enquanto ela está tonta; acordada, ela bloqueia e desvia dos tiros) → Rifle do Silêncio → escada desabando atrás de você (8 lances do térreo ao 4º andar, com giro de câmera a cada lance; barricadas, degraus quebrados, lâmpadas caindo e extintores rolando).
 > - Arte: a **Fase 1 já tem pixel art** baseada no campus de verdade (tour 360° da UNIFESP SJC), à noite e abandonada, com lanterna e luzes piscando. Veja `tools/art/README.md`.
 > - Fase 3 (4º andar, laboratórios, atalho F4): porta de vidro (no pé do corredor de vidro) da área final com senha → câmeras apitam, alarme e fantasmas no corredor, laboratórios destrancam → laboratórios seguros: fiação e distribuidor (Lab 1) e computador com login (aluno/unifesp) e o site da universidade (Lab 2) → senha (sorteada a cada partida) abre a porta e some com os fantasmas. Já tem o auditório (área restrita, porta com E, palco) ligado à área final; o diploma e o chefe vêm depois. Salas de teste (`levels/test_rooms*.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.

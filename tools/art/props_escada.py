@@ -1,10 +1,10 @@
 # Props da escada (fim da Fase 2): o prédio abandonado desabando atrás do jogador.
 # Cada sprite tem o tamanho do jogo dividido por 4 (1 pixel da arte = 4 do jogo).
 # Saída: sprites/props/escada/
-#   barricada0/1   pilha de carteiras, tábuas e fita zebrada (fecha a faixa: 48 x 14 = 192 x 56 no jogo)
+#   barricada0/1   pilha de carteiras, tábuas e fita zebrada (fecha a faixa: 64 x 14 = 256 x 56 no jogo)
 #   lampada        lâmpada de desenho (bulbo e rosca) caindo do teto (14 x 20)
 #   lampada_quebrada  a lâmpada estilhaçada no chão (22 x 12)
-#   continuacao    o fim do lance: degraus seguindo para cima no escuro, com seta para frente (48 x 40)
+#   continuacao    o fim do lance: degraus seguindo para cima no escuro, com seta para frente (64 x 40)
 #   extintor       extintor vermelho deitado, rolando escada abaixo (dois quadros: extintor0/1, 14 x 8)
 #   espuma         nuvem de pó quando o extintor leva um tiro (16 x 12)
 #   degrau_quebrado  buraco no meio do lance (26 x 32: 104 px de largura, 2 tiles de altura)
@@ -27,7 +27,7 @@ DESK_TOP, DESK_TOP_D = hexc("cfc6b0"), hexc("9c927b")
 # ======================================================================== BARRICADA
 def barricada(seed):
     """Carteiras de braço tombadas, tábuas pregadas atravessadas e a fita zebrada amarela e preta."""
-    w, h = 48, 14
+    w, h = 64, 14
     cv = Canvas(w, h)
     r = rng(5100 + seed)
     shadow_ellipse(cv, w / 2, h - 1.5, w / 2 - 1, 1.6, 90)
@@ -209,7 +209,7 @@ buraco(32, 80, 1).save(OUT + "lance_metade.png")
 def continuacao():
     """No alto de cada lance, no lugar da parede: os degraus continuam subindo e somem no escuro,
     com o corrimão dos dois lados e uma seta pintada apontando para frente. Passa a ideia de 'seguir em frente'."""
-    w, h = 48, 40
+    w, h = 64, 40
     cv = Canvas(w, h)
     step_l, step_d = hexc("cfc8b6"), hexc("8e8774")
     for y in range(h):
@@ -224,9 +224,9 @@ def continuacao():
         cv.put(inset, y, rail); cv.put(w - 1 - inset, y, rail)
     # seta branca gasta apontando para frente (para cima)
     arrow = mix(VOID, hexc("f0ece0"), 0.85)
-    cv.rect(22, 18, 4, 16, arrow)
+    cv.rect(w // 2 - 2, 18, 4, 16, arrow)
     for i in range(7):
-        cv.hline(24 - 1 - i, 11 + i, 2 + 2 * i, arrow)
+        cv.hline(w // 2 - 1 - i, 11 + i, 2 + 2 * i, arrow)
     return cv
 
 

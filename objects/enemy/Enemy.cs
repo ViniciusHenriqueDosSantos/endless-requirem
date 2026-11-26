@@ -117,8 +117,13 @@ public partial class Enemy : CharacterBody2D
 		_hitBox = GetNode<Area2D>("HitBox");
 
 		_stats = StatsByKind[Type];
-		// O zelador é um mini-chefe: a vida dele não muda com o ajuste da sala.
-		_health = Type == Kind.Janitor ? _stats.Health : Mathf.Max(1, Mathf.RoundToInt(_stats.Health * HealthScale));
+		// dificuldade escolhida no menu
+		HealthScale *= GameState.EnemyHealthScale;
+		SpeedScale *= GameState.EnemySpeedScale;
+		// O zelador é um mini-chefe: a vida dele não muda com o ajuste da sala, só com a dificuldade (como os chefes).
+		_health = Type == Kind.Janitor
+			? Mathf.Max(1, Mathf.RoundToInt(_stats.Health * GameState.BossHealthScale))
+			: Mathf.Max(1, Mathf.RoundToInt(_stats.Health * HealthScale));
 		_maxHealth = _health;
 
 		Texture2D art = Type switch

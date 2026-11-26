@@ -19,6 +19,8 @@ public partial class Fase1 : Node2D
 	[Export] public Door PortaEntradaRu;
 	[Export] public Pickup Marmita;
 	[Export] public ItemSlot Microondas;
+	// Brilho em volta do micro-ondas: acende quando o jogador pega a marmita (mostra para onde levar).
+	[Export] public GlowingDevice BrilhoMicroondas;
 	[Export] public Room Corredor;
 	[Export] public Room Cantina;
 	[Export] public Door CantinaPorta1;
@@ -47,12 +49,23 @@ public partial class Fase1 : Node2D
 		Screen.Closed += OnScreenClosed;
 
 		HideBadgeInRandomPile();
+		// tutorial: o quadro de comandos fica na tela até o jogador passar pela catraca (H mostra de novo)
+		Hud.ShowControls(true);
 		Cracha.PickedUp += _ => Hud.SetObjective("Passe pela catraca da portaria");
-		Catraca.Unlocked += () => Hud.SetObjective("Vá ao RU (porta à esquerda do corredor)");
+		Catraca.Unlocked += () =>
+		{
+			Hud.ShowControls(false);
+			Hud.SetObjective("Vá ao RU (porta à esquerda do corredor)");
+		};
 		Ru.Entered += OnRuEntered;
-		Marmita.PickedUp += _ => Hud.SetObjective("Esquente a marmita no micro-ondas");
+		Marmita.PickedUp += _ =>
+		{
+			Hud.SetObjective("Esquente a marmita no micro-ondas");
+			BrilhoMicroondas.Glow = true;
+		};
 		Microondas.Used += () =>
 		{
+			BrilhoMicroondas.Glow = false;
 			Ru.StartFight();
 			_microondasSom = new AudioStreamPlayer2D
 			{
@@ -195,8 +208,8 @@ public partial class Fase1 : Node2D
 	{
 		Player.HealFull();
 		Hud.ShowMessage("PLIM! A marmita esquentou. Vida cheia!", 4f);
-		Corredor.Activate();
-		Hud.SetObjective("Saia do RU e limpe o corredor");
+		// MVP 8: o corredor não tem mais onda de fantasmas (economiza tempo): a cantina já abre
+		OnCorredorCleared();
 	}
 
 	private void OnCorredorCleared()
@@ -284,6 +297,7 @@ public partial class Fase1 : Node2D
 		Player.RemoveItem("marmita");
 		Marmita.Reset();
 		Microondas.Reset();
+		BrilhoMicroondas.Glow = false;
 		Hud.SetObjective("Pegue uma marmita no balcão");
 	}
 }

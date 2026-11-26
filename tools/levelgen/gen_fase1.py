@@ -52,7 +52,7 @@ def material(x, y):
     if y == 62: return "bloquete"
     if y >= 51:  # Entrada (nível de baixo): praça de bloquete vermelho com gramados dos dois lados do caminho
         if (x <= 9 and y >= 57) or (x >= 27 and y >= 57): return "grama"
-        return "bloquete_tatil" if (y == 57 and 16 <= x <= 20) else "bloquete"
+        return "bloquete"
     if 23 <= x <= 30 and 8 <= y <= 45: return "praca"        # Corredor: praça aberta entre os prédios
     if 46 <= y <= 50: return "rampa"                         # depois da catraca: a rampa que sobe para o terraço
     if 24 <= y <= 39 and x <= 22: return "ceramica"          # RU
@@ -192,6 +192,7 @@ def prop(name, parent, x, y, w, h, color, text="", depth=None, font=16, text_col
 
 # --- raiz
 root_paths = ["Player", "Hud", "Screen", "Cracha", "Pilhas", "Catraca", "Ru", "PortaEntradaRu", "Marmita", "Microondas",
+              "BrilhoMicroondas",
               "Corredor", "Cantina", "CantinaPorta1", "CantinaPorta2", "Tia", "Escopeta", "PortaElevador", "Elevador"]
 root_head = ('[node name="Fase1" type="Node2D" node_paths=PackedStringArray(' +
              ', '.join(f'"{p}"' for p in root_paths) + ')]')
@@ -199,6 +200,7 @@ root_props = {"y_sort_enabled": "true", "script": 'ExtResource("fase1")',
               "Player": 'NodePath("Player")', "Hud": 'NodePath("Hud")', "Screen": 'NodePath("MessageScreen")',
               "Cracha": 'NodePath("Cracha")', "Pilhas": 'NodePath("Pilhas")', "Catraca": 'NodePath("Catraca")', "Ru": 'NodePath("RU")', "PortaEntradaRu": 'NodePath("PortaEntradaRU")',
               "Marmita": 'NodePath("RU/Marmita")', "Microondas": 'NodePath("RU/MicroondasEncaixe")',
+              "BrilhoMicroondas": 'NodePath("RU/BrilhoMicroondas")',
               "Corredor": 'NodePath("Corredor")', "Cantina": 'NodePath("Cantina")',
               "CantinaPorta1": 'NodePath("Cantina/Entrada1")', "CantinaPorta2": 'NodePath("Cantina/Entrada2")',
               "Tia": 'NodePath("Cantina/Tia")', "Escopeta": 'NodePath("Escopeta")',
@@ -376,7 +378,7 @@ for i, ty in enumerate([10, 15, 20, 26, 31, 41, 44]):
 # ===== RU =====
 ru = (2 * T, 24 * T)
 node("RU", inst="room", props={"position": v(*ru), "Size": v(20 * T, 16 * T), "Waves": "0",
-     "SurviveTime": "50.0", "SurviveSpawnInterval": "1.2", "SurviveMaxAlive": "7", "SpawnAnywhere": "true", "StartOnEnter": "false",
+     "SurviveTime": "40.0", "SurviveSpawnInterval": "1.2", "SurviveMaxAlive": "7", "SpawnAnywhere": "true", "StartOnEnter": "false",
      "RespawnPoint": 'NodePath("Respawn")'}, node_paths=["RespawnPoint"])
 node("Porta", "RU", inst="door", props={"position": v(12 * T + 32 - ru[0], 31 * T - ru[1]), "Size": v(3 * T, 64)})
 node("Respawn", "RU", type="Marker2D", props={"position": v(12 * T + 32 - ru[0], 28 * T - ru[1])})
@@ -387,6 +389,10 @@ prop("BalcaoPrato", "RU", 4 * T + 32 - ru[0], 25 * T - ru[1], 5 * T, 88, BEGE, "
      blocks_ghosts=True, sprite="balcao_devolucao")
 prop("MicroondasBloco", "RU", 11 * T - ru[0], 25 * T - ru[1], 112, 96, col(0.85, 0.85, 0.88), "MICRO-\nONDAS",
      depth=56, font=14, blocks_ghosts=True, sprite="microondas")
+# brilho em volta do micro-ondas: o roteiro acende quando o jogador pega a marmita
+node("BrilhoMicroondas", "RU", type="Node2D", props={"position": v(11 * T - ru[0], 25 * T - 40 - ru[1]),
+     "script": 'ExtResource("glow")', "Glow": "false", "GlowColor": col(1, 0.85, 0.35), "GlowRadius": "110",
+     "LightEnergy": "1.2", "LightScale": "1.6"})
 node("MicroondasEncaixe", "RU", inst="item_slot", props={"position": v(11 * T - ru[0], 25 * T - ru[1]),
      "Size": v(224, 160), "RequiredItem": '"marmita"', "MissingMessage": '"Você precisa de uma marmita."',
      "UseMessage": '"Micro-ondas ligado... os fantasmas sentiram o cheiro!"'})
@@ -450,7 +456,8 @@ prop("Sinuca2", "Cantina", 13 * T - ca[0], 19 * T + 16 - ca[1], 3 * T, 80, col(0
 # canto de convivência: lixeiras da coleta seletiva, bebedouro e sofá
 prop("LixeirasCantina", "Cantina", 19 * T - ca[0], 12 * T + 8 - ca[1], 84, 48, col(0, 0, 0, 0), solid=False, sprite="lixeiras")
 prop("Bebedouro", "Cantina", 21 * T + 8 - ca[0], 12 * T + 8 - ca[1], 32, 64, col(0, 0, 0, 0), solid=False, sprite="bebedouro")
-prop("Sofa", "Cantina", 18 * T + 32 - ca[0], 19 * T + 56 - ca[1], 128, 56, col(0, 0, 0, 0), solid=False, sprite="sofa")
+# sofá cinza (a "geladeira"): sólido e afastado da parede, para o jogador se esconder atrás dele dos tiros da Tia
+prop("Sofa", "Cantina", 18 * T + 32 - ca[0], 19 * T + 8 - ca[1], 128, 56, col(0, 0, 0, 0), depth=40, sprite="sofa")
 for i, (cx, cy, spr) in enumerate([(3 * T + 30, 19 * T + 40, "entulho"), (11 * T, 15 * T + 20, "cadeira_caida"),
                                    (20 * T, 17 * T, "cadeira_caida")]):
     prop(f"Destrocos{i+1}", "Cantina", cx - ca[0], cy - ca[1], 48, 32, col(0, 0, 0, 0), solid=False, sprite=spr)
@@ -595,6 +602,7 @@ ext = [
     ('PackedScene', 'res://objects/boss/boss_target.tscn', 'boss_target'),
     ('Resource', 'res://objects/boss/tia_cantina.tres', 'tia'),
     ('Resource', 'res://objects/weapon/shotgun.tres', 'shotgun'),
+    ('Script', 'res://objects/fase3/GlowingDevice.cs', 'glow'),
 ]
 with open(OUT, "w") as f:
     f.write("[gd_scene format=4]\n\n")
