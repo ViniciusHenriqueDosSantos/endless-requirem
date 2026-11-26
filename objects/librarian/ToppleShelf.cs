@@ -2,10 +2,11 @@ using Godot;
 using System.Collections.Generic;
 
 // Estante bamba da biblioteca: a arma contra a Bibliotecária.
-//   - Tiro na estante: os livros caem lá de cima e fazem BARULHO (ela vem ver o que foi). A estante não cai com tiro.
-//   - Empurrar: atrás da estante (do lado de cima), [Espaço] empurra e ela tomba para a frente.
+//   - Tiro na estante: ela balança, mas não cai nem chama a Bibliotecária (quem chama são os objetos: NoiseMaker).
+//   - Empurrar: atrás da estante (do lado de cima), [E] empurra e ela tomba para a frente.
 //     Quem estiver na frente (FallZone) é esmagado. Dá para empurrar sem ela ver: a estante tapa a visão.
-//   - Caída, vira entulho no chão por um tempo e depois a Bibliotecária a põe de pé de novo (ReriseTime).
+//   - Caída, vira entulho no chão e fica lá (ReriseTime > 0 faz ela voltar a ficar de pé sozinha).
+//   - Size.X menor que o desenho: estante mais curta (mostra só o meio do desenho).
 [Tool]
 public partial class ToppleShelf : Prop, IHittable
 {
@@ -14,7 +15,7 @@ public partial class ToppleShelf : Prop, IHittable
 	[Export] public Texture2D FallenTexture;
 	[Export] public float FallDepth = 130f;      // até onde ela cai, para a frente (px)
 	[Export] public float NoiseRadius = 1300f;
-	[Export] public float ReriseTime = 9f;        // segundos caída até voltar a ficar de pé
+	[Export] public float ReriseTime = 0f;        // segundos caída até voltar a ficar de pé (0 = nunca)
 	[Export] public float NoiseCooldown = 1.5f;   // um barulho por vez (tiro de escopeta não vira cinco)
 
 	public enum State { Standing, Falling, Fallen, Rising }
@@ -46,7 +47,7 @@ public partial class ToppleShelf : Prop, IHittable
 		SetProcess(true);
 		if (Engine.IsEditorHint()) return;
 		All.Add(this);
-		// dica "[Espaço] Empurrar": num filho que aparece no escuro
+		// dica "[E] Empurrar": num filho que aparece no escuro
 		_hint = new Node2D { Material = SharedMaterials.Unshaded, ZIndex = 20, Visible = false };
 		AddChild(_hint);
 		_hint.Draw += DrawHint;
@@ -54,7 +55,16 @@ public partial class ToppleShelf : Prop, IHittable
 
 	public override void _ExitTree() => All.Remove(this);
 
-	// Chamado pelo jogador ao apertar [Espaço]: empurra a estante de pé que ele está atrás. Se empurrou, não rola.
+	// O jogador está atrás de alguma estante de pé (o [E] vai empurrar)?
+	public static bool CanPush(Node2D player)
+	{
+		foreach (ToppleShelf shelf in All)
+			if (shelf.IsStanding && shelf.Visible && shelf.PushZone.HasPoint(player.GlobalPosition))
+				return true;
+		return false;
+	}
+
+	// Chamado pelo jogador ao apertar [E]: empurra a estante de pé que ele está atrás.
 	public static bool TryPush(Node2D player)
 	{
 		foreach (ToppleShelf shelf in All)
@@ -66,13 +76,12 @@ public partial class ToppleShelf : Prop, IHittable
 		return false;
 	}
 
+	// Tiro na estante: ela só balança (não chama mais a Bibliotecária: quem chama são os objetos que fazem
+	// barulho, NoiseMaker). O tiro em si ainda faz o barulhinho de tiro, que ela ouve só de perto.
 	public void TakeHit(int damage, Vector2 direction)
 	{
-		if (!IsStanding || _noiseTimer > 0) return;
+		if (!IsStanding) return;
 		_wobble = 1f;
-		_noiseTimer = NoiseCooldown;
-		Noise.Make(this, NoisePoint, NoiseRadius);
-		(GetTree().GetFirstNodeInGroup("player") as Player)?.TriggerShake(3f);
 	}
 
 	public void Topple()
@@ -129,7 +138,7 @@ public partial class ToppleShelf : Prop, IHittable
 			case State.Fallen:
 				_fallenTimer -= dt;
 				// não levanta em cima de ninguém
-				if (_fallenTimer <= 0 && !SomeoneInFallZone())
+				if (ReriseTime > 0 && _fallenTimer <= 0 && !SomeoneInFallZone())
 				{
 					Current = State.Rising;
 					_anim = 0f;
@@ -160,17 +169,26 @@ public partial class ToppleShelf : Prop, IHittable
 		return false;
 	}
 
+	// Pedaço do desenho que aparece: o meio, na largura da estante (estantes curtas cortam as pontas).
+	private Rect2 Region(Texture2D texture)
+	{
+		float w = Mathf.Min(texture.GetWidth(), Mathf.Round(Size.X / PixelScale));
+		return new Rect2((texture.GetWidth() - w) / 2f, 0, w, texture.GetHeight());
+	}
+
 	public override void _Draw()
 	{
 		if (Texture == null) { base._Draw(); return; }
-		Vector2 size = Texture.GetSize() * PixelScale;
+		Rect2 region = Region(Texture);
+		Vector2 size = region.Size * PixelScale;
 
 		bool fallenLook = Current == State.Fallen || (Current == State.Falling && _anim > 0.6f) || (Current == State.Rising && _anim < 0.4f);
 		if (FallenTexture != null && fallenLook)
 		{
-			Vector2 fs = FallenTexture.GetSize() * PixelScale;
+			Rect2 fallenRegion = Region(FallenTexture);
+			Vector2 fs = fallenRegion.Size * PixelScale;
 			float k = Current == State.Falling ? (_anim - 0.6f) / 0.4f : Current == State.Rising ? 1f - _anim / 0.4f : 1f;
-			DrawTextureRect(FallenTexture, new Rect2(-fs.X / 2, -24, fs.X, fs.Y * Mathf.Max(0.3f, k)), false);
+			DrawTextureRectRegion(FallenTexture, new Rect2(-fs.X / 2, -24, fs.X, fs.Y * Mathf.Max(0.3f, k)), fallenRegion);
 			return;
 		}
 
@@ -179,20 +197,20 @@ public partial class ToppleShelf : Prop, IHittable
 			// tomba para a frente (o topo desce até o chão) ou volta a subir
 			float k = Current == State.Falling ? _anim : 1f - (_anim - 0.4f) / 0.6f;
 			float h = size.Y * (1f - k * 0.85f);
-			DrawTextureRect(Texture, new Rect2(-size.X / 2, -h + k * 40f, size.X, h), false,
+			DrawTextureRectRegion(Texture, new Rect2(-size.X / 2, -h + k * 40f, size.X, h), region,
 				Current == State.Rising ? new Color(0.8f, 0.85f, 1f, 0.9f) : Colors.White);
 			return;
 		}
 
 		float shake = Mathf.Sin(_time * 38f) * 6f * _wobble;
-		DrawTextureRect(Texture, new Rect2(-size.X / 2 + shake, -size.Y, size.X, size.Y), false);
+		DrawTextureRectRegion(Texture, new Rect2(-size.X / 2 + shake, -size.Y, size.X, size.Y), region);
 
 	}
 
 	private void DrawHint()
 	{
 		Font font = ThemeDB.FallbackFont;
-		string hint = "[Espaço] Empurrar a estante";
+		string hint = "[E] Empurrar a estante";
 		float w = font.GetStringSize(hint, HorizontalAlignment.Left, -1, 18).X;
 		float y = -Texture.GetSize().Y * PixelScale - 30;
 		_hint.DrawRect(new Rect2(-w / 2 - 8, y - 4, w + 16, 28), new Color(0, 0, 0, 0.65f));

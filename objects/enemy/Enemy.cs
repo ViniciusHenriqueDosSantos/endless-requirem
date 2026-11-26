@@ -1,6 +1,7 @@
 using Godot;
 using System.Collections.Generic;
 
+// O zelador (Kind.Janitor) tem ataques próprios: ver Enemy.Janitor.cs.
 public partial class Enemy : CharacterBody2D
 {
 	// Ligado: o fantasma fica parado onde nasceu (bloqueio). Quem cria liga antes de pôr na cena.
@@ -10,7 +11,7 @@ public partial class Enemy : CharacterBody2D
 	public float HealthScale = 1f;
 	public float SpeedScale = 1f;
 
-	public enum Kind { Normal, Fast, Tank }
+	public enum Kind { Normal, Fast, Tank, Janitor }
 
 	private readonly record struct Stats(float Speed, int Health, int ScoreValue, Color Color, float Scale);
 
@@ -19,6 +20,7 @@ public partial class Enemy : CharacterBody2D
 		[Kind.Normal] = new(Speed: 170f, Health: 3, ScoreValue: 10, new Color(0.78f, 0f, 0.2f), Scale: 0.5f),
 		[Kind.Fast] = new(Speed: 215f, Health: 2, ScoreValue: 15, new Color(1f, 0.55f, 0f), Scale: 0.38f),
 		[Kind.Tank] = new(Speed: 95f, Health: 8, ScoreValue: 30, new Color(0.6f, 0.15f, 0.85f), Scale: 0.75f),
+		[Kind.Janitor] = new(Speed: 125f, Health: 40, ScoreValue: 200, new Color(0.3f, 0.45f, 0.8f), Scale: 0.9f),
 	};
 
 	// Chegam em curva, cada um por um lado, e ficam retos quando estão perto.
@@ -70,6 +72,7 @@ public partial class Enemy : CharacterBody2D
 	[Export] public Texture2D NormalSprite;
 	[Export] public Texture2D FastSprite;
 	[Export] public Texture2D TankSprite;
+	[Export] public Texture2D JanitorSprite;
 	private const int SpriteFrames = 4;
 	private const float FloatFrameTime = 0.15f;
 	private static readonly Color HitFlash = new(2.5f, 2.5f, 2.5f);
@@ -83,6 +86,8 @@ public partial class Enemy : CharacterBody2D
 
 	private Stats _stats;
 	private int _health;
+	private int _maxHealth;
+	public float HealthRatio => _maxHealth <= 0 ? 0f : Mathf.Max(0, _health) / (float)_maxHealth;
 	private Player _player;
 	private Sprite2D _sprite;
 	private CollisionShape2D _collision;
@@ -112,16 +117,21 @@ public partial class Enemy : CharacterBody2D
 		_hitBox = GetNode<Area2D>("HitBox");
 
 		_stats = StatsByKind[Type];
-		_health = Mathf.Max(1, Mathf.RoundToInt(_stats.Health * HealthScale));
+		// O zelador é um mini-chefe: a vida dele não muda com o ajuste da sala.
+		_health = Type == Kind.Janitor ? _stats.Health : Mathf.Max(1, Mathf.RoundToInt(_stats.Health * HealthScale));
+		_maxHealth = _health;
 
-		Texture2D art = Type switch { Kind.Fast => FastSprite, Kind.Tank => TankSprite, _ => NormalSprite };
+		Texture2D art = Type switch
+		{
+			Kind.Fast => FastSprite, Kind.Tank => TankSprite, Kind.Janitor => JanitorSprite, _ => NormalSprite,
+		};
 		_pixelArt = art != null;
 		if (_pixelArt)
 		{
 			// Cada tipo tem o seu desenho no tamanho certo: escala fixa de 4 (pixel art), apoiado nos pés.
 			_baseColor = Colors.White;
 			_sprite.Texture = art;
-			_sprite.Hframes = SpriteFrames + 1;
+			_sprite.Hframes = SpriteFrames + (Type == Kind.Janitor ? 2 : 1);
 			_sprite.Frame = (int)(GD.Randi() % SpriteFrames);
 			_sprite.Scale = Vector2.One * 4f;
 			_sprite.Position = new Vector2(0, -art.GetHeight() * 2f);
@@ -142,6 +152,9 @@ public partial class Enemy : CharacterBody2D
 
 		_hitBox.SetDeferred(Area2D.PropertyName.Monitorable, false);
 		_sprite.Modulate = new Color(_baseColor, 0f);
+
+		if (Type == Kind.Janitor)
+			JanitorReady();
 	}
 
 	public void TakeDamage(int damage, Vector2 hitDirection)
@@ -149,7 +162,8 @@ public partial class Enemy : CharacterBody2D
 		if (_health <= 0) return;
 
 		_health -= damage;
-		_knockback = hitDirection * KnockbackForce;
+		// O zelador é pesado: quase não é empurrado pelo tiro.
+		_knockback = hitDirection * KnockbackForce * (Type == Kind.Janitor ? 0.15f : 1f);
 		GetNode<AudioStreamPlayer2D>("Acerto").Play();
 		if (_pixelArt)
 		{
@@ -166,6 +180,8 @@ public partial class Enemy : CharacterBody2D
 
 		if (_health <= 0)
 			Die();
+		else if (Type == Kind.Janitor)
+			JanitorHurt();
 	}
 
 	private void Die()
@@ -206,6 +222,10 @@ public partial class Enemy : CharacterBody2D
 
 		_knockback = _knockback.MoveToward(Vector2.Zero, KnockbackDecay * dt);
 		Animate(dt);
+
+		// O zelador decide sozinho quando atacar (investida, vassourada, balde); fora dos ataques, persegue.
+		if (Type == Kind.Janitor && JanitorUpdate(dt))
+			return;
 
 		// Parado de propósito (ex.: fantasma pesado bloqueando a escada): não persegue, só machuca quem encosta.
 		if (Stationary)

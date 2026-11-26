@@ -2,18 +2,18 @@
 
 [ext_resource type="Script" path="res://objects/weapon/Weapon.cs" id="1_script"]
 [ext_resource type="Texture2D" path="res://sprites/weapons/escopeta.png" id="2_sprite"]
-[ext_resource type="Texture2D" path="res://sprites/fx/pellet.png" id="3_bullet"]
-[ext_resource type="AudioStream" path="res://sounds/player/tiro_escopeta.ogg" id="4_sound"]
+[ext_resource type="Texture2D" path="res://sprites/fx/grao_cafe.png" id="3_bullet"]
+[ext_resource type="AudioStream" path="res://sounds/player/tiro_escopeta_cafe.wav" id="4_sound"]
 
 [resource]
 script = ExtResource("1_script")
-Name = "Escopeta"
+Name = "Escopeta de Café"
 Cooldown = 0.65
 BulletSpeed = 520.0
 BulletScale = 0.12
 Damage = 1
 Piercing = false
-Color = Color(0.8, 0.4, 0.08, 1)
+Color = Color(0.85, 0.58, 0.32, 1)
 Shake = 5.5
 Recoil = 220.0
 Pellets = 5
@@ -23,4 +23,4 @@ SpreadDegrees = 8.0
 Sprite = ExtResource("2_sprite")
 BulletSprite = ExtResource("3_bullet")
 ShotSound = ExtResource("4_sound")
-ShotVolumeDb = -10.0
+ShotVolumeDb = -8.0
