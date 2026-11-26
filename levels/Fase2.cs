@@ -7,7 +7,9 @@ using System.Collections.Generic;
 //   chegada -> porta da biblioteca (fechada: falta um livro)
 //   -> Achados e Perdidos (trancado: a chave está com o zelador)
 //   -> Hall das Caronas (as cadeiras bloqueiam a saída, 3 ondas, o zelador solta a chave)
-//   -> Achados e Perdidos (caixas: uma tem o livro, algumas têm fantasma)
+//   -> Achados e Perdidos: o livro está no armário trancado com cadeado -> tarefa 2D (LockerPuzzle, estilo Among Us:
+//      girar o disco até a combinação do post-it do zelador e puxar a alavanca)
+//      (as caixas do chão da sala ainda podem ser quebradas: coisas perdidas e alguns fantasmas)
 //   -> devolução do livro -> biblioteca abre
 //   -> Bibliotecária (furtividade: barulho atrai, empurrar a estante esmaga) -> Canhão + chave da escada
 //   -> porta da escada -> escada até o 4º andar (levels/escada.tscn).
@@ -21,6 +23,8 @@ public partial class Fase2 : LevelBase
 	[Export] public Room Achados;
 	[Export] public Node2D Caixas;
 	[Export] public Pickup Livro;
+	// Armário dos Achados: [E] abre o puzzle das caixas; resolvido, o livro aparece na frente dele.
+	[Export] public Interactable Armario;
 	[Export] public Room Biblioteca;
 	[Export] public Librarian Bibliotecario;
 	[Export] public Pickup Canhao;
@@ -34,11 +38,9 @@ public partial class Fase2 : LevelBase
 	[Export] public Node2D CadeirasDaSaida;
 
 	private const string EscadaScene = "res://levels/escada.tscn";
-	private const int MinGhostsBeforeBook = 2;
+	private const int MinBoxGhosts = 2;
 	private const int MaxBoxGhosts = 5;
-	private const float GhostChanceBeforeBook = 0.45f;
-	private const float GhostChanceAfter = 0.25f;
-	private static readonly Vector2 PointerOffset = new(0, -40);
+	private const float GhostChance = 0.35f;
 	private static readonly Vector2 BossPointerOffset = new(0, -60);
 
 	private static readonly string[] BoxMessages =
@@ -89,11 +91,11 @@ public partial class Fase2 : LevelBase
 		};
 		PortaAchados.Unlocked += () => Hud.ShowMessage("A porta rangeu e abriu. Que bagunça...", 3f);
 
-		Hall.Entered += OnHallEntered;
 		Hall.Started += OnHallStarted;
 		Hall.Cleared += OnHallCleared;
 
 		SetupBoxes();
+		SetupCabinet();
 		Devolucao.Used += OnBookReturned;
 
 		Biblioteca.Started += () => Bibliotecario.StartFight();
@@ -106,9 +108,9 @@ public partial class Fase2 : LevelBase
 
 	// ---------- Achados e Perdidos ----------
 
-	// O conteúdo de cada caixa é decidido na hora em que ela quebra:
-	// - antes do livro saem pelo menos 2 fantasmas (obrigatório);
-	// - depois disso o livro pode sair em qualquer caixa, e a última caixa sempre tem o livro.
+	// Caixas do chão: o conteúdo é decidido na hora em que quebra. As primeiras sempre têm fantasma
+	// (até MinBoxGhosts); depois, às vezes fantasma, às vezes só uma coisa perdida. O livro não está nelas:
+	// está no armário (puzzle).
 	private void SetupBoxes()
 	{
 		foreach (Node child in Caixas.GetChildren())
@@ -119,45 +121,9 @@ public partial class Fase2 : LevelBase
 			}
 	}
 
-	private int BoxesLeft()
-	{
-		int count = 0;
-		foreach (PaperPile box in _boxes)
-			if (!box.IsDestroyed)
-				count++;
-		return count;
-	}
-
 	private void OnBoxOpened(PaperPile box)
 	{
-		int left = BoxesLeft(); // caixas fechadas depois desta
-
-		if (!_bookRevealed)
-		{
-			if (_boxGhosts < MinGhostsBeforeBook)
-			{
-				// Ainda faltam fantasmas: garante que sobra caixa para eles e para o livro.
-				int needed = MinGhostsBeforeBook - _boxGhosts;
-				if (left <= needed || GD.Randf() < GhostChanceBeforeBook)
-				{
-					ReleaseGhost(box);
-					return;
-				}
-			}
-			else if (left == 0 || GD.Randf() < 1f / (left + 1))
-			{
-				_bookRevealed = true;
-				Livro.Reveal(box.GlobalPosition);
-				Hud.ShowMessage("\"Cálculo I\"! Atrasado desde 2041.", 3f);
-				return;
-			}
-			else if (_boxGhosts < MaxBoxGhosts && GD.Randf() < GhostChanceAfter)
-			{
-				ReleaseGhost(box);
-				return;
-			}
-		}
-		else if (_boxGhosts < MaxBoxGhosts && GD.Randf() < GhostChanceAfter)
+		if (_boxGhosts < MinBoxGhosts || (_boxGhosts < MaxBoxGhosts && GD.Randf() < GhostChance))
 		{
 			ReleaseGhost(box);
 			return;
@@ -166,6 +132,29 @@ public partial class Fase2 : LevelBase
 		Hud.ShowMessage(BoxMessages[_messageIndex % BoxMessages.Length], 2.5f);
 		_messageIndex++;
 	}
+
+	private void SetupCabinet()
+	{
+		_lockerPuzzle = new LockerPuzzle();
+		AddChild(_lockerPuzzle);
+		Armario.Interacted += () => { if (!_bookRevealed) _lockerPuzzle.Open(); };
+		Armario.PlayerEntered += () =>
+		{
+			if (!_bookRevealed)
+				Hud.ShowMessage("O livro deve estar nesse armário... trancado com cadeado. Tem um post-it colado na porta.", 3.5f);
+		};
+		_lockerPuzzle.Solved += () =>
+		{
+			_bookRevealed = true;
+			Armario.Enabled = false;
+			Vector2 drop = Armario.GlobalPosition + new Vector2(-80, 40);
+			GhostNav.TryNearestFreeFloor(this, drop, out drop);
+			Livro.Reveal(drop);
+			Hud.ShowMessage("\"Cálculo I\"! Atrasado desde 2041.", 3f);
+		};
+	}
+
+	private LockerPuzzle _lockerPuzzle;
 
 	private void ReleaseGhost(PaperPile box)
 	{
@@ -182,10 +171,16 @@ public partial class Fase2 : LevelBase
 		PortaAchados.LockedMessage = AchadosFullMessage;
 	}
 
-	// O Hall só tranca depois de o jogador ter passado pela biblioteca e pelos Achados.
-	private void OnHallEntered()
+	// O Hall só tranca depois de o jogador ter passado pela biblioteca e pelos Achados,
+	// e só com ele já do lado de dentro da barreira de cadeiras. (Antes, a luta começava com o jogador
+	// ainda em cima da barreira: as cadeiras trancavam em cima dele e ele ficava preso ou era jogado para fora.)
+	private const float HallExitClearance = 160f;   // distância da borda direita do Hall (onde fica a barreira)
+
+	private void CheckHallStart()
 	{
-		if (_achadosTold && !Hall.IsCleared && !Hall.IsFighting)
+		if (!_achadosTold || Hall.IsCleared || Hall.IsFighting) return;
+		Rect2 inside = new(Hall.GlobalPosition + new Vector2(64, 64), Hall.Size - new Vector2(64 + HallExitClearance, 128));
+		if (inside.HasPoint(Player.GlobalPosition))
 			Hall.StartFight();
 	}
 
@@ -264,6 +259,7 @@ public partial class Fase2 : LevelBase
 	public override void _Process(double delta)
 	{
 		base._Process(delta);
+		CheckHallStart();
 		UpdateObjective();
 	}
 
@@ -282,7 +278,9 @@ public partial class Fase2 : LevelBase
 
 		if (Bibliotecario.IsStunned)
 		{
-			Hud.SetObjective("Ela está tonta! Fuja e se esconda antes que ela acorde");
+			Hud.SetObjective(Bibliotecario.IsTired
+				? "Ela parou para respirar: ATIRE!"
+				: "Ela está TONTA! Atire nela agora... e se esconda antes que ela acorde");
 			Hud.SetBoss(Bibliotecario.DisplayName, Bibliotecario.HealthRatio, false);
 			Hud.PointTo(Bibliotecario.GlobalPosition + BossPointerOffset, "BIBLIOTECÁRIA");
 			return;
@@ -291,8 +289,8 @@ public partial class Fase2 : LevelBase
 		if (Bibliotecario.InStealth)
 		{
 			Hud.SetObjective(Bibliotecario.IsInvestigating
-				? $"Ela ouviu! Dê a volta por trás da estante e, quando ela parar na frente, empurre com [Espaço] ({Bibliotecario.CrashesLeft} restantes)"
-				: $"Silêncio... Atire numa estante para os livros caírem e atraí-la ({Bibliotecario.CrashesLeft} restantes)");
+				? $"Ela ouviu! Dê a volta por trás da estante e, quando ela parar na frente, empurre com [Espaço] ({Bibliotecario.ShelvesLeft} de pé)"
+				: $"Silêncio... Atire numa estante para os livros caírem e atraí-la ({Bibliotecario.ShelvesLeft} de pé)");
 			Hud.SetBoss(Bibliotecario.DisplayName, Bibliotecario.HealthRatio, false);
 			ToppleShelf shelf = Bibliotecario.NearestShelf(Player.GlobalPosition);
 			if (shelf != null)
@@ -302,25 +300,75 @@ public partial class Fase2 : LevelBase
 
 		if (Bibliotecario.IsAttacking)
 		{
-			Hud.SetObjective("Derrote a Bibliotecária");
+			Hud.SetObjective("Nada mais de pé! Desvie dos livros e atire quando ela cansar");
 			Hud.SetBoss(Bibliotecario.DisplayName, Bibliotecario.HealthRatio, false);
 			Hud.PointTo(Bibliotecario.GlobalPosition + BossPointerOffset, "BIBLIOTECÁRIA");
 			return;
 		}
 
-		if (Bibliotecario.IsDefeated || _libraryOpen || Hall.IsFighting)
+		// Hall das Caronas: barra de vida do zelador quando ele chega.
+		if (Hall.IsFighting)
 		{
 			Hud.SetObjective("");
-			Hud.HidePointer();
+			Enemy zelador = Hall.FinalEnemy;
+			if (IsInstanceValid(zelador))
+			{
+				_janitorShown = true;
+				Hud.SetBoss("ZELADOR", zelador.HealthRatio, false);
+				Hud.PointTo(zelador.GlobalPosition + BossPointerOffset, "ZELADOR");
+			}
+			else
+				Hud.HidePointer();
 			return;
 		}
+		if (_janitorShown)
+		{
+			_janitorShown = false;
+			Hud.HideBoss();
+		}
 
-		Objective("Vá até a biblioteca", PortaBiblioteca.GlobalPosition, "BIBLIOTECA");
+		UpdateGuide();
 	}
+
+	private bool _janitorShown;
+
+	// Fora das lutas: a seta sempre aponta para o próximo passo da fase.
+	// O texto fica curto de propósito: o porquê de cada passo vem das mensagens das portas.
+	private void UpdateGuide()
+	{
+		if (!_libraryTold)
+			Objective("Vá até a biblioteca", DoorPoint(PortaBiblioteca), "BIBLIOTECA");
+		else if (!_achadosTold)
+			Objective("", DoorPoint(PortaAchados), "ACHADOS E PERDIDOS");
+		else if (!Hall.IsCleared)
+			Objective("", CentroHall.GlobalPosition, "HALL DAS CARONAS");
+		else if (!Chave.IsCollected && PortaAchados.IsLocked)
+			Objective("", Chave.GlobalPosition, "CHAVE");
+		else if (PortaAchados.IsLocked)
+			Objective("", DoorPoint(PortaAchados), "ACHADOS E PERDIDOS");
+		else if (!_bookRevealed)
+			Objective("", Armario.GlobalPosition, "ARMÁRIO");
+		else if (!Livro.IsCollected && !_libraryOpen)
+			Objective("", Livro.GlobalPosition, "LIVRO");
+		else if (!_libraryOpen)
+			Objective("", Devolucao.GlobalPosition, "DEVOLUÇÃO");
+		else if (!Bibliotecario.IsDefeated)
+			Objective("", DoorPoint(PortaBiblioteca), "BIBLIOTECA");
+		else if (!Canhao.IsCollected)
+			Objective("", Canhao.GlobalPosition, "RIFLE");
+		else if (!ChaveEscada.IsCollected)
+			Objective("", ChaveEscada.GlobalPosition, "CHAVE DA ESCADA");
+		else
+			Objective("Suba pela escada", Escada.GlobalPosition, "ESCADA");
+	}
+
+	// Porta: a origem fica na base; o meio dela fica meia altura acima.
+	private static Vector2 DoorPoint(Door door) => door.GlobalPosition + new Vector2(0, -door.Size.Y / 2);
+
 
 	private void Objective(string text, Vector2 target, string label)
 	{
 		Hud.SetObjective(text);
-		Hud.PointTo(target + PointerOffset, label);
+		Hud.PointTo(target, label);
 	}
 }

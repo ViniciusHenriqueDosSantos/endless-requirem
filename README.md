@@ -6,7 +6,7 @@ Jogo de ação e tiro top-down feito em **Godot 4.7.2 (.NET / C#)** para a disci
 
 > Estado atual: **Fases 1 e 2 completas em cinza**.
 > - Fase 1: Entrada → Portaria → RU → Corredor → Cantina (Tia da Cantina) → Elevador.
-> - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (chave) → caixas (livro) → devolução → Bibliotecária (surda, enxerga pela luz: furtividade e caçada) → escada desabando atrás de você (8 lances do térreo ao 4º andar, com giro de câmera a cada lance; barricadas, degraus quebrados, lâmpadas caindo e extintores rolando).
+> - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (ondas + o Zelador, que solta a chave) → armário dos Achados (tarefa 2D estilo Among Us: girar o cadeado com a combinação do post-it e puxar a alavanca: o livro) → devolução → Bibliotecária (surda, enxerga pela luz: derrube estantes nela e atire enquanto ela está tonta; acordada, ela bloqueia e desvia dos tiros) → escada desabando atrás de você (8 lances do térreo ao 4º andar, com giro de câmera a cada lance; barricadas, degraus quebrados, lâmpadas caindo e extintores rolando).
 > - Arte: a **Fase 1 já tem pixel art** baseada no campus de verdade (tour 360° da UNIFESP SJC), à noite e abandonada, com lanterna e luzes piscando. Veja `tools/art/README.md`.
 > - Fase 3 (4º andar, laboratórios, atalho F4): porta de vidro (no pé do corredor de vidro) da área final com senha → câmeras apitam, alarme e fantasmas no corredor, laboratórios destrancam → laboratórios seguros: fiação e distribuidor (Lab 1) e computador com login (aluno/unifesp) e o site da universidade (Lab 2) → senha (sorteada a cada partida) abre a porta e some com os fantasmas. Já tem o auditório (área restrita, porta com E, palco) ligado à área final; o diploma e o chefe vêm depois. Salas de teste (`levels/test_rooms*.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
 
@@ -68,11 +68,11 @@ levels/test_rooms.tscn  sala de teste da MVP 1
 main.tscn / Main.cs     arena antiga de ondas infinitas
 objects/                uma pasta por objeto do jogo
   player/               jogador: movimento, cambalhota, vida, tiro
-  enemy/                inimigos (Normal, Fast, Tank)
+  enemy/                inimigos (Normal, Fast, Tank) e o Zelador (Enemy.Janitor.cs: investida, vassourada, balde)
   bullet/               projétil
   weapon/               armas (cada .tres é uma arma)
   heal_drop/            item de cura
-  hud/                  textos na tela
+  hud/                  textos na tela e a seta de direção (GuideArrow: segue o caminho pelo chão até o objetivo)
   obstacle/             obstáculo
   door/                 porta que tranca e abre (pode exigir um item, como a catraca)
   room/                 sala: ondas, sobrevivência por tempo ou segura
@@ -83,7 +83,8 @@ objects/                uma pasta por objeto do jogo
   area_trigger/         área que avisa quando o jogador entra (elevador)
   message_screen/       tela cheia: REPROVADO, fim de fase
   boss/                 chefe (um código só; cada chefe é um .tres, ex.: tia_cantina.tres)
-  librarian/            Bibliotecária (lanterna, caçada) e as luminárias das salas de estudo
+  librarian/            Bibliotecária (lanterna, caçada) e as estantes que tombam (ficam no chão)
+  achados/              tarefa 2D do armário dos Achados e Perdidos (cadeado de disco + alavanca)
   decor/                assinaturas dos alunos nas paredes (Fase 2)
   escada/               escada: desabamento, barricada, lâmpada caindo e extintor rolando
   fase3/                Fase 3: ponto de interagir (E), aparelho que brilha, área segura, telas 2D (senha, fios, site)

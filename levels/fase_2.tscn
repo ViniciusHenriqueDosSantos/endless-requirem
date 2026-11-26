@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" path="res://objects/librarian/estante_bamba.tscn" id="shelf"]
 [ext_resource type="Resource" path="res://objects/librarian/bibliotecario.tres" id="bib"]
 [ext_resource type="Script" path="res://objects/decor/Signatures.cs" id="sig"]
+[ext_resource type="Script" path="res://objects/fase3/Interactable.cs" id="interactable"]
 [ext_resource type="Resource" path="res://objects/weapon/cannon.tres" id="cannon"]
 [ext_resource type="PackedScene" path="res://objects/night/night_overlay.tscn" id="night_overlay"]
 [ext_resource type="PackedScene" path="res://objects/night/flicker_light.tscn" id="flicker_light"]
@@ -62,7 +63,7 @@
 [ext_resource type="Texture2D" path="res://sprites/props/fase1/entulho.png" id="tex_props_fase1_entulho"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/cadeira_espera_caida.png" id="tex_props_fase2_cadeira_espera_caida"]
 
-[node name="Fase2" type="Node2D" node_paths=PackedStringArray("Player", "Hud", "Screen", "PortaBiblioteca", "Devolucao", "PortaAchados", "Hall", "Chave", "Achados", "Caixas", "Livro", "Biblioteca", "Bibliotecario", "Canhao", "ChaveEscada", "Escada", "CentroHall", "CadeirasDaSaida")]
+[node name="Fase2" type="Node2D" node_paths=PackedStringArray("Player", "Hud", "Screen", "PortaBiblioteca", "Devolucao", "PortaAchados", "Hall", "Chave", "Achados", "Caixas", "Livro", "Armario", "Biblioteca", "Bibliotecario", "Canhao", "ChaveEscada", "Escada", "CentroHall", "CadeirasDaSaida")]
 y_sort_enabled = true
 script = ExtResource("fase2")
 Player = NodePath("Player")
@@ -76,6 +77,7 @@ Chave = NodePath("Chave")
 Achados = NodePath("Achados")
 Caixas = NodePath("Achados/Caixas")
 Livro = NodePath("Livro")
+Armario = NodePath("ArmarioPuzzle")
 Biblioteca = NodePath("Biblioteca")
 Bibliotecario = NodePath("Biblioteca/Bibliotecario")
 Canhao = NodePath("Canhao")
@@ -184,6 +186,7 @@ EnemyHealthScale = 0.6
 EnemySpeedScale = 1.1
 SpawnAnywhere = true
 FinalWaveTank = true
+FinalEnemyKind = 3
 StartOnEnter = false
 FinalWaveMessage = "O ZELADOR CHEGOU!"
 RespawnPoint = NodePath("Respawn")
@@ -401,6 +404,13 @@ Color = Color(0.2, 0.2, 0.22, 1)
 Texture = ExtResource("tex_props_fase2_cadeira_espera")
 Depth = 22
 
+[node name="ArmarioPuzzle" type="Area2D" parent="."]
+position = Vector2(2240, 1232)
+script = ExtResource("interactable")
+Size = Vector2(128, 128)
+Prompt = "Abrir o cadeado"
+PromptHeight = 120
+
 [node name="Livro" parent="." instance=ExtResource("pickup")]
 position = Vector2(2048, 1280)
 ItemId = "livro"
@@ -486,6 +496,42 @@ Depth = 64
 Tall = true
 BlocksGhosts = true
 Texture = ExtResource("tex_props_fase2_estante3")
+
+[node name="EstanteCurta1" parent="Biblioteca/Estantes" instance=ExtResource("shelf")]
+position = Vector2(960, 896)
+Size = Vector2(256, 128)
+Color = Color(0.48, 0.34, 0.22, 1)
+Depth = 64
+Tall = true
+BlocksGhosts = true
+Texture = ExtResource("tex_props_fase2_estante1")
+
+[node name="EstanteCurta2" parent="Biblioteca/Estantes" instance=ExtResource("shelf")]
+position = Vector2(960, 1216)
+Size = Vector2(256, 128)
+Color = Color(0.48, 0.34, 0.22, 1)
+Depth = 64
+Tall = true
+BlocksGhosts = true
+Texture = ExtResource("tex_props_fase2_estante2")
+
+[node name="EstanteCurta3" parent="Biblioteca/Estantes" instance=ExtResource("shelf")]
+position = Vector2(1088, 1472)
+Size = Vector2(256, 128)
+Color = Color(0.48, 0.34, 0.22, 1)
+Depth = 64
+Tall = true
+BlocksGhosts = true
+Texture = ExtResource("tex_props_fase2_estante3")
+
+[node name="EstanteCurta4" parent="Biblioteca/Estantes" instance=ExtResource("shelf")]
+position = Vector2(1216, 704)
+Size = Vector2(256, 128)
+Color = Color(0.48, 0.34, 0.22, 1)
+Depth = 64
+Tall = true
+BlocksGhosts = true
+Texture = ExtResource("tex_props_fase2_estante0")
 
 [node name="Peca1" parent="Biblioteca" instance=ExtResource("prop")]
 position = Vector2(224, 1528)
@@ -672,7 +718,7 @@ position = Vector2(800, 928)
 position = Vector2(96, 672)
 
 [node name="Bibliotecario" parent="Biblioteca" node_paths=PackedStringArray("Patrol", "Shelves") instance=ExtResource("librarian")]
-position = Vector2(1024, 1152)
+position = Vector2(96, 1024)
 Config = ExtResource("bib")
 Patrol = NodePath("../Patrulha")
 Shelves = NodePath("../Estantes")

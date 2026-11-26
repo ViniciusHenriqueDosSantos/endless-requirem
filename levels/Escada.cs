@@ -214,9 +214,11 @@ void fragment() {
 				AdvanceCollapse(dt);
 				if (_state != State.Running) return;
 				CheckTopOfFlight();
+				UpdatePointer();
 				break;
 
 			case State.Spinning:
+				Hud.HidePointer();
 				UpdateSpin(dt);
 				break;
 
@@ -471,6 +473,16 @@ void fragment() {
 		_rumble.VolumeDb = Mathf.Lerp(-18f, 2f, _danger);
 		float pulse = 0.85f + 0.15f * Mathf.Sin(Time.GetTicksMsec() / 90f);
 		_redEdge.SetShaderParameter("strength", _danger * 0.85f * pulse);
+	}
+
+	// Seta de direção: o alto do lance atual (no último, a porta do 4º andar).
+	private void UpdatePointer()
+	{
+		if (_state != State.Running) return;
+		if (_exitShown)
+			Hud.PointTo(Saida.GlobalPosition + Saida.Size / 2, "4º ANDAR");
+		else
+			Hud.PointTo(new Vector2(_flight % 2 == 0 ? ColunaA : ColunaB, AltoDoLance), "SUBA!");
 	}
 
 	// ---------- fim ----------

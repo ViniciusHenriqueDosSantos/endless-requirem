@@ -9,11 +9,15 @@ using System.Collections.Generic;
 //     Tiro faz pouco barulho (só quem está perto ouve); livros caindo se ouvem na biblioteca inteira.
 //   - Armadilha: atire numa estante (os livros caem e fazem barulho), dê a volta por trás dela sem ser vista e,
 //     quando a Bibliotecária parar na frente para olhar, empurre ([Espaço]): a estante tomba em cima dela.
-//   - Tiro não machuca: só estante na cabeça. Três vezes e ela cai. A cada vez ela volta mais rápida.
+//   - Acordada, ela se defende dos tiros: bloqueia com um livro (às vezes rebatendo o tiro de volta)
+//     ou dá um passo para o lado. Só leva dano de tiro enquanto está TONTA.
+//   - Estante na cabeça dá pouco dano, mas deixa ela tonta: é a hora de descarregar a arma nela.
+//     A cada vida perdida ela fica mais rápida.
 //   - Caçada: se ela te vê, corre atrás e joga livros. Suma da vista dela por alguns segundos e ela vai
 //     procurar onde te viu por último.
-//   - Esmagada, fica tonta uns segundos e depois acorda furiosa, já te caçando: hora de fugir e se esconder.
-//   - As estantes caídas voltam a ficar de pé depois de um tempo.
+//   - Tonta, depois de uns segundos acorda furiosa, já te caçando: hora de fugir e se esconder.
+//   - O que cai fica no chão (não levanta sozinho). Se não sobrar nada de pé, ela parte para o ataque
+//     e, cansada, para de tempos em tempos para respirar (fica tonta de novo).
 // Não chama fantasmas: na biblioteca são só vocês dois.
 [Tool]
 public partial class Librarian : CharacterBody2D, IHittable
@@ -32,25 +36,41 @@ public partial class Librarian : CharacterBody2D, IHittable
 	[Export] public PackedScene ProjectileScene;
 
 	// Segundos fora da vista dela para ela desistir da caçada.
-	[Export] public float HuntTime = 6f;
-	// Estantes na cabeça para ela cair.
-	[Export] public int CrashesToWin = 3;
+	[Export] public float HuntTime = 7f;
+	// Dano de uma estante na cabeça (pouco: o forte é atirar enquanto ela está tonta).
+	[Export] public int CrashDamage = 8;
 	// Até onde ela ouve um tiro (px). Estante balançando é bem mais alto (ToppleShelf.NoiseRadius).
-	[Export] public float GunNoiseRadius = 300f;
+	[Export] public float GunNoiseRadius = 320f;
+	// Para onde ela olha quando a luta começa (graus; -90 = para cima, de costas para a entrada).
+	[Export] public float StartFacingDegrees = -90f;
 
 	private enum Phase { Idle, Patrol, Investigate, Hunt, Stunned, Attack, Dead }
 
 	private static readonly Vector2 BodySize = new(88, 116);
 	private static readonly Vector2 Eye = new(0, -60);
 
-	private const float VisionRange = 430f;
+	private const float VisionRange = 470f;
 	private const float VisionHalfAngle = 0.5f;  // radianos (~29 graus)
 	private const float PatrolSpeedFactor = 0.55f;
 	private const float InvestigateSpeedFactor = 0.95f;
 	private const float HuntSpeedFactor = 1.1f;
 	private const float WaypointPause = 1.0f;
 	private const float LookAroundTime = 3.2f;
-	private const float StunTime = 4.5f;
+	private const float StunTime = 5f;
+	// Sem nada de pé para derrubar: depois de algumas rajadas ela para, cansada, por este tempo.
+	private const float TiredTime = 3.5f;
+	private const int FansBeforeTired = 3;
+
+	// Defesa contra tiros (acordada): bloqueia com o livro e às vezes rebate; ou desvia para o lado.
+	private const float BlockShowTime = 0.25f;
+	private const float DeflectCooldown = 0.35f;
+	private const float DeflectChance = 0.35f;
+	private const float DodgeCooldown = 1.1f;
+	private const float DodgeSpeed = 520f;
+	private const float DodgeTime = 0.18f;
+
+	// Cor dela: um pouco apagada (fantasma de biblioteca escura, não uma lâmpada).
+	private static readonly Color Tint = new(0.62f, 0.6f, 0.72f);
 	private const float TurnSpeed = 5f;
 	private const float FeelHitTime = 1.4f;
 
@@ -62,7 +82,12 @@ public partial class Librarian : CharacterBody2D, IHittable
 
 	private Phase _phase = Phase.Idle;
 	private int _health;
-	private int _crashes;
+	private int _fansSinceRest;
+	private float _blockTimer;
+	private float _deflectTimer;
+	private float _dodgeCooldown;
+	private float _dodgeTimer;
+	private Vector2 _dodgeVelocity;
 	private float _facing = Mathf.Pi / 2;
 	private float _targetFacing = Mathf.Pi / 2;
 	private int _patrolIndex;
@@ -91,7 +116,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 	private readonly List<BossProjectile> _projectiles = new();
 
 	public bool IsFighting => _phase is Phase.Patrol or Phase.Investigate or Phase.Hunt or Phase.Stunned or Phase.Attack;
-	public bool InStealth => _phase is Phase.Patrol or Phase.Investigate or Phase.Hunt or Phase.Stunned;
+	public bool InStealth => !_tired && _phase is Phase.Patrol or Phase.Investigate or Phase.Hunt or Phase.Stunned;
 	public bool IsHunting => _phase == Phase.Hunt;
 	public bool IsInvestigating => _phase == Phase.Investigate;
 	public bool IsStunned => _phase == Phase.Stunned;
@@ -100,9 +125,22 @@ public partial class Librarian : CharacterBody2D, IHittable
 	public float HuntTimeLeft => _huntTimer;
 	public float HealthRatio => Config == null ? 0f : (float)_health / Config.Health;
 	public string DisplayName => Config?.Name ?? "Bibliotecária";
-	public int CrashesLeft => Mathf.Max(0, CrashesToWin - _crashes);
-	// A cada estante na cabeça ela volta mais rápida.
-	private float Speed => Config.MoveSpeed * (1f + 0.15f * _crashes);
+	// Quantas coisas de pé ainda dá para derrubar nela.
+	public int ShelvesLeft
+	{
+		get
+		{
+			int count = 0;
+			foreach (ToppleShelf shelf in _shelves)
+				if (shelf.IsStanding) count++;
+			return count;
+		}
+	}
+	// Sem nada de pé: luta aberta (ela cansa de tempos em tempos).
+	public bool IsTired => _phase == Phase.Stunned && _tired;
+	private bool _tired;
+	// Quanto mais machucada, mais rápida.
+	private float Speed => Config.MoveSpeed * (1f + 0.35f * (1f - HealthRatio));
 
 	// Estante de pé mais perto de um ponto (para a seta de objetivo).
 	public ToppleShelf NearestShelf(Vector2 from)
@@ -176,8 +214,9 @@ public partial class Librarian : CharacterBody2D, IHittable
 
 		FindPlayer();
 		_patrolIndex = 0;
+		_facing = _targetFacing = Mathf.DegToRad(StartFacingDegrees);
 		StartPatrol();
-		ShowMessage("Ela quase não enxerga, mas ouve TUDO. Atire numa estante para atraí-la... e empurre a estante em cima dela.", 5f);
+		ShowMessage("Ela quase não enxerga, mas ouve TUDO. Derrube estantes em cima dela... e atire enquanto ela estiver tonta.", 5f);
 	}
 
 	private void StartPatrol()
@@ -230,35 +269,81 @@ public partial class Librarian : CharacterBody2D, IHittable
 		if (!IsFighting || _phase == Phase.Attack) return;
 		if (shelf.FallZone.HasPoint(GlobalPosition))
 		{
-			_crashes++;
-			int damage = Mathf.CeilToInt(Config.Health / (float)CrashesToWin);
-			_health -= damage;
+			_health -= CrashDamage;
 			_flash = HitFlashTime * 3;
 			FreeProjectiles();
-			if (_health <= 0 || _crashes >= CrashesToWin)
+			if (_health <= 0)
 			{
 				Die();
 				return;
 			}
-			_phase = Phase.Stunned;
-			_stunTimer = StunTime;
-			ShowMessage(CrashesLeft == 1 ? "CRASH! Só mais uma! Fuja antes que ela acorde!" : $"CRASH! Ela ficou tonta... fuja e se esconda! Faltam {CrashesLeft}.", 3f);
+			Stun(StunTime, false);
+			ShowMessage("CRASH! Ela ficou TONTA: atire nela agora!", 3f);
+			return;
 		}
+
+	}
+
+	private void Stun(float time, bool tired)
+	{
+		_phase = Phase.Stunned;
+		_tired = tired;
+		_stunTimer = time;
+		_dodgeTimer = 0;
+	}
+
+	// Nada mais para derrubar: ela vem para cima, mas cansa e para de tempos em tempos.
+	private void StartOpenFight()
+	{
+		_phase = Phase.Attack;
+		_tired = false;
+		_fansSinceRest = 0;
+		_fireTimer = 0.8f;
+		ShowMessage("Não sobrou nada de pé! Ela vem com tudo... mas cansa. Atire quando ela parar para respirar.", 4.5f);
 	}
 
 	public void TakeHit(int damage, Vector2 direction)
 	{
-		if (_phase is Phase.Patrol or Phase.Investigate)
+		if (!IsFighting) return;
+
+		// Tonta (ou cansada): agora o tiro machuca.
+		if (_phase == Phase.Stunned)
 		{
-			// Não se machuca, mas sente. Vira para o lado de onde veio.
-			if (direction != Vector2.Zero)
-				_targetFacing = (-direction).Angle();
-			_feelTimer = FeelHitTime;
+			_health -= damage;
+			_flash = HitFlashTime;
+			if (_health <= 0)
+				Die();
 			return;
 		}
 
-		// Tiro não machuca: só estante na cabeça. Mas ela sente e fica mais brava.
-		_flash = HitFlashTime;
+		// Acordada: defende. Vira para o lado de onde veio o tiro.
+		if (direction != Vector2.Zero)
+			_targetFacing = (-direction).Angle();
+		if (_phase is Phase.Patrol or Phase.Investigate)
+			_feelTimer = FeelHitTime;
+		Defend(direction);
+	}
+
+	// Bloqueia com o livro (às vezes rebate de volta) ou dá um passo para o lado.
+	private void Defend(Vector2 direction)
+	{
+		_blockTimer = BlockShowTime;
+
+		if (_dodgeCooldown <= 0 && direction != Vector2.Zero && GD.Randf() < 0.5f)
+		{
+			_dodgeCooldown = DodgeCooldown;
+			_dodgeTimer = DodgeTime;
+			_dodgeVelocity = direction.Orthogonal() * (GD.Randf() < 0.5f ? -1f : 1f) * DodgeSpeed;
+			return;
+		}
+
+		if (_deflectTimer <= 0 && GD.Randf() < DeflectChance && IsInstanceValid(_player))
+		{
+			_deflectTimer = DeflectCooldown;
+			Vector2 origin = GlobalPosition + Eye;
+			Vector2 aim = (_player.GlobalPosition + new Vector2(0, -32) - origin).Normalized();
+			SpawnBook(origin + aim * 40f, aim);
+		}
 	}
 
 	private void Die()
@@ -283,10 +368,12 @@ public partial class Librarian : CharacterBody2D, IHittable
 
 		_phase = Phase.Idle;
 		_health = Config.Health;
-		_crashes = 0;
+		_tired = false;
+		_fansSinceRest = 0;
+		_dodgeTimer = _dodgeCooldown = _deflectTimer = _blockTimer = 0;
 		GlobalPosition = _home;
 		Velocity = Vector2.Zero;
-		_facing = _targetFacing = Mathf.Pi / 2;
+		_facing = _targetFacing = Mathf.DegToRad(StartFacingDegrees);
 		_huntTimer = _feelTimer = _pauseTimer = _stunTimer = 0;
 		Show();
 		_collision.SetDeferred(CollisionShape2D.PropertyName.Disabled, false);
@@ -301,6 +388,9 @@ public partial class Librarian : CharacterBody2D, IHittable
 		_time += dt;
 		if (_flash > 0) _flash -= dt;
 		if (_throwTimer > 0) _throwTimer -= dt;
+		if (_blockTimer > 0) _blockTimer -= dt;
+		if (_deflectTimer > 0) _deflectTimer -= dt;
+		if (_dodgeCooldown > 0) _dodgeCooldown -= dt;
 		QueueRedraw();
 	}
 
@@ -311,6 +401,12 @@ public partial class Librarian : CharacterBody2D, IHittable
 		if (!IsInstanceValid(_player)) return;
 
 		float dt = (float)delta;
+		if (_dodgeTimer > 0) _dodgeTimer -= dt;
+
+		// Não sobrou nada de pé para derrubar: luta aberta.
+		if (_phase is Phase.Patrol or Phase.Investigate or Phase.Hunt && ShelvesLeft == 0)
+			StartOpenFight();
+
 		switch (_phase)
 		{
 			case Phase.Patrol: UpdatePatrol(dt); break;
@@ -485,7 +581,21 @@ public partial class Librarian : CharacterBody2D, IHittable
 	{
 		_stunTimer -= dt;
 		StandStill();
-		if (_stunTimer <= 0)
+		if (_stunTimer > 0) return;
+
+		if (ShelvesLeft == 0)
+		{
+			// Nada mais de pé: volta para a luta aberta.
+			bool first = !_tired;
+			_tired = false;
+			_phase = Phase.Attack;
+			_fansSinceRest = 0;
+			_fireTimer = 0.5f;
+			if (first)
+				ShowMessage("Ela acordou FURIOSA... e não sobrou nada de pé! Atire quando ela parar para respirar.", 4f);
+			return;
+		}
+
 		{
 			// Acordou furiosa: sabe onde você está.
 			_phase = Phase.Hunt;
@@ -503,6 +613,14 @@ public partial class Librarian : CharacterBody2D, IHittable
 		Vector2 toPlayer = _player.GlobalPosition - GlobalPosition;
 		_targetFacing = toPlayer.Angle();
 		Chase(dt, toPlayer.Length(), toPlayer, true);
+
+		// Cansou: para para respirar (e fica vulnerável).
+		if (_fansSinceRest >= FansBeforeTired)
+		{
+			_fansSinceRest = 0;
+			Stun(TiredTime, true);
+			ShowMessage("Ela parou para respirar: ATIRE!", 2f);
+		}
 	}
 
 	// Corre atrás mantendo distância e atira leques de livros.
@@ -525,7 +643,8 @@ public partial class Librarian : CharacterBody2D, IHittable
 		if (_fireTimer <= 0 && canShoot)
 		{
 			FireFan();
-			_fireTimer = Config.FireInterval * (HealthRatio < 0.5f ? 0.75f : 1f);
+			_fansSinceRest++;
+			_fireTimer = Config.FireInterval * (HealthRatio < 0.5f ? 0.7f : 1f);
 		}
 	}
 
@@ -533,9 +652,12 @@ public partial class Librarian : CharacterBody2D, IHittable
 
 	private void StandStill()
 	{
-		Velocity = Vector2.Zero;
+		Velocity = DodgeVelocity();
 		MoveAndSlide();
 	}
+
+	// Passo para o lado (desviando de tiro), somado a qualquer movimento.
+	private Vector2 DodgeVelocity() => _dodgeTimer > 0 && _phase != Phase.Stunned ? _dodgeVelocity : Vector2.Zero;
 
 	private void MoveTowards(Vector2 target, float speed, float dt, bool faceMovement = true)
 	{
@@ -555,7 +677,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 		}
 
 		dir = dir.Normalized();
-		Velocity = dir * speed;
+		Velocity = dir * speed + DodgeVelocity();
 		MoveAndSlide();
 		if (faceMovement)
 			_targetFacing = dir.Angle();
@@ -589,20 +711,25 @@ public partial class Librarian : CharacterBody2D, IHittable
 		for (int i = 0; i < Config.Pellets; i++)
 		{
 			float spread = (i - (Config.Pellets - 1) / 2f) * Config.SpreadDegrees;
-			BossProjectile projectile = ProjectileScene.Instantiate<BossProjectile>();
-			projectile.Direction = aim.Rotated(Mathf.DegToRad(spread));
-			projectile.Speed = Config.ProjectileSpeed;
-			projectile.Color = Config.ProjectileColor;
-			if (Config.ProjectileSprite != null)
-			{
-				projectile.Texture = Config.ProjectileSprite;
-				projectile.Frames = Config.ProjectileFrames;
-			}
-			projectile.TreeExiting += () => _projectiles.Remove(projectile);
-			_projectiles.Add(projectile);
-			GetParent().AddChild(projectile);
-			projectile.GlobalPosition = origin;
+			SpawnBook(origin, aim.Rotated(Mathf.DegToRad(spread)));
 		}
+	}
+
+	private void SpawnBook(Vector2 origin, Vector2 direction)
+	{
+		BossProjectile projectile = ProjectileScene.Instantiate<BossProjectile>();
+		projectile.Direction = direction;
+		projectile.Speed = Config.ProjectileSpeed;
+		projectile.Color = Config.ProjectileColor;
+		if (Config.ProjectileSprite != null)
+		{
+			projectile.Texture = Config.ProjectileSprite;
+			projectile.Frames = Config.ProjectileFrames;
+		}
+		projectile.TreeExiting += () => _projectiles.Remove(projectile);
+		_projectiles.Add(projectile);
+		GetParent().AddChild(projectile);
+		projectile.GlobalPosition = origin;
 	}
 
 	private void FreeProjectiles()
@@ -630,9 +757,9 @@ public partial class Librarian : CharacterBody2D, IHittable
 		{
 			Color light = _phase switch
 			{
-				Phase.Hunt or Phase.Attack => new Color(1f, 0.3f, 0.25f, 0.13f),
-				Phase.Investigate => new Color(1f, 0.65f, 0.3f, 0.11f),
-				_ => new Color(1f, 0.92f, 0.5f, 0.09f),
+				Phase.Hunt or Phase.Attack => new Color(1f, 0.3f, 0.25f, 0.1f),
+				Phase.Investigate => new Color(1f, 0.65f, 0.3f, 0.08f),
+				_ => new Color(1f, 0.92f, 0.5f, 0.06f),
 			};
 			const int segments = 10;
 			Vector2[] cone = new Vector2[segments + 2];
@@ -646,7 +773,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 		}
 
 		Rect2 body = new(-BodySize.X / 2, -BodySize.Y, BodySize.X, BodySize.Y);
-		Color color = _flash > 0 ? Colors.White : Config.BodyColor;
+		Color color = _flash > 0 ? Colors.White : Config.BodyColor * Tint;
 		float labelY = -BodySize.Y - 52;
 		if (Config.Sprite != null)
 		{
@@ -663,7 +790,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 			Rect2 dest = new(-size.X / 2, -size.Y + 8, size.X, size.Y);
 			if (left) dest = new Rect2(dest.Position.X + size.X, dest.Position.Y, -size.X, size.Y);
 			DrawTextureRectRegion(Config.Sprite, dest, new Rect2(frame * frameSize.X, 0, frameSize.X, frameSize.Y),
-				_flash > 0 ? new Color(2.5f, 2.5f, 2.5f) : Colors.White);
+				_flash > 0 ? new Color(2.5f, 2.5f, 2.5f) : Tint);
 			labelY = -size.Y - 8;
 		}
 		else
@@ -672,6 +799,18 @@ public partial class Librarian : CharacterBody2D, IHittable
 			DrawRect(body, color);
 			DrawRect(body, Config.BodyColor.Darkened(0.5f), false, 3f);
 			DrawCircle(new Vector2(0, -BodySize.Y - 16), 24, color);
+		}
+
+		// Bloqueando um tiro: o livro aberto na frente, com um brilho azul.
+		if (_blockTimer > 0 && _phase != Phase.Stunned && !editor)
+		{
+			Vector2 dir = Vector2.FromAngle(_facing);
+			Vector2 center = Eye + dir * 46f;
+			float a = Mathf.Clamp(_blockTimer / BlockShowTime, 0f, 1f);
+			DrawArc(center, 30f, _facing - 1.1f, _facing + 1.1f, 12, new Color(0.55f, 0.8f, 1f, 0.8f * a), 5f);
+			Vector2 side = dir.Orthogonal() * 16f;
+			Vector2[] book = { center + side, center + dir * 6f, center - side, center - side - dir * 10f, center + side - dir * 10f };
+			DrawColoredPolygon(book, new Color(0.55f, 0.32f, 0.22f, a));
 		}
 
 		Font font = ThemeDB.FallbackFont;

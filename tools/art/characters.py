@@ -209,6 +209,80 @@ def ghost_sheet(kind):
     return sheet(ghost_frames(kind) + ghost_frames(kind, hurt=True)[:1], 5)
 
 
+# ======================================================================== ZELADOR (28x32)
+# O fantasma do zelador: macacão azul, boné, bigode, molho de chaves no cinto e a vassoura.
+# Quadros: 0..3 flutuando, 4 = careta (levou tiro), 5 = vassoura no alto (preparando a vassourada/investida).
+def zelador_bone(cv, frame, bob, cx, top):
+    y = int(top) - 1
+    navy, navy_l = hexc("26375e"), hexc("3a5288")
+    cv.rect(int(cx) - 6, y - 2, 12, 3, navy); cv.hline(int(cx) - 5, y - 2, 10, navy_l)
+    cv.rect(int(cx) - 7, y + 1, 15, 1, hexc("1b2645"))            # aba
+    cv.rect(int(cx) - 1, y - 1, 3, 2, hexc("f2c230"))              # emblema
+
+
+def zelador_macacao(cv, frame, bob, cx, top):
+    blue, blue_d = hexc("3f63a8"), hexc("2c4680")
+    y0 = int(top) + 14
+    bottom = cv.h - 3 + bob
+    for y in range(y0, bottom + 1):
+        for x in range(cv.w):
+            if cv.get(x, y)[3]:
+                cv.put(x, y, blue_d if x > cx + 4 else blue)
+    for x in (int(cx) - 5, int(cx) + 4):                            # alças
+        cv.vline(x, int(top) + 9, 5, blue)
+        cv.put(x, int(top) + 9, hexc("f2c230"))
+    cv.rect(int(cx) - 2, y0 + 2, 5, 3, blue_d); cv.hline(int(cx) - 2, y0 + 2, 5, hexc("5a7fc4"))   # bolso
+
+
+def zelador_bigode(cv, frame, bob, cx, top):
+    y = int(top) + 10
+    c, c_d = hexc("6b6470"), hexc("47414d")
+    cv.hline(int(cx) - 3, y, 6, c); cv.hline(int(cx) - 4, y + 1, 8, c_d)
+    cv.put(int(cx) - 5, y + 2, c_d); cv.put(int(cx) + 4, y + 2, c_d)
+
+
+def zelador_chaves(cv, frame, bob, cx, top):
+    x, y = int(cx) - 8, int(top) + 18
+    gold, gold_d = hexc("f2c230"), hexc("b8901c")
+    cv.frame(x, y, 3, 3, gold)
+    sway = frame % 2
+    cv.vline(x - 1 + sway, y + 3, 3, gold_d); cv.vline(x + 1, y + 3, 4, gold); cv.vline(x + 3 - sway, y + 3, 2, gold_d)
+
+
+def zelador_vassoura(swing):
+    def draw(cv, frame, bob, cx, top):
+        stick, stick_d = hexc("b07a46"), hexc("7d5230")
+        straw, straw_d = hexc("e7c35a"), hexc("b8902e")
+        if swing:   # vassoura erguida por cima da cabeça
+            cv.line(cv.w - 4, int(top) + 16, 4, int(top) - 2, stick)
+            cv.line(cv.w - 3, int(top) + 16, 5, int(top) - 2, stick_d)
+            for i in range(5):
+                cv.line(1 + i, int(top) - 3 - (i % 2), 3 + i, int(top) + 2, straw if i % 2 else straw_d)
+        else:
+            x = cv.w - 3
+            cv.vline(x, int(top) + 4, cv.h - 9 - int(top) + bob, stick); cv.vline(x + 1, int(top) + 5, cv.h - 10 - int(top) + bob, stick_d)
+            by = cv.h - 6 + bob
+            cv.rect(x - 2, by, 6, 4, straw); cv.vline(x - 2, by, 4, straw_d); cv.vline(x + 2, by + 1, 3, straw_d)
+            cv.hline(x - 2, by, 6, hexc("c0392b"))                   # amarração vermelha
+        cv.rect(cv.w - 6, int(top) + 15, 3, 3, hexc("bccbd8"))       # mão
+    return draw
+
+
+def zelador_frames():
+    body, m, d = hexc("e2ebf1"), hexc("b9c8d6"), hexc("8a9cb3")
+    frames = []
+    for f in range(6):
+        hurt, swing = f == 4, f == 5
+        extras = {"draw": [zelador_macacao, zelador_bone, zelador_bigode, zelador_chaves, zelador_vassoura(swing)],
+                  "top": 3, "eye_dy": -5, "hurt": hurt}
+        frames.append(ghost(28, 32, f % 4, body, m, d, hexc("ffcf3a"), extras))
+    return frames
+
+
+def zelador_sheet():
+    return sheet(zelador_frames(), 6)
+
+
 # ======================================================================== TIA DA CANTINA (32x40)
 # Quadros: 0 e 1 = parada (respirando), 2 = arremessando salgado, 3 = tonta (escudo caiu)
 def tia(frame):
@@ -276,4 +350,5 @@ if __name__ == "__main__":
     for k in ("normal", "fast", "tank"):
         ghost_sheet(k).save(OUT + f"fantasma_{k}.png")
     tia_sheet().save(OUT + "tia_cantina.png")
+    zelador_sheet().save(OUT + "zelador.png")
     print("personagens ok")
