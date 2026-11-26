@@ -456,10 +456,10 @@ for i, (cx, cy, spr) in enumerate([(3 * T + 30, 19 * T + 40, "entulho"), (11 * T
     prop(f"Destrocos{i+1}", "Cantina", cx - ca[0], cy - ca[1], 48, 32, col(0, 0, 0, 0), solid=False, sprite=spr)
 
 node("Escopeta", inst="pickup", props={"position": v(13 * T, 12 * T), "ItemId": '"escopeta"',
-     "DisplayName": '"Escopeta"', "Color": col(0.95, 0.45, 0.2, 1), "WeaponReward": 'ExtResource("shotgun")',
+     "DisplayName": '"Escopeta de Café"', "Color": col(0.95, 0.45, 0.2, 1), "WeaponReward": 'ExtResource("shotgun")',
      "StartsHidden": "true", "Texture": tex("escopeta", "items"), "InspectTexture": tex("escopeta", "items/inspecao"),
-     "InspectTitle": '"ESCOPETA"',
-     "InspectText": '"A Tia guardava embaixo do balcão. Cinco chumbos por tiro: de perto, nenhum fantasma aguenta. Tecla 2."'})
+     "InspectTitle": '"ESCOPETA DE CAFÉ"',
+     "InspectText": '"A garrafa térmica da Tia, com uma colher de pau de coronha. Cinco grãos de café quentinhos por tiro: de perto, nenhum fantasma aguenta. Tecla 2."'})
 
 # ===== ELEVADOR =====
 node("PortaElevador", inst="door", props={"position": v(3 * T, 8 * T), "Size": v(2 * T, 64), "StartsLocked": "true",

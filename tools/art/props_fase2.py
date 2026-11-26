@@ -472,6 +472,97 @@ def chave_grande(red):
     return cv
 
 
+# ======================================================================== OBJETOS QUE FAZEM BARULHO (biblioteca)
+# Ficam num banquinho na frente das estantes: usados com [E], atraem a Bibliotecária (objects/librarian/NoiseMaker.cs).
+# Dois quadros lado a lado: 0 = parado, 1 = fazendo barulho (tremendo, com luz/ondinhas).
+def banquinho(cv, x0, top):
+    """Banquinho de madeira embaixo do objeto (pés até o fim do quadro)."""
+    W, W_D = hexc("7a5230"), hexc("553820")
+    cv.rect(x0, top, 12, 2, W); cv.hline(x0, top + 1, 12, W_D)
+    cv.vline(x0 + 1, top + 2, cv.h - top - 3, W_D); cv.vline(x0 + 10, top + 2, cv.h - top - 3, W_D)
+    cv.hline(x0 + 1, cv.h - 5, 10, W_D)
+
+
+def radio(frame):
+    cv = Canvas(16, 20)
+    banquinho(cv, 2, 10)
+    dy = -1 if frame and True else 0
+    body, body_d = hexc("8a4a2e"), hexc("5e2f1c")
+    cv.rect(1, 3 + dy, 14, 7, body); cv.hline(1, 3 + dy, 14, hexc("a8633f")); cv.hline(1, 9 + dy, 14, body_d)
+    cv.rect(2, 4 + dy, 6, 5, hexc("d9c79a"))                          # alto-falante de tecido
+    for y in (5, 7): cv.hline(2, y + dy, 6, hexc("b0a078"))
+    cv.rect(9, 4 + dy, 5, 2, hexc("2a2b30")); cv.put(10 + frame * 2, 4 + dy, hexc("ff5a3a"))   # dial
+    cv.put(10, 7 + dy, hexc("e3d6b0")); cv.put(13, 7 + dy, hexc("e3d6b0"))                    # botões
+    cv.line(12, 2 + dy, 15, 0, hexc("9aa0a8"))                         # antena
+    if frame:
+        for x, y in ((0, 1), (15, 4), (0, 6)): cv.put(x, y, hexc("ffe9a0"))
+    cv.outline(INK)
+    return cv
+
+
+def despertador(frame):
+    cv = Canvas(16, 20)
+    banquinho(cv, 2, 10)
+    shake = (1 if frame else 0)
+    cx = 8 + shake
+    red, red_d = hexc("c0392b"), hexc("8a2a20")
+    cv.ellipse(cx, 6, 4.5, 4, red); cv.vline(cx + 3, 4, 5, red_d)
+    cv.ellipse(cx, 6, 3, 2.6, hexc("efeadd"))
+    cv.vline(cx, 4, 3, hexc("2a2b30")); cv.hline(cx, 6, 2, hexc("2a2b30"))   # ponteiros
+    for bx in (cx - 4, cx + 3):                                         # os dois sininhos
+        cv.rect(bx, 0, 3, 2, hexc("d9a62e"))
+    cv.put(cx - 3, 10, red_d); cv.put(cx + 3, 10, red_d)               # pezinhos
+    if frame:
+        for x, y in ((0, 1), (15, 1), (0, 4), (15, 5)): cv.put(x, y, hexc("ffe9a0"))
+    cv.outline(INK)
+    return cv
+
+
+def campainha(frame):
+    cv = Canvas(16, 20)
+    banquinho(cv, 2, 10)
+    gold, gold_d, gold_l = hexc("d9a62e"), hexc("9c7418"), hexc("f2d06a")
+    cv.rect(3, 8, 10, 2, hexc("3a3446"))                               # base
+    cv.ellipse(8, 7.5, 4, 3.5, gold); cv.hline(4, 8, 9, gold_d); cv.put(6, 5, gold_l)
+    cv.rect(7, 2 + frame, 2, 2, hexc("9aa0a8"))                         # o botão (afundado tocando)
+    if frame:
+        for x, y in ((1, 3), (14, 3), (2, 0), (13, 0)): cv.put(x, y, hexc("ffe9a0"))
+    cv.outline(INK)
+    return cv
+
+
+def telefone(frame):
+    cv = Canvas(16, 20)
+    banquinho(cv, 2, 10)
+    dy = -1 if frame else 0
+    black, black_l = hexc("2a2b30"), hexc("4a4d55")
+    cv.rect(2, 5 + dy, 12, 5, black); cv.hline(2, 5 + dy, 12, black_l)       # corpo
+    cv.ellipse(8, 7.5 + dy, 2.6, 2, hexc("c9ced6")); cv.put(8, 7 + dy, black)  # disco
+    # o fone em cima (no toque, ele pula do gancho)
+    hy = 1 + dy - frame
+    cv.rect(2, hy + 1, 12, 2, black); cv.rect(1, hy, 3, 3, black); cv.rect(12, hy, 3, 3, black)
+    cv.hline(3, hy + 1, 10, black_l)
+    if frame:
+        for x, y in ((0, 0), (15, 0), (0, 4), (15, 5)): cv.put(x, y, hexc("ffe9a0"))
+    cv.outline(INK)
+    return cv
+
+
+def pilha_livros(frame):
+    """Pilha alta de livros: no quadro 1 ela está tombando."""
+    cv = Canvas(16, 20)
+    banquinho(cv, 2, 10)
+    cols = [hexc("b33a2e"), hexc("2f5fa8"), hexc("3f8a4a"), hexc("6a3f8f"), hexc("d9a62e")]
+    for i, c in enumerate(cols):
+        y = 8 - i * 2
+        x = 3 + (i % 2) + (i * i // 4 if frame else 0)
+        cv.rect(x, y, 9, 2, c); cv.hline(x, y, 9, shade(c, 0.3)); cv.vline(x + 8, y, 2, hexc("efeadd"))
+    if frame:
+        for x, y in ((0, 2), (15, 0), (14, 6)): cv.put(x, y, hexc("ffe9a0"))
+    cv.outline(INK)
+    return cv
+
+
 PROPS = {
     "estante_caida": estante_caida,
     "estante0": lambda: estante(0), "estante1": lambda: estante(1), "estante2": lambda: estante(2), "estante3": lambda: estante(3),
@@ -494,6 +585,9 @@ if __name__ == "__main__":
         fn().save(OUT + name + ".png")
     sheet([bibliotecaria(f) for f in range(5)], 5).save("sprites/characters/bibliotecaria.png")
     livros_voando().save("sprites/fx/livros.png")
+    for name, fn in (("radio", radio), ("despertador", despertador), ("campainha", campainha),
+                     ("telefone", telefone), ("livros", pilha_livros)):
+        sheet([fn(0), fn(1)], 2).save(OUT + name + ".png")
     livro_item().save("sprites/items/livro.png")
     chave_item(hexc("e3b62a")).save("sprites/items/chave_achados.png")
     chave_item(hexc("c7372f")).save("sprites/items/chave_escada.png")
