@@ -1,17 +1,21 @@
 using Godot;
 
-// Menu principal: Jogar / Sair (embaixo à esquerda) e, embaixo à direita, a escolha do personagem (Téo ou Lia)
-// e da dificuldade (Fácil / Médio / Difícil). As escolhas ficam em GameState.
+// Menu principal do "Instituto de Ciência e Terror".
+// Tela inicial: logotipo no alto e as opções no meio (Jogar, Controles, Opções, Sair).
+// Telas secundárias (Esc ou Voltar retornam):
+//   Jogar     -> NOVO JOGO: escolha do personagem (Téo ou Lia) e da dificuldade, e Começar
+//   Controles -> tecla e para que serve
+//   Opções    -> volume geral e tela cheia
+// As escolhas ficam em GameState (valem até fechar o jogo).
 public partial class MainMenu : Control
 {
-	// cores da paleta do jogo (tools/art/palette.py)
-	private static readonly Color Ink = new(0.11f, 0.10f, 0.13f, 0.82f);        // ink 1c1a22
-	private static readonly Color Frame = new(0.23f, 0.25f, 0.28f);             // uni_text 3a3f48
-	private static readonly Color Selected = new(0.95f, 0.76f, 0.19f);          // tassel f2c230
-	private static readonly Color Cream = new(0.89f, 0.87f, 0.82f);             // plaza_l e3ddd1
-	private static readonly Color Green = new(0.17f, 0.71f, 0.45f);             // lanyard 2bb673
-
 	private const float WalkFrameTime = 0.16f;
+
+	private Control _home;
+	private Control _newGame;
+	private Control _controls;
+	private Control _options;
+	private Button _homeFirst;
 
 	private readonly Button[] _characterCards = new Button[2];
 	private readonly AtlasTexture[] _characterFrames = new AtlasTexture[2];
@@ -19,52 +23,115 @@ public partial class MainMenu : Control
 	private Label _difficultyHint;
 	private float _walkTimer;
 	private int _walkFrame;
+	private bool _starting;
 
 	public override void _Ready()
 	{
-		BuildOptions();
-		Refresh();
-		GetNode<Button>("Buttons/Play").GrabFocus();
+		GetNode("SplashBg").AddChild(MenuUi.Logo("res://sprites/ui/menu/logo.png"));
+
+		_home = BuildHome();
+		_newGame = Screen(BuildNewGame());
+		_controls = Screen(BuildControls());
+		_options = Screen(BuildOptions());
+		RefreshChoices();
+		ShowScreen(_home);
 	}
 
-	private void OnPlayPressed()
+	// ===================================================================== telas
+	private void ShowScreen(Control screen)
 	{
-		GetNode<SplashBg>("SplashBg").LastStrike();
-		GetNode<SceneTransition>("/root/SceneTransition").ChangeScene("res://levels/fase_1.tscn");
+		foreach (Control s in new[] { _home, _newGame, _controls, _options })
+			s.Visible = s == screen;
+		if (screen == _home)
+			_homeFirst.GrabFocus();
+		else if (screen.FindChild("Primeiro", true, false) is Control first)
+			first.GrabFocus();
 	}
 
-	private void OnQuitPressed() => GetTree().Quit();
-
-	// ===================================================================== painel de opções
-	private void BuildOptions()
+	public override void _UnhandledInput(InputEvent @event)
 	{
-		PanelContainer panel = new() { MouseFilter = MouseFilterEnum.Stop };
-		panel.AddThemeStyleboxOverride("panel", Box(Ink, Frame, 3, 18));
-		panel.SetAnchorsAndOffsetsPreset(LayoutPreset.BottomRight);
-		panel.GrowHorizontal = GrowDirection.Begin;
-		panel.GrowVertical = GrowDirection.Begin;
-		panel.OffsetRight = -24;
-		panel.OffsetBottom = -16;
-		AddChild(panel);
+		if (@event.IsActionPressed("ui_cancel") && !_home.Visible)
+		{
+			ShowScreen(_home);
+			GetViewport().SetInputAsHandled();
+		}
+	}
 
+	// tela secundária: centralizada, um pouco abaixo do logotipo
+	private Control Screen(Control content)
+	{
+		CenterContainer center = new() { MouseFilter = MouseFilterEnum.Ignore };
+		center.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+		center.OffsetTop = 236;   // abaixo do logotipo
+		center.AddChild(content);
+		AddChild(center);
+		return center;
+	}
+
+	private Button BackButton()
+	{
+		Button back = MenuUi.BigButton("Voltar", 24);
+		back.Pressed += () => ShowScreen(_home);
+		return back;
+	}
+
+	// ---------- inicial ----------
+	private Control BuildHome()
+	{
+		CenterContainer center = new() { MouseFilter = MouseFilterEnum.Ignore };
+		center.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+		center.OffsetTop = 170;
+		AddChild(center);
+
+		VBoxContainer column = new();
+		column.AddThemeConstantOverride("separation", 2);
+		center.AddChild(column);
+
+		(string text, System.Action action)[] items =
+		{
+			("Jogar", () => ShowScreen(_newGame)),
+			("Controles", () => ShowScreen(_controls)),
+			("Opções", () => ShowScreen(_options)),
+			("Sair", () => GetTree().Quit()),
+		};
+		foreach ((string text, System.Action action) in items)
+		{
+			Button button = MenuUi.BigButton(text, 34);
+			button.CustomMinimumSize = new Vector2(320, 0);
+			button.Pressed += action;
+			column.AddChild(button);
+			_homeFirst ??= button;
+		}
+		return center;
+	}
+
+	// ---------- novo jogo: personagem e dificuldade ----------
+	private Control BuildNewGame()
+	{
+		PanelContainer panel = MenuUi.Panel(MenuUi.Yellow);
 		VBoxContainer column = new();
 		column.AddThemeConstantOverride("separation", 10);
 		panel.AddChild(column);
+		column.AddChild(MenuUi.Text("NOVO JOGO", 24, MenuUi.Yellow));
 
-		column.AddChild(Title("PERSONAGEM"));
+		// duas colunas: personagem à esquerda, dificuldade à direita
+		HBoxContainer sides = new();
+		sides.AddThemeConstantOverride("separation", 32);
+		column.AddChild(sides);
+
+		VBoxContainer left = new();
+		left.AddThemeConstantOverride("separation", 8);
+		sides.AddChild(left);
+		left.AddChild(MenuUi.Text("PERSONAGEM", 16, MenuUi.Green));
 		HBoxContainer characters = new() { Alignment = BoxContainer.AlignmentMode.Center };
-		characters.AddThemeConstantOverride("separation", 16);
-		column.AddChild(characters);
+		characters.AddThemeConstantOverride("separation", 14);
+		left.AddChild(characters);
 		string[] sheets = { "res://sprites/characters/estudante.png", "res://sprites/characters/estudante_garota.png" };
 		string[] names = { "TÉO", "LIA" };   // os dois estudantes jogáveis
 		for (int i = 0; i < 2; i++)
 		{
 			int index = i;
-			_characterFrames[i] = new AtlasTexture
-			{
-				Atlas = GD.Load<Texture2D>(sheets[i]),
-				Region = new Rect2(0, 0, 16, 24),
-			};
+			_characterFrames[i] = new AtlasTexture { Atlas = GD.Load<Texture2D>(sheets[i]), Region = new Rect2(0, 0, 16, 24) };
 			Button card = new()
 			{
 				Icon = _characterFrames[i],
@@ -72,61 +139,63 @@ public partial class MainMenu : Control
 				Text = names[i],
 				IconAlignment = HorizontalAlignment.Center,
 				VerticalIconAlignment = VerticalAlignment.Top,
-				CustomMinimumSize = new Vector2(104, 150),
-				FocusMode = FocusModeEnum.None,
+				CustomMinimumSize = new Vector2(110, 150),
 				TextureFilter = TextureFilterEnum.Nearest,
 			};
-			card.AddThemeFontSizeOverride("font_size", 18);
+			card.AddThemeFontSizeOverride("font_size", 20);
 			card.Pressed += () =>
 			{
 				GameState.PlayGirl = index == 1;
-				Refresh();
+				RefreshChoices();
 			};
 			characters.AddChild(card);
 			_characterCards[i] = card;
 		}
 
-		column.AddChild(Title("DIFICULDADE"));
-		HBoxContainer levels = new() { Alignment = BoxContainer.AlignmentMode.Center };
-		levels.AddThemeConstantOverride("separation", 8);
-		column.AddChild(levels);
+		VBoxContainer right = new();
+		right.AddThemeConstantOverride("separation", 8);
+		sides.AddChild(right);
+		right.AddChild(MenuUi.Text("DIFICULDADE", 16, MenuUi.Green));
+		VBoxContainer levels = new();
+		levels.AddThemeConstantOverride("separation", 6);
+		right.AddChild(levels);
 		string[] labels = { "Fácil", "Médio", "Difícil" };
 		for (int i = 0; i < 3; i++)
 		{
 			GameState.Difficulty level = (GameState.Difficulty)i;
-			Button button = new()
-			{
-				Text = labels[i],
-				CustomMinimumSize = new Vector2(80, 40),
-				FocusMode = FocusModeEnum.None,
-			};
+			Button button = new() { Text = labels[i], CustomMinimumSize = new Vector2(200, 40) };
 			button.AddThemeFontSizeOverride("font_size", 18);
 			button.Pressed += () =>
 			{
 				GameState.Level = level;
-				Refresh();
+				RefreshChoices();
 			};
 			levels.AddChild(button);
 			_difficultyButtons[i] = button;
 		}
 
-		_difficultyHint = new Label
-		{
-			HorizontalAlignment = HorizontalAlignment.Center,
-			CustomMinimumSize = new Vector2(256, 0),
-			AutowrapMode = TextServer.AutowrapMode.WordSmart,
-		};
-		_difficultyHint.AddThemeFontSizeOverride("font_size", 13);
-		_difficultyHint.AddThemeColorOverride("font_color", Cream);
-		column.AddChild(_difficultyHint);
+		_difficultyHint = MenuUi.Text("", 13, MenuUi.Cream);
+		_difficultyHint.CustomMinimumSize = new Vector2(200, 0);
+		_difficultyHint.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+		right.AddChild(_difficultyHint);
+
+		HBoxContainer actions = new() { Alignment = BoxContainer.AlignmentMode.Center };
+		actions.AddThemeConstantOverride("separation", 24);
+		column.AddChild(actions);
+		actions.AddChild(BackButton());
+		Button start = MenuUi.BigButton("Começar", 28);
+		start.Name = "Primeiro";
+		start.Pressed += StartGame;
+		actions.AddChild(start);
+		return panel;
 	}
 
-	private void Refresh()
+	private void RefreshChoices()
 	{
 		for (int i = 0; i < 2; i++)
-			Style(_characterCards[i], (i == 1) == GameState.PlayGirl);
+			MenuUi.Choice(_characterCards[i], (i == 1) == GameState.PlayGirl);
 		for (int i = 0; i < 3; i++)
-			Style(_difficultyButtons[i], (int)GameState.Level == i);
+			MenuUi.Choice(_difficultyButtons[i], (int)GameState.Level == i);
 
 		_difficultyHint.Text = GameState.Level switch
 		{
@@ -134,6 +203,76 @@ public partial class MainMenu : Control
 			GameState.Difficulty.Dificil => "Menos vida, mais fantasmas, mais fortes e mais rápidos.",
 			_ => "O jogo como foi pensado.",
 		};
+	}
+
+	private void StartGame()
+	{
+		if (_starting) return;
+		_starting = true;
+		GetNode<SplashBg>("SplashBg").LastStrike();
+		GetNode<SceneTransition>("/root/SceneTransition").ChangeScene("res://levels/fase_1.tscn");
+	}
+
+	// ---------- controles ----------
+	private Control BuildControls()
+	{
+		PanelContainer panel = MenuUi.Panel(MenuUi.Green);
+		VBoxContainer column = new();
+		column.AddThemeConstantOverride("separation", 8);
+		panel.AddChild(column);
+		column.AddChild(MenuUi.Text("CONTROLES", 22, MenuUi.Yellow));
+		column.AddChild(MenuUi.ControlsList(15));
+		column.AddChild(MenuUi.Text("No jogo, H mostra ou esconde este quadro.", 13, MenuUi.Cream));
+		Button back = BackButton();
+		back.Name = "Primeiro";
+		column.AddChild(back);
+		return panel;
+	}
+
+	// ---------- opções ----------
+	private Control BuildOptions()
+	{
+		PanelContainer panel = MenuUi.Panel(MenuUi.Green);
+		VBoxContainer column = new();
+		column.AddThemeConstantOverride("separation", 14);
+		panel.AddChild(column);
+		column.AddChild(MenuUi.Text("OPÇÕES", 26, MenuUi.Yellow));
+
+		HBoxContainer volumeRow = new();
+		volumeRow.AddThemeConstantOverride("separation", 16);
+		volumeRow.AddChild(MenuUi.Text("Volume", 18, MenuUi.Cream, false));
+		HSlider volume = new()
+		{
+			Name = "Primeiro",
+			MinValue = 0,
+			MaxValue = 1,
+			Step = 0.05,
+			Value = AudioServer.IsBusMute(0) ? 0 : Mathf.DbToLinear(AudioServer.GetBusVolumeDb(0)),
+			CustomMinimumSize = new Vector2(240, 24),
+			SizeFlagsVertical = SizeFlags.ShrinkCenter,
+		};
+		volume.ValueChanged += v =>
+		{
+			AudioServer.SetBusVolumeDb(0, Mathf.LinearToDb((float)Mathf.Max(v, 0.0001)));
+			AudioServer.SetBusMute(0, v <= 0.001);
+		};
+		volumeRow.AddChild(volume);
+		column.AddChild(volumeRow);
+
+		CheckButton fullscreen = new()
+		{
+			Text = "Tela cheia",
+			ButtonPressed = DisplayServer.WindowGetMode() == DisplayServer.WindowMode.Fullscreen,
+		};
+		fullscreen.AddThemeFontSizeOverride("font_size", 18);
+		fullscreen.AddThemeColorOverride("font_color", MenuUi.Cream);
+		fullscreen.AddThemeColorOverride("font_hover_color", MenuUi.Yellow);
+		fullscreen.AddThemeColorOverride("font_pressed_color", MenuUi.Cream);
+		fullscreen.Toggled += on => DisplayServer.WindowSetMode(on ? DisplayServer.WindowMode.Fullscreen : DisplayServer.WindowMode.Windowed);
+		column.AddChild(fullscreen);
+
+		column.AddChild(BackButton());
+		return panel;
 	}
 
 	// o personagem escolhido anda no lugar; o outro fica parado
@@ -148,43 +287,5 @@ public partial class MainMenu : Control
 			bool chosen = (i == 1) == GameState.PlayGirl;
 			_characterFrames[i].Region = new Rect2((chosen ? _walkFrame : 0) * 16, 0, 16, 24);
 		}
-	}
-
-	private static Label Title(string text)
-	{
-		Label label = new() { Text = text, HorizontalAlignment = HorizontalAlignment.Center };
-		label.AddThemeFontSizeOverride("font_size", 16);
-		label.AddThemeColorOverride("font_color", Green);
-		return label;
-	}
-
-	private static void Style(Button button, bool chosen)
-	{
-		Color border = chosen ? Selected : Frame;
-		Color face = chosen ? new Color(0.17f, 0.16f, 0.2f) : new Color(0.13f, 0.12f, 0.15f);
-		button.AddThemeStyleboxOverride("normal", Box(face, border, 3, 8));
-		button.AddThemeStyleboxOverride("hover", Box(face.Lightened(0.1f), chosen ? Selected : Cream, 3, 8));
-		button.AddThemeStyleboxOverride("pressed", Box(face.Darkened(0.2f), Selected, 3, 8));
-		Color text = chosen ? Selected : Cream;
-		button.AddThemeColorOverride("font_color", text);
-		button.AddThemeColorOverride("font_hover_color", text);
-		button.AddThemeColorOverride("font_pressed_color", Selected);
-		button.Modulate = chosen ? Colors.White : new Color(1, 1, 1, 0.75f);
-	}
-
-	private static StyleBoxFlat Box(Color background, Color border, int borderWidth, int margin)
-	{
-		StyleBoxFlat box = new()
-		{
-			BgColor = background,
-			BorderColor = border,
-			ContentMarginLeft = margin,
-			ContentMarginRight = margin,
-			ContentMarginTop = margin * 0.6f,
-			ContentMarginBottom = margin * 0.6f,
-		};
-		box.SetBorderWidthAll(borderWidth);
-		box.SetCornerRadiusAll(6);
-		return box;
 	}
 }

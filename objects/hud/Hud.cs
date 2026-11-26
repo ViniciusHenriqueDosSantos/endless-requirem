@@ -24,7 +24,7 @@ public partial class Hud : CanvasLayer
 	private Label _counter;
 
 	// Quadro de comandos (tecla + para que serve), pequeno, à direita. A Fase 1 mostra no começo; H mostra/esconde.
-	private static readonly (string Key, string Use)[] Controls =
+	public static readonly (string Key, string Use)[] Controls =
 	{
 		("W A S D", "andar"),
 		("MOUSE", "mirar"),
