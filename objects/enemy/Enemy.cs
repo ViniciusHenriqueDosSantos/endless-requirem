@@ -10,13 +10,6 @@ public partial class Enemy : CharacterBody2D
 	public float HealthScale = 1f;
 	public float SpeedScale = 1f;
 
-	// Inimigo especial (ex.: o zelador da Fase 2): desenho próprio, quanto recua com os tiros (1 = normal)
-	// e um nome; com nome, mostra em cima dele o nome e os pontos de vida (barra + número).
-	public Texture2D SpriteOverride;
-	public float KnockbackScale = 1f;
-	public string DisplayName = "";
-	private int _maxHealth;
-
 	public enum Kind { Normal, Fast, Tank }
 
 	private readonly record struct Stats(float Speed, int Health, int ScoreValue, Color Color, float Scale);
@@ -120,9 +113,8 @@ public partial class Enemy : CharacterBody2D
 
 		_stats = StatsByKind[Type];
 		_health = Mathf.Max(1, Mathf.RoundToInt(_stats.Health * HealthScale));
-		_maxHealth = _health;
 
-		Texture2D art = SpriteOverride ?? Type switch { Kind.Fast => FastSprite, Kind.Tank => TankSprite, _ => NormalSprite };
+		Texture2D art = Type switch { Kind.Fast => FastSprite, Kind.Tank => TankSprite, _ => NormalSprite };
 		_pixelArt = art != null;
 		if (_pixelArt)
 		{
@@ -144,8 +136,6 @@ public partial class Enemy : CharacterBody2D
 		_sprite.Modulate = _baseColor;
 		// Fantasmas brilham no escuro: não dependem das luzes da fase (sem efeito em fase sem noite).
 		_sprite.Material = SharedMaterials.Unshaded;
-		if (DisplayName != "")
-			Material = SharedMaterials.Unshaded;   // o nome e a barra aparecem mesmo no escuro
 		_collision.Scale = Vector2.One * _stats.Scale;
 		_collision.Position *= _stats.Scale;
 		_hitBox.Scale = Vector2.One * _stats.Scale;
@@ -159,8 +149,7 @@ public partial class Enemy : CharacterBody2D
 		if (_health <= 0) return;
 
 		_health -= damage;
-		_knockback = hitDirection * KnockbackForce * KnockbackScale;
-		if (DisplayName != "") QueueRedraw();
+		_knockback = hitDirection * KnockbackForce;
 		GetNode<AudioStreamPlayer2D>("Acerto").Play();
 		if (_pixelArt)
 		{
@@ -177,22 +166,6 @@ public partial class Enemy : CharacterBody2D
 
 		if (_health <= 0)
 			Die();
-	}
-
-	// Nome e vida em cima do inimigo especial (só quando ele tem nome).
-	public override void _Draw()
-	{
-		if (DisplayName == "" || _health <= 0 || _sprite == null) return;
-
-		float top = _sprite.Position.Y - (_sprite.Texture != null ? _sprite.Texture.GetHeight() * 2f : 40f) - 18f;
-		const float width = 90f;
-		float ratio = Mathf.Clamp((float)_health / _maxHealth, 0f, 1f);
-		Rect2 bar = new(-width / 2, top, width, 8);
-		DrawRect(bar.Grow(2), new Color(0, 0, 0, 0.8f));
-		DrawRect(new Rect2(bar.Position, new Vector2(width * ratio, bar.Size.Y)), new Color(0.75f, 0.35f, 1f));
-		Font font = ThemeDB.FallbackFont;
-		string label = $"{DisplayName}  {_health}/{_maxHealth}";
-		DrawString(font, new Vector2(-80, top - 6), label, HorizontalAlignment.Center, 160, 14, Colors.White);
 	}
 
 	private void Die()

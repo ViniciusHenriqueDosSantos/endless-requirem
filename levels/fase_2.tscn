@@ -24,7 +24,6 @@
 [ext_resource type="TileSet" path="res://tilesets/fase1_tileset_outer.tres" id="tiles_outer"]
 [ext_resource type="PackedScene" path="res://objects/prop/prop.tscn" id="prop"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/elevador.png" id="tex_props_fase2_elevador"]
-[ext_resource type="Texture2D" path="res://sprites/characters/fantasma_zelador.png" id="tex_characters_fantasma_zelador"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/cadeira_espera.png" id="tex_props_fase2_cadeira_espera"]
 [ext_resource type="Texture2D" path="res://sprites/items/chave_achados.png" id="tex_items_chave_achados"]
 [ext_resource type="Texture2D" path="res://sprites/items/inspecao/chave_achados.png" id="tex_items_inspecao_chave_achados"]
@@ -178,7 +177,7 @@ Facing = 2
 [node name="Hall" parent="." node_paths=PackedStringArray("RespawnPoint") instance=ExtResource("room")]
 position = Vector2(128, 2176)
 Size = Vector2(1408, 448)
-Waves = 2
+Waves = 3
 EnemiesPerWave = 6
 FastChance = 0
 EnemyHealthScale = 0.6
@@ -188,10 +187,6 @@ FinalWaveTank = true
 StartOnEnter = false
 FinalWaveMessage = "O ZELADOR CHEGOU!"
 RespawnPoint = NodePath("Respawn")
-FinalEnemySprite = ExtResource("tex_characters_fantasma_zelador")
-FinalEnemyHealthScale = 5
-FinalEnemyKnockbackScale = 0.25
-FinalEnemyName = "ZELADOR"
 
 [node name="Barreira" parent="Hall" instance=ExtResource("door")]
 position = Vector2(1376, 320)
@@ -713,7 +708,7 @@ TextColor = Color(0.85, 0.8, 1, 1)
 Solid = false
 
 [node name="ElevadorQuebrado" parent="." instance=ExtResource("prop")]
-position = Vector2(1560, -64)
+position = Vector2(1560, -320)
 Size = Vector2(48, 192)
 Color = Color(0.62, 0.62, 0.6, 1)
 Texture = ExtResource("tex_props_fase2_elevador_quebrado")
@@ -721,13 +716,13 @@ Tall = true
 Depth = 192
 
 [node name="AvisoElevador" parent="." instance=ExtResource("item_slot")]
-position = Vector2(1600, -160)
+position = Vector2(1600, -384)
 Size = Vector2(200, 220)
 RequiredItem = "nunca"
 MissingMessage = "ELEVADOR - fora de serviço desde 2049. Use a escada aqui do lado."
 
 [node name="PortaEscada" parent="." instance=ExtResource("prop")]
-position = Vector2(1560, -320)
+position = Vector2(1560, -64)
 Size = Vector2(48, 192)
 Color = Color(0.5, 0.42, 0.3, 1)
 Texture = ExtResource("tex_props_fase2_porta_escada")
@@ -736,7 +731,7 @@ Depth = 192
 
 [node name="PlacaEscada" parent="." instance=ExtResource("prop")]
 z_index = 1
-position = Vector2(1632, -508)
+position = Vector2(1632, -252)
 Size = Vector2(140, 30)
 Color = Color(0, 0, 0, 0)
 Text = "ESCADA"
@@ -745,7 +740,7 @@ TextColor = Color(0.95, 0.9, 0.6, 1)
 Solid = false
 
 [node name="Escada" parent="." instance=ExtResource("item_slot")]
-position = Vector2(1600, -384)
+position = Vector2(1600, -160)
 Size = Vector2(200, 220)
 RequiredItem = "chave_escada"
 MissingMessage = "ESCADA - trancada. A chave está com a Bibliotecária."
@@ -1008,7 +1003,7 @@ Behavior = 3
 Seed = 119
 
 [node name="ElevadorQuebrado" parent="Luzes" instance=ExtResource("flicker_light")]
-position = Vector2(1584, -128)
+position = Vector2(1584, -384)
 color = Color(1, 0.15, 0.1, 1)
 texture_scale = 1.6
 BaseEnergy = 1
@@ -1016,7 +1011,7 @@ Behavior = 3
 Seed = 120
 
 [node name="PlacaEscada" parent="Luzes" instance=ExtResource("flicker_light")]
-position = Vector2(1584, -448)
+position = Vector2(1584, -192)
 color = Color(0.2, 1, 0.45, 1)
 texture_scale = 0.8
 BaseEnergy = 0.8
