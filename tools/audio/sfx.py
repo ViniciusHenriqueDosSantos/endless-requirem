@@ -5,6 +5,10 @@
 #   sounds/objects/campainha.wav      campainha de balcão (ding!)
 #   sounds/objects/radio.wav          rádio velho chiando e tocando um pedacinho de música
 #   sounds/objects/despertador.wav    despertador tocando (trrrim)
+#   sounds/player/tiro_grampeador.wav  tiro do Grampeador (ka-tchak)
+#   sounds/player/tiro_escopeta_cafe.wav  tiro da Escopeta de Café (pof + vapor)
+#   sounds/objects/telefone.wav       telefone antigo tocando
+#   sounds/objects/livros.wav         pilha de livros caindo
 import math, os, random, struct, wave
 
 RATE = 22050
@@ -84,7 +88,75 @@ def despertador():
     return lowpass(out, 0.7)
 
 
+def grampeador():
+    """Grampeador: "ka-tchak" metálico (dois estalos e um rangido curto de mola)."""
+    rng = random.Random(2)
+    n = int(0.22 * RATE)
+    out = []
+    for i in range(n):
+        t = i / RATE
+        v = 0.0
+        for t0, f, decay in ((0.0, 3100, 90), (0.05, 2300, 70)):
+            if t >= t0:
+                tt = t - t0
+                v += (math.sin(2 * math.pi * f * tt) * 0.6 + rng.uniform(-1, 1) * 0.5) * math.exp(-tt * decay)
+        if 0.05 <= t < 0.15:   # mola
+            v += 0.15 * math.sin(2 * math.pi * (900 + 1500 * (t - 0.05)) * t) * math.exp(-(t - 0.05) * 25)
+        out.append(v)
+    return out
+
+
+def escopeta_cafe():
+    """Escopeta de Café: "POF" grave (a tampa da garrafa térmica) e um chiado de vapor que some."""
+    rng = random.Random(6)
+    n = int(0.7 * RATE)
+    boom, phase = [], 0.0
+    for i in range(n):
+        t = i / RATE
+        phase += (45 + 110 * math.exp(-t * 25)) / RATE
+        boom.append(math.sin(2 * math.pi * phase) * math.exp(-t * 14))
+    crack = lowpass([rng.uniform(-1, 1) * math.exp(-i / RATE * 40) for i in range(n)], 0.35)
+    raw = [rng.uniform(-1, 1) for _ in range(n)]
+    low = lowpass(raw, 0.6)
+    steam = [(raw[i] - low[i]) * min(1, max(0, (i / RATE - 0.05) * 12)) * math.exp(-max(0, i / RATE - 0.08) * 5) for i in range(n)]
+    return [boom[i] + 0.9 * crack[i] + 0.3 * steam[i] for i in range(n)]
+
+
+def telefone():
+    """Telefone antigo de disco: "trrrim... trrrim" (campainha dupla batendo rápido)."""
+    n = int(2.8 * RATE)
+    out = []
+    for i in range(n):
+        t = i / RATE
+        on = (t % 1.4) < 0.9
+        hammer = 1 if (t * 22) % 1 < 0.5 else 0.25
+        v = math.sin(2 * math.pi * 1400 * t) + 0.7 * math.sin(2 * math.pi * 1750 * t) + 0.2 * math.sin(2 * math.pi * 3500 * t)
+        out.append(v * hammer * (1 if on else 0) * min(1, (2.8 - t) * 8))
+    return lowpass(out, 0.75)
+
+
+def livros():
+    """Pilha de livros caindo: vários "tum" de livro batendo no chão, um atrás do outro."""
+    rng = random.Random(12)
+    n = int(1.3 * RATE)
+    out = [0.0] * n
+    t0 = 0.0
+    for k in range(7):
+        t0 += rng.uniform(0.05, 0.16)
+        f = rng.uniform(70, 130)
+        for i in range(int(0.25 * RATE)):
+            j = int(t0 * RATE) + i
+            if j >= n: break
+            tt = i / RATE
+            out[j] += (math.sin(2 * math.pi * f * tt) + rng.uniform(-1, 1) * 0.6 * math.exp(-tt * 60)) * math.exp(-tt * 18) * (1 - k * 0.08)
+    return lowpass(out, 0.5)
+
+
 if __name__ == "__main__":
+    save("sounds/player/tiro_grampeador.wav", grampeador(), 0.7)
+    save("sounds/player/tiro_escopeta_cafe.wav", escopeta_cafe(), 0.85)
+    save("sounds/objects/telefone.wav", telefone(), 0.55)
+    save("sounds/objects/livros.wav", livros(), 0.8)
     save("sounds/player/tiro_silencio.wav", tiro_silencio(), 0.8)
     save("sounds/objects/campainha.wav", campainha(), 0.7)
     save("sounds/objects/radio.wav", radio(), 0.6)

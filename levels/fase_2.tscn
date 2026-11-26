@@ -50,9 +50,11 @@
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/luminaria.png" id="tex_props_fase2_luminaria"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/luminaria_apagada.png" id="tex_props_fase2_luminaria_apagada"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/mesa_sala.png" id="tex_props_fase2_mesa_sala"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase2/telefone.png" id="tex_props_fase2_telefone"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/radio.png" id="tex_props_fase2_radio"]
-[ext_resource type="Texture2D" path="res://sprites/props/fase2/despertador.png" id="tex_props_fase2_despertador"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase2/livros.png" id="tex_props_fase2_livros"]
 [ext_resource type="Texture2D" path="res://sprites/props/fase2/campainha.png" id="tex_props_fase2_campainha"]
+[ext_resource type="Texture2D" path="res://sprites/props/fase2/despertador.png" id="tex_props_fase2_despertador"]
 [ext_resource type="Texture2D" path="res://sprites/weapons/rifle_silencio.png" id="tex_weapons_rifle_silencio"]
 [ext_resource type="Texture2D" path="res://sprites/items/chave_escada.png" id="tex_items_chave_escada"]
 [ext_resource type="Texture2D" path="res://sprites/items/inspecao/chave_escada.png" id="tex_items_inspecao_chave_escada"]
@@ -692,26 +694,69 @@ offset_bottom = 384.0
 mouse_filter = 2
 color = Color(0.55, 0.38, 0.22, 1)
 
-[node name="Radio" type="Area2D" parent="Biblioteca"]
-position = Vector2(548, 1032)
+[node name="Telefone" type="Area2D" parent="Biblioteca"]
+position = Vector2(760, 840)
 script = ExtResource("noise_maker")
-Size = Vector2(150, 130)
+Size = Vector2(110, 110)
+Kind = 3
+Texture = ExtResource("tex_props_fase2_telefone")
+LureOffset = Vector2(-110, 30)
+
+[node name="Radio" type="Area2D" parent="Biblioteca"]
+position = Vector2(760, 1032)
+script = ExtResource("noise_maker")
+Size = Vector2(110, 110)
 Kind = 1
 Texture = ExtResource("tex_props_fase2_radio")
+LureOffset = Vector2(-110, 30)
 
-[node name="Despertador" type="Area2D" parent="Biblioteca"]
-position = Vector2(908, 1287)
+[node name="Livros" type="Area2D" parent="Biblioteca"]
+position = Vector2(760, 1224)
 script = ExtResource("noise_maker")
-Size = Vector2(150, 130)
-Kind = 2
-Texture = ExtResource("tex_props_fase2_despertador")
+Size = Vector2(110, 110)
+Kind = 4
+Texture = ExtResource("tex_props_fase2_livros")
+LureOffset = Vector2(-110, 30)
 
 [node name="Campainha" type="Area2D" parent="Biblioteca"]
-position = Vector2(358, 1412)
+position = Vector2(760, 1416)
 script = ExtResource("noise_maker")
-Size = Vector2(150, 130)
+Size = Vector2(110, 110)
 Kind = 0
 Texture = ExtResource("tex_props_fase2_campainha")
+LureOffset = Vector2(-110, 30)
+
+[node name="Despertador" type="Area2D" parent="Biblioteca"]
+position = Vector2(908, 968)
+script = ExtResource("noise_maker")
+Size = Vector2(110, 110)
+Kind = 2
+Texture = ExtResource("tex_props_fase2_despertador")
+LureOffset = Vector2(0, 20)
+
+[node name="Radio2" type="Area2D" parent="Biblioteca"]
+position = Vector2(908, 1287)
+script = ExtResource("noise_maker")
+Size = Vector2(110, 110)
+Kind = 1
+Texture = ExtResource("tex_props_fase2_radio")
+LureOffset = Vector2(0, 20)
+
+[node name="Telefone2" type="Area2D" parent="Biblioteca"]
+position = Vector2(1168, 1544)
+script = ExtResource("noise_maker")
+Size = Vector2(110, 110)
+Kind = 3
+Texture = ExtResource("tex_props_fase2_telefone")
+LureOffset = Vector2(0, 20)
+
+[node name="Despertador2" type="Area2D" parent="Biblioteca"]
+position = Vector2(1228, 776)
+script = ExtResource("noise_maker")
+Size = Vector2(110, 110)
+Kind = 2
+Texture = ExtResource("tex_props_fase2_despertador")
+LureOffset = Vector2(0, 20)
 
 [node name="Patrulha" type="Node2D" parent="Biblioteca"]
 

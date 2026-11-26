@@ -803,8 +803,21 @@ public partial class Librarian : CharacterBody2D, IHittable
 	// Passo para o lado (desviando de tiro), somado a qualquer movimento.
 	private Vector2 DodgeVelocity() => _dodgeTimer > 0 && _phase != Phase.Stunned ? _dodgeVelocity : Vector2.Zero;
 
+	// Enroscou numa quina (bateu e quase não saiu do lugar): escorrega pela lateral do obstáculo um instante.
+	private const float UnstickTime = 0.35f;
+	private float _unstickTimer;
+	private Vector2 _unstickDir;
+
 	private void MoveTowards(Vector2 target, float speed, float dt, bool faceMovement = true)
 	{
+		if (_unstickTimer > 0)
+		{
+			_unstickTimer -= dt;
+			Velocity = _unstickDir * speed + DodgeVelocity();
+			MoveAndSlide();
+			return;
+		}
+
 		_repathTimer -= dt;
 		if (_repathTimer <= 0)
 		{
@@ -822,9 +835,21 @@ public partial class Librarian : CharacterBody2D, IHittable
 
 		dir = dir.Normalized();
 		Velocity = dir * speed + DodgeVelocity();
+		Vector2 before = GlobalPosition;
 		MoveAndSlide();
 		if (faceMovement)
 			_targetFacing = dir.Angle();
+
+		// andou menos de um terço do que devia e bateu em algo: está raspando a quina
+		if (GetSlideCollisionCount() > 0 && GlobalPosition.DistanceTo(before) < speed * dt * 0.33f)
+		{
+			Vector2 normal = GetSlideCollision(0).GetNormal();
+			Vector2 tangent = normal.Orthogonal();
+			if (tangent.Dot(dir) < 0) tangent = -tangent;
+			_unstickDir = (tangent + normal * 0.6f).Normalized();
+			_unstickTimer = UnstickTime;
+			_repathTimer = 0;
+		}
 	}
 
 	// Caminho livre até o alvo para o corpo inteiro dela (três raios: o meio e as duas laterais),
