@@ -61,8 +61,8 @@ public partial class Auditorio3D : Node
 	private Node3D _diploma;
 	private SpotLight3D _diplomaLight;
 
-	private Label _prompt;
-	private Label _subtitle;
+	private Caption _prompt;
+	private Caption _subtitle;
 	private Label _endText;
 	private ColorRect _fade;
 	private AudioStreamPlayer _sound;
@@ -355,14 +355,11 @@ public partial class Auditorio3D : Node
 		_fade.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 		layer.AddChild(_fade);
 
-		_prompt = MakeLabel(24, new Color(1f, 0.95f, 0.6f));
-		_prompt.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.CenterBottom);
-		_prompt.OffsetTop = -170; _prompt.OffsetBottom = -130; _prompt.OffsetLeft = -300; _prompt.OffsetRight = 300;
+		// legendas embaixo, nas cores da paleta (Caption)
+		_prompt = Caption.AtBottom(Caption.Kind.Prompt, 22, 160, 116);
 		layer.AddChild(_prompt);
 
-		_subtitle = MakeLabel(26, Colors.White);
-		_subtitle.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.BottomWide);
-		_subtitle.OffsetTop = -110; _subtitle.OffsetBottom = -40;
+		_subtitle = Caption.AtBottom(Caption.Kind.Message, 24, 96, 40);
 		layer.AddChild(_subtitle);
 
 		_endText = MakeLabel(30, new Color(0.6f, 0.9f, 1f));

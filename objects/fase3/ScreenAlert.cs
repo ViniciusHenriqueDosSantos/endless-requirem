@@ -10,7 +10,7 @@ public partial class ScreenAlert : CanvasLayer
 	private const float FadeTime = 0.6f;
 
 	private readonly ColorRect[] _edges = new ColorRect[4];
-	private Label _caption;
+	private Caption _caption;
 	private float _timeLeft;
 	private float _time;
 
@@ -41,21 +41,8 @@ public partial class ScreenAlert : CanvasLayer
 			_edges[i] = edge;
 		}
 
-		_caption = new Label
-		{
-			HorizontalAlignment = HorizontalAlignment.Center,
-			AutowrapMode = TextServer.AutowrapMode.WordSmart,
-			MouseFilter = Control.MouseFilterEnum.Ignore,
-		};
-		_caption.AddThemeFontSizeOverride("font_size", 30);
-		_caption.AddThemeColorOverride("font_color", new Color(1f, 0.85f, 0.8f));
-		_caption.AddThemeConstantOverride("outline_size", 10);
-		_caption.AddThemeColorOverride("font_outline_color", new Color(0.35f, 0f, 0f));
-		_caption.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.TopWide);
-		_caption.OffsetTop = 40;
-		_caption.OffsetBottom = 120;
-		_caption.OffsetLeft = 60;
-		_caption.OffsetRight = -60;
+		// legenda do perigo embaixo (onde o jogador está olhando), acima das legendas do Hud
+		_caption = Caption.AtBottom(Caption.Kind.Alert, 28, 266, 206);
 		root.AddChild(_caption);
 
 		Visible = false;

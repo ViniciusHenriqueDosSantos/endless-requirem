@@ -10,8 +10,13 @@ INK = C["ink"]
 # ======================================================================== ESTUDANTE (16x24)
 # Folha 4 colunas x 3 linhas: linha 0 = de frente (descendo), 1 = de costas (subindo), 2 = de lado (direita).
 # Coluna 0 = parado; 0..3 = ciclo de caminhada.
-def student(direction, frame):
+def student(direction, frame, girl=False):
     cv = Canvas(16, 24)
+    # a estudante (escolha no menu): moletom vinho, cabelo comprido e presilha amarela
+    C = dict(globals()["C"])
+    if girl:
+        C["hood"], C["hood_l"], C["hood_d"] = hexc("7a2e4f"), hexc("9c4068"), hexc("541f37")
+        C["hair"], C["hair_l"] = hexc("3a2418"), hexc("5c3a26")
     bob = 1 if frame in (1, 3) else 0
     step = {0: 0, 1: 1, 2: 0, 3: -1}[frame]
     y0 = bob  # corpo desce 1 px nos passos
@@ -75,6 +80,8 @@ def student(direction, frame):
             cv.hline(7, hy + 7, 2, C["skin_d"])
         else:
             cv.rect(4, hy, 8, 7, C["hair"]); cv.hline(5, hy, 6, C["hair_l"]); cv.hline(5, hy + 6, 6, shade(C["hair"], 0.1))
+    if girl:
+        girl_hair(cv, direction, hy, C)
     cv.outline(INK)
     # sombra no chão, só onde não tem desenho
     for yy in (22, 23):
@@ -84,9 +91,36 @@ def student(direction, frame):
     return cv
 
 
-def student_roll(frame):
+def girl_hair(cv, direction, hy, C):
+    """Cabelo comprido da estudante por cima da cabeça do estudante (mesma silhueta de corpo)."""
+    hair, hair_l, clip = C["hair"], C["hair_l"], C["tassel"]
+    if direction == "down":
+        # franja de lado e mechas caindo dos dois lados do rosto até os ombros
+        cv.rect(3, hy + 1, 2, 10, hair); cv.rect(11, hy + 1, 2, 10, hair)
+        cv.vline(3, hy + 2, 8, hair_l)
+        cv.rect(5, hy + 3, 3, 1, hair)
+        cv.put(11, hy + 1, clip); cv.put(12, hy + 1, clip)              # presilha
+        cv.put(5, hy + 5, INK); cv.put(10, hy + 5, INK)                  # cílios
+        cv.put(6, hy + 7, hexc("d9826f")); cv.put(9, hy + 7, hexc("d9826f"))  # bochechas
+    elif direction == "up":
+        # cabelo comprido cobrindo a parte de cima da mochila
+        cv.rect(3, hy, 10, 11, hair); cv.hline(4, hy, 8, hair_l); cv.vline(4, hy + 2, 7, hair_l)
+        cv.hline(4, hy + 10, 8, shade(hair, 0.15))
+        cv.put(11, hy + 1, clip); cv.put(12, hy + 1, clip)
+    else:
+        # rabo de cavalo atrás da cabeça e cílio
+        cv.rect(2, hy + 2, 3, 7, hair); cv.vline(2, hy + 3, 5, hair_l); cv.put(3, hy + 9, hair)
+        cv.put(5, hy + 1, clip)
+        cv.put(10, hy + 4, INK)
+
+
+def student_roll(frame, girl=False):
     """Cambalhota: o estudante encolhido (moletom, mochila, cabelo, tênis) girando 90° por quadro."""
     from PIL import Image
+    C = dict(globals()["C"])
+    if girl:
+        C["hood"], C["hood_l"] = hexc("7a2e4f"), hexc("9c4068")
+        C["hair"], C["hair_l"] = hexc("3a2418"), hexc("5c3a26")
     ball = Canvas(16, 16)
     ball.ellipse(8, 8, 6.5, 6.5, C["hood"])
     ball.ellipse(7, 7, 4.5, 4.5, C["hood_l"])
@@ -104,9 +138,10 @@ def student_roll(frame):
     return cv
 
 
-def player_sheet():
+def player_sheet(girl=False):
     # linhas: 0 frente, 1 costas, 2 lado, 3 cambalhota
-    frames = [student(d, f) for d in ("down", "up", "side") for f in range(4)] + [student_roll(f) for f in range(4)]
+    frames = ([student(d, f, girl) for d in ("down", "up", "side") for f in range(4)]
+              + [student_roll(f, girl) for f in range(4)])
     return sheet(frames, 4)
 
 
@@ -273,6 +308,7 @@ def tia_sheet():
 
 if __name__ == "__main__":
     player_sheet().save(OUT + "estudante.png")
+    player_sheet(girl=True).save(OUT + "estudante_garota.png")
     for k in ("normal", "fast", "tank"):
         ghost_sheet(k).save(OUT + f"fantasma_{k}.png")
     tia_sheet().save(OUT + "tia_cantina.png")

@@ -83,7 +83,7 @@ public partial class Room : Node2D
 	private float _timeLeft;
 	private bool _spawnFinalEnemy;
 
-	private Label _banner;
+	private Caption _banner;
 	private float _bannerTimer;
 
 	public int AliveEnemies => _enemies.Count;
@@ -100,6 +100,11 @@ public partial class Room : Node2D
 
 		CreateTrigger();
 		CreateBanner();
+
+		// dificuldade escolhida no menu: mais ou menos fantasmas, sobrevivência mais curta ou mais longa
+		EnemiesPerWave = Mathf.Max(1, Mathf.RoundToInt(EnemiesPerWave * GameState.EnemyCountScale));
+		SurviveMaxAlive = Mathf.Max(1, Mathf.RoundToInt(SurviveMaxAlive * GameState.EnemyCountScale));
+		SurviveTime = Mathf.Round(SurviveTime * GameState.SurviveTimeScale);
 	}
 
 	private void CreateTrigger()
@@ -117,17 +122,8 @@ public partial class Room : Node2D
 	private void CreateBanner()
 	{
 		CanvasLayer layer = new() { Name = "Banner", Layer = 3 };
-		_banner = new Label
-		{
-			HorizontalAlignment = HorizontalAlignment.Center,
-			Modulate = new Color(0.55f, 1f, 0.7f),
-		};
-		_banner.AddThemeFontSizeOverride("font_size", 40);
-		_banner.AddThemeConstantOverride("outline_size", 8);
-		_banner.AddThemeColorOverride("font_outline_color", Colors.Black);
-		_banner.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.BottomWide);
-		_banner.OffsetTop = -260;
-		_banner.OffsetBottom = -200;
+		// aviso grande da sala ("PORTAS TRANCADAS!"), embaixo, acima das legendas do Hud
+		_banner = Caption.AtBottom(Caption.Kind.Banner, 34, 196, 138);
 		layer.AddChild(_banner);
 		AddChild(layer);
 	}
