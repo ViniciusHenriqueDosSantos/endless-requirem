@@ -8,7 +8,7 @@
 script = ExtResource("1_script")
 Name = "BIBLIOTECÁRIA"
 BodyColor = Color(0.42, 0.48, 0.78, 1)
-Health = 120
+Health = 70
 Cycles = 1
 ShieldDownTime = 0.0
 TargetHealth = 0
