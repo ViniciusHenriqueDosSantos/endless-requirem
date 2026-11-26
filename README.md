@@ -5,7 +5,8 @@ Jogo de ação e tiro top-down feito em **Godot 4.7.2 (.NET / C#)** para a disci
 2061. A IA chamada MENTORA fechou as faculdades. Você volta ao campus abandonado, cheio de fantasmas de alunos que nunca se formaram, para buscar o seu diploma.
 
 > Estado atual: **Fases 1 e 2 completas em cinza**.
-> - Menu: escolha o personagem (ele ou ela) e a dificuldade (Fácil / Médio / Difícil; Médio = valores originais, ajustes em `GameState`).
+> - Abertura: letreiro no espaço com fanfarra original (`tools/audio/gen_intro.py`).
+> - Menu: escolha o personagem (Téo ou Lia) e a dificuldade (Fácil / Médio / Difícil; Médio = valores originais, ajustes em `GameState`).
 > - Fase 1: Entrada (placas com os comandos) → Portaria → RU (40 s; micro-ondas brilha quando você pega a marmita) → Cantina (Tia da Cantina; o sofá cinza serve de cobertura) → Elevador.
 > - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (chave) → caixas (livro) → devolução → Bibliotecária (surda, enxerga pela luz: furtividade e caçada) → escada desabando atrás de você (8 lances do térreo ao 4º andar, com giro de câmera a cada lance; barricadas, degraus quebrados, lâmpadas caindo e extintores rolando).
 > - Arte: a **Fase 1 já tem pixel art** baseada no campus de verdade (tour 360° da UNIFESP SJC), à noite e abandonada, com lanterna e luzes piscando. Veja `tools/art/README.md`.

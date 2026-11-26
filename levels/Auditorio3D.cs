@@ -33,6 +33,14 @@ public partial class Auditorio3D : Node
 	// altura do chão (aproximada, uma rampa) num ponto do corredor
 	private static float RampY(float z) => Mathf.Clamp(TierRise + (z - FirstRowZ) * TierRise / RowStep, 0f, LandingY);
 	private const float CenterAisleLeft = -1.28f, CenterAisleRight = 1.3f;
+	// 5 poltronas de cada lado (eram 6): os corredores das paredes ficaram com 1,6 m (eram 0,9 m)
+	private const int SeatsPerSide = 5;
+	private const float SeatWidth = 0.72f;
+	private const float LeftSeatsStart = CenterAisleLeft - SeatsPerSide * SeatWidth;
+	private const float RightSeatsEnd = CenterAisleRight + SeatsPerSide * SeatWidth;
+	// A rampa dos corredores entra este tanto por baixo das poltronas e o degrau começa só depois:
+	// o jogador (cápsula de 0,3 m) não esbarra mais na quina do degrau atrás das cadeiras.
+	private const float AisleOverlap = 0.4f;
 	private static readonly Vector3 DiplomaSpot = new(0, StageHeight, -14.4f);
 	private static readonly Vector3 ScreenCenter = new(0, 3.7f, StageBackZ + 0.08f);
 
@@ -191,7 +199,11 @@ public partial class Auditorio3D : Node
 	private void BuildTiers(Node3D world, Material wood)
 	{
 		Material carpet = Textured("carpete", 1f, Colors.White);
-		float[][] blocks = { new[] { -HalfWidth + 0.9f, CenterAisleLeft }, new[] { CenterAisleRight, HalfWidth - 0.88f } };
+		float[][] blocks =
+		{
+			new[] { LeftSeatsStart + AisleOverlap, CenterAisleLeft - AisleOverlap },
+			new[] { CenterAisleRight + AisleOverlap, RightSeatsEnd - AisleOverlap },
+		};
 		for (int row = 0; row <= Rows; row++)
 		{
 			bool landing = row == Rows;
@@ -212,9 +224,9 @@ public partial class Auditorio3D : Node
 		float zEnd = LandingZ, rise = LandingY;
 		(float left, float right, float zStart)[] aisles =
 		{
-			(CenterAisleLeft, CenterAisleRight, FirstRowZ - RowStep),
-			(-HalfWidth, -HalfWidth + 0.9f, FirstRowZ - RowStep),
-			(HalfWidth - 0.88f, HalfWidth, FirstRowZ - RowStep),
+			(CenterAisleLeft - AisleOverlap, CenterAisleRight + AisleOverlap, FirstRowZ - RowStep),
+			(-HalfWidth, LeftSeatsStart + AisleOverlap, FirstRowZ - RowStep),
+			(RightSeatsEnd - AisleOverlap, HalfWidth, FirstRowZ - RowStep),
 		};
 		foreach ((float left, float right, float zStart) in aisles)
 		{
@@ -307,15 +319,15 @@ public partial class Auditorio3D : Node
 	{
 		Material fabric = Textured("poltrona", 2f, Colors.White);
 		Material arm = Plain(new Color(0.22f, 0.15f, 0.12f));
-		const float seatWidth = 0.72f;
+		const float seatWidth = SeatWidth;
 		for (int row = 0; row < 5; row++)
 		{
 			float z = RowZ(row);
 			float y = TierTop(row);
 			foreach (float side in new[] { -1f, 1f })
 			{
-				float start = side < 0 ? -5.6f : 1.3f;
-				for (int k = 0; k < 6; k++)
+				float start = side < 0 ? LeftSeatsStart : CenterAisleRight;
+				for (int k = 0; k < SeatsPerSide; k++)
 				{
 					float x = start + seatWidth * (k + 0.5f);
 					Block(world, new Vector3(x, y + 0.25f, z), new Vector3(seatWidth - 0.08f, 0.5f, 0.55f), fabric, false);
@@ -323,7 +335,7 @@ public partial class Auditorio3D : Node
 					Block(world, new Vector3(x - seatWidth / 2, y + 0.55f, z + 0.05f), new Vector3(0.06f, 0.2f, 0.55f), arm, false);
 				}
 				// uma colisão só para a fileira inteira
-				Collider(world, new Vector3(start + seatWidth * 3, y + 0.5f, z + 0.1f), new Vector3(seatWidth * 6, 1f, 0.8f));
+				Collider(world, new Vector3(start + seatWidth * SeatsPerSide / 2f, y + 0.5f, z + 0.1f), new Vector3(seatWidth * SeatsPerSide, 1f, 0.8f));
 			}
 		}
 	}
