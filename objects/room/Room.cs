@@ -380,10 +380,40 @@ public partial class Room : Node2D
 		{
 			if (child is not Door door) continue;
 			if (locked)
+			{
+				PushPlayerOutOfDoor(door);
 				door.Lock();
+			}
 			else
 				door.Unlock();
 		}
+	}
+
+	// Metade do corpo do jogador (colisão dos pés) e a folga que ele ganha ao ser empurrado.
+	private static readonly Vector2 PlayerHalfBody = new(20, 8);
+	private const float DoorPushMargin = 12f;
+
+	// A porta vai trancar com o jogador em cima dela (ele ficaria preso dentro da grade/das cadeiras):
+	// empurra o jogador para o lado de dentro da sala, logo depois da porta.
+	private void PushPlayerOutOfDoor(Door door)
+	{
+		if (!IsInstanceValid(_player)) return;
+
+		Rect2 doorRect = new(door.GlobalPosition + new Vector2(-door.Size.X / 2, -door.Size.Y), door.Size);
+		Vector2 p = _player.GlobalPosition;
+		Rect2 body = new(p - PlayerHalfBody, PlayerHalfBody * 2);
+		if (!doorRect.Intersects(body)) return;
+
+		Vector2 roomCenter = GlobalPosition + Size / 2;
+		if (door.Size.Y >= door.Size.X)
+			p.X = roomCenter.X < doorRect.GetCenter().X
+				? doorRect.Position.X - PlayerHalfBody.X - DoorPushMargin
+				: doorRect.End.X + PlayerHalfBody.X + DoorPushMargin;
+		else
+			p.Y = roomCenter.Y < doorRect.GetCenter().Y
+				? doorRect.Position.Y - PlayerHalfBody.Y - DoorPushMargin
+				: doorRect.End.Y + PlayerHalfBody.Y + DoorPushMargin;
+		_player.GlobalPosition = p;
 	}
 
 	private void ShowBanner(string text)

@@ -2,8 +2,9 @@ using Godot;
 
 // Caminho do jogador até o objetivo, pelo chão da fase (contornando paredes, passando pelas portas).
 // É uma grade com um quadrado por tile, montada a partir da camada de chão (TileMapLayer no grupo "floor"):
-// tudo que é chão está livre. Serve para a seta de direção (GuideArrow) apontar para onde andar,
-// e não em linha reta através da parede.
+// tudo que é chão está livre, menos (a cada consulta) os móveis sólidos e as portas trancadas, que o jogador
+// não atravessa. Serve para a seta de direção (GuideArrow) apontar para onde andar, contornando paredes,
+// balcões e estantes, e não em linha reta através deles.
 public static class PlayerRoute
 {
 	private static AStarGrid2D _grid;
@@ -65,9 +66,42 @@ public static class PlayerRoute
 			return to;
 		if (start == end) return to;
 
-		Godot.Collections.Array<Vector2I> path = _grid.GetIdPath(start, end);
+		// Móveis e portas trancadas bloqueiam só durante esta consulta (eles mudam: estante cai, porta abre).
+		System.Collections.Generic.List<Vector2I> blocked = BlockDynamic(anyNode, start, end);
+		Godot.Collections.Array<Vector2I> path = _grid.GetIdPath(start, end, true);
+		foreach (Vector2I cell in blocked)
+			_grid.SetPointSolid(cell, false);
 		if (path.Count < 2) return to;
 		if (path.Count - 1 <= lookahead) return to;
 		return ToWorld(path[lookahead]);
+	}
+
+	// Marca como bloqueados os quadrados (com o centro) debaixo de móveis sólidos e portas trancadas.
+	// Nunca o quadrado do jogador nem o do destino. Devolve os que marcou, para desmarcar depois.
+	private static System.Collections.Generic.List<Vector2I> BlockDynamic(Node anyNode, Vector2I start, Vector2I end)
+	{
+		System.Collections.Generic.List<Vector2I> marked = new();
+		void Block(Rect2 rect)
+		{
+			Vector2I from = ToCell(rect.Position);
+			Vector2I to = ToCell(rect.End);
+			for (int y = from.Y; y <= to.Y; y++)
+				for (int x = from.X; x <= to.X; x++)
+				{
+					Vector2I cell = new(x, y);
+					if (cell == start || cell == end || !IsFree(cell)) continue;
+					if (!rect.HasPoint(ToWorld(cell))) continue;
+					_grid.SetPointSolid(cell, true);
+					marked.Add(cell);
+				}
+		}
+
+		foreach (Node node in anyNode.GetTree().GetNodesInGroup("cover"))
+			if (node is Prop prop && prop.IsVisibleInTree())
+				Block(prop.GlobalFootRect);
+		foreach (Node node in anyNode.GetTree().GetNodesInGroup("obstacles"))
+			if (node is Door door && door.IsLocked)
+				Block(new Rect2(door.GlobalPosition + new Vector2(-door.Size.X / 2, -door.Size.Y), door.Size));
+		return marked;
 	}
 }

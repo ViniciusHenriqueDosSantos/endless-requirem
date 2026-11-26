@@ -14,6 +14,7 @@ public partial class GuideArrow : Control
 
 	private Node2D _player;
 	private Vector2 _target;
+	private string _label = "";
 	private bool _active;
 	private Vector2 _step;
 	private float _routeTimer;
@@ -23,8 +24,9 @@ public partial class GuideArrow : Control
 
 	public void Setup(Node2D player) => _player = player;
 
-	public void SetTarget(Vector2 globalTarget)
+	public void SetTarget(Vector2 globalTarget, string label = "")
 	{
+		_label = label;
 		if (!_active || globalTarget.DistanceTo(_target) > 32f)
 			_routeTimer = 0;   // objetivo novo: recalcula o caminho já
 		_target = globalTarget;
@@ -84,10 +86,23 @@ public partial class GuideArrow : Control
 		Vector2[] arrow = { tip, back + side, back + dir * 7f, back - side };
 		DrawColoredPolygon(arrow, new Color(Color, 0.75f + 0.25f * pulse));
 		DrawPolyline(new[] { arrow[0], arrow[1], arrow[2], arrow[3], arrow[0] }, new Color(0, 0, 0, 0.8f), 2f);
+		DrawLabel(tip + dir * 18f);
 
 		// Objetivo na tela: marca ele também.
 		if (view.Grow(-24).HasPoint(target))
 			DrawMarker(target + new Vector2(0, -26 - 8 * pulse));
+	}
+
+	// Nome do destino, logo depois da ponta da seta (com contorno, para ler em qualquer fundo).
+	private void DrawLabel(Vector2 at)
+	{
+		if (_label == "") return;
+		Font font = ThemeDB.FallbackFont;
+		const int size = 18;
+		Vector2 textSize = font.GetStringSize(_label, HorizontalAlignment.Left, -1, size);
+		Vector2 pos = at - new Vector2(textSize.X / 2, -size / 2f);
+		DrawStringOutline(font, pos, _label, HorizontalAlignment.Left, -1, size, 5, new Color(0, 0, 0, 0.85f));
+		DrawString(font, pos, _label, HorizontalAlignment.Left, -1, size, Color);
 	}
 
 	// Setinha apontando para baixo, em cima do objetivo.

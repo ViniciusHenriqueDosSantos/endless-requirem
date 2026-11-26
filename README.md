@@ -72,7 +72,7 @@ objects/                uma pasta por objeto do jogo
   bullet/               projétil
   weapon/               armas (cada .tres é uma arma)
   heal_drop/            item de cura
-  hud/                  textos na tela e a seta de direção (GuideArrow: segue o caminho pelo chão até o objetivo)
+  hud/                  textos na tela e a seta de direção com o nome do destino (GuideArrow: segue o caminho pelo chão, contornando móveis e portas trancadas)
   obstacle/             obstáculo
   door/                 porta que tranca e abre (pode exigir um item, como a catraca)
   room/                 sala: ondas, sobrevivência por tempo ou segura
