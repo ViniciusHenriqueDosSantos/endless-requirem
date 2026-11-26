@@ -20,9 +20,6 @@ public partial class Hud : CanvasLayer
 	private Label _bossName;
 	private ColorRect _bossFill;
 
-	// Distância da borda da tela onde a seta aparece.
-	private const float PointerMargin = 48f;
-	private ScreenPointer _pointer;
 	private GuideArrow _guide;
 	private Label _counter;
 
@@ -60,10 +57,6 @@ public partial class Hud : CanvasLayer
 		_counter.OffsetTop = 16;
 		_counter.OffsetBottom = 70;
 		AddChild(_counter);
-
-		_pointer = new ScreenPointer { Visible = false, MouseFilter = Control.MouseFilterEnum.Ignore };
-		_pointer.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-		AddChild(_pointer);
 
 		_guide = new GuideArrow { Visible = false, MouseFilter = Control.MouseFilterEnum.Ignore };
 		_guide.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
@@ -121,28 +114,12 @@ public partial class Hud : CanvasLayer
 		HidePointer();
 	}
 
-	// Objetivo atual: a seta em volta do jogador mostra o caminho até ele (GuideArrow) e,
-	// com o ponto fora da tela, outra seta na borda da tela aponta para ele com o nome.
-	// As fases chamam a cada quadro com o objetivo do momento; HidePointer tira as duas.
+	// Objetivo atual: a seta em volta do jogador mostra o caminho até ele (GuideArrow), com o nome do lugar.
+	// (Não tem mais a seta na borda da tela: ela apontava em linha reta, através das paredes, e confundia.)
+	// As fases chamam a cada quadro com o objetivo do momento; HidePointer tira a seta.
 	public void PointTo(Vector2 globalPosition, string label)
 	{
-		_guide.SetTarget(globalPosition);
-
-		Rect2 view = GetViewport().GetVisibleRect();
-		Vector2 screen = GetViewport().GetCanvasTransform() * globalPosition;
-		Rect2 inner = view.Grow(-PointerMargin);
-
-		if (inner.HasPoint(screen))
-		{
-			_pointer.Visible = false;
-			return;
-		}
-
-		Vector2 clamped = new(
-			Mathf.Clamp(screen.X, inner.Position.X, inner.End.X),
-			Mathf.Clamp(screen.Y, inner.Position.Y, inner.End.Y));
-		_pointer.Label = label;
-		_pointer.PointAt(clamped, (screen - view.GetCenter()).Angle());
+		_guide.SetTarget(globalPosition, label);
 	}
 
 	// Atalhos de teste (só ao rodar pelo editor, nunca no jogo exportado):
@@ -177,7 +154,6 @@ public partial class Hud : CanvasLayer
 
 	public void HidePointer()
 	{
-		_pointer.Visible = false;
 		_guide.Clear();
 	}
 
