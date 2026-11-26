@@ -10,11 +10,11 @@ public partial class GuideArrow : Control
 	private const float Radius = 78f;            // distância da seta até o jogador (na tela)
 	private const float BodyOffset = -36f;       // o centro do corpo do jogador fica acima dos pés
 	private const float NearDistance = 130f;     // perto assim do objetivo, a seta do jogador some
-	private const float RouteInterval = 0.2f;
+	private const float RouteInterval = 0.15f;
+	private const float TurnSpeed = 7f;          // quão rápido a seta gira até a direção nova (suave, sem tremer)
 
 	private Node2D _player;
 	private Vector2 _target;
-	private string _label = "";
 	private bool _active;
 	private Vector2 _step;
 	private float _routeTimer;
@@ -24,9 +24,11 @@ public partial class GuideArrow : Control
 
 	public void Setup(Node2D player) => _player = player;
 
-	public void SetTarget(Vector2 globalTarget, string label = "")
+	// Direção atual da seta (radianos, na tela).
+	public float Angle => _angle;
+
+	public void SetTarget(Vector2 globalTarget)
 	{
-		_label = label;
 		if (!_active || globalTarget.DistanceTo(_target) > 32f)
 			_routeTimer = 0;   // objetivo novo: recalcula o caminho já
 		_target = globalTarget;
@@ -52,6 +54,17 @@ public partial class GuideArrow : Control
 			_routeTimer = RouteInterval;
 			_step = PlayerRoute.NextStep(_player, _player.GlobalPosition, _target);
 		}
+
+		// Gira com suavidade até a direção do próximo trecho (na tela: vale também com a câmera girada).
+		Transform2D canvas = GetViewport().GetCanvasTransform();
+		Vector2 player = canvas * (_player.GlobalPosition + new Vector2(0, BodyOffset));
+		Vector2 toStep = canvas * _step - player;
+		if (toStep.LengthSquared() > 1f)
+		{
+			float wanted = toStep.Angle();
+			_angle = _hasAngle ? Mathf.LerpAngle(_angle, wanted, 1f - Mathf.Exp(-TurnSpeed * dt)) : wanted;
+			_hasAngle = true;
+		}
 		QueueRedraw();
 	}
 
@@ -73,36 +86,19 @@ public partial class GuideArrow : Control
 			return;
 		}
 
-		// Seta em volta do jogador, apontando para o próximo trecho do caminho (com a câmera girada também).
-		Vector2 step = canvas * _step;
-		float wanted = (step - player).Angle();
-		_angle = _hasAngle ? Mathf.LerpAngle(_angle, wanted, 0.25f) : wanted;
-		_hasAngle = true;
-
+		// Seta em volta do jogador, apontando para o próximo trecho do caminho (fixa na distância, sem pulsar).
+		if (!_hasAngle) return;
 		Vector2 dir = Vector2.FromAngle(_angle);
-		Vector2 tip = player + dir * (Radius + 14f + 5f * pulse);
-		Vector2 back = player + dir * (Radius - 6f + 5f * pulse);
+		Vector2 tip = player + dir * (Radius + 14f);
+		Vector2 back = player + dir * (Radius - 6f);
 		Vector2 side = dir.Orthogonal() * 13f;
 		Vector2[] arrow = { tip, back + side, back + dir * 7f, back - side };
-		DrawColoredPolygon(arrow, new Color(Color, 0.75f + 0.25f * pulse));
+		DrawColoredPolygon(arrow, new Color(Color, 0.9f));
 		DrawPolyline(new[] { arrow[0], arrow[1], arrow[2], arrow[3], arrow[0] }, new Color(0, 0, 0, 0.8f), 2f);
-		DrawLabel(tip + dir * 18f);
 
 		// Objetivo na tela: marca ele também.
 		if (view.Grow(-24).HasPoint(target))
 			DrawMarker(target + new Vector2(0, -26 - 8 * pulse));
-	}
-
-	// Nome do destino, logo depois da ponta da seta (com contorno, para ler em qualquer fundo).
-	private void DrawLabel(Vector2 at)
-	{
-		if (_label == "") return;
-		Font font = ThemeDB.FallbackFont;
-		const int size = 18;
-		Vector2 textSize = font.GetStringSize(_label, HorizontalAlignment.Left, -1, size);
-		Vector2 pos = at - new Vector2(textSize.X / 2, -size / 2f);
-		DrawStringOutline(font, pos, _label, HorizontalAlignment.Left, -1, size, 5, new Color(0, 0, 0, 0.85f));
-		DrawString(font, pos, _label, HorizontalAlignment.Left, -1, size, Color);
 	}
 
 	// Setinha apontando para baixo, em cima do objetivo.

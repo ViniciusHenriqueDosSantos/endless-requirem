@@ -57,9 +57,15 @@ public static class PlayerRoute
 		return false;
 	}
 
-	// Ponto para onde andar agora: alguns tiles à frente no caminho até o destino.
+	// Até onde procura a próxima curva no caminho (em quadrados).
+	private const int MaxLookahead = 24;
+	private const float BodyHalfWidth = 18f;
+
+	// Ponto para onde andar agora: a próxima curva do caminho, isto é, o ponto mais adiantado do caminho
+	// que dá para alcançar em linha reta sem esbarrar em parede, móvel ou porta trancada. Assim a seta só
+	// muda de direção quando é preciso virar (e não a cada quadrado andado).
 	// Sem chão na fase (ou sem caminho), é o próprio destino (a seta aponta em linha reta).
-	public static Vector2 NextStep(Node anyNode, Vector2 from, Vector2 to, int lookahead = 3)
+	public static Vector2 NextStep(Node anyNode, Vector2 from, Vector2 to)
 	{
 		if (!EnsureBuilt(anyNode)) return to;
 		if (!TryNearestFree(ToCell(from), out Vector2I start) || !TryNearestFree(ToCell(to), out Vector2I end))
@@ -69,11 +75,45 @@ public static class PlayerRoute
 		// Móveis e portas trancadas bloqueiam só durante esta consulta (eles mudam: estante cai, porta abre).
 		System.Collections.Generic.List<Vector2I> blocked = BlockDynamic(anyNode, start, end);
 		Godot.Collections.Array<Vector2I> path = _grid.GetIdPath(start, end, true);
+		Vector2 step = to;
+		if (path.Count >= 2)
+		{
+			bool reachesEnd = path[path.Count - 1] == end;
+			step = reachesEnd ? to : ToWorld(path[path.Count - 1]);
+			if (!(reachesEnd && HasClearLine(from, to)))
+			{
+				// do mais longe para o mais perto: o primeiro que dá para ver em linha reta
+				int last = Mathf.Min(path.Count - 1, MaxLookahead);
+				step = ToWorld(path[1]);
+				for (int i = last; i >= 1; i--)
+					if (HasClearLine(from, ToWorld(path[i])))
+					{
+						step = ToWorld(path[i]);
+						break;
+					}
+			}
+		}
 		foreach (Vector2I cell in blocked)
 			_grid.SetPointSolid(cell, false);
-		if (path.Count < 2) return to;
-		if (path.Count - 1 <= lookahead) return to;
-		return ToWorld(path[lookahead]);
+		return step;
+	}
+
+	// Linha reta livre (na largura do corpo do jogador) pela grade: só chão, sem móvel nem porta trancada.
+	private static bool HasClearLine(Vector2 from, Vector2 to)
+	{
+		Vector2 delta = to - from;
+		float length = delta.Length();
+		if (length < 1f) return true;
+		Vector2 side = delta / length * BodyHalfWidth;
+		side = new Vector2(-side.Y, side.X);
+		int samples = Mathf.CeilToInt(length / 16f);
+		for (int k = 0; k <= samples; k++)
+		{
+			Vector2 p = from + delta * (k / (float)samples);
+			if (!IsFree(ToCell(p)) || !IsFree(ToCell(p + side)) || !IsFree(ToCell(p - side)))
+				return false;
+		}
+		return true;
 	}
 
 	// Marca como bloqueados os quadrados (com o centro) debaixo de móveis sólidos e portas trancadas.
