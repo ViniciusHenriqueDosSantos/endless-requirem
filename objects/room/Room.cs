@@ -44,13 +44,17 @@ public partial class Room : Node2D
 	// Fantasma nunca surge mais perto do jogador que isto (pixels). O roteiro pode mudar durante a luta.
 	[Export] public float MinSpawnDistance = 260f;
 
-	// Última onda traz um fantasma grande (Tank) a mais. Onde ele caiu fica em FinalEnemyPosition.
+	// Última onda traz um fantasma especial a mais (FinalEnemyKind: Tank, ou o zelador). Onde ele caiu fica em FinalEnemyPosition.
 	[Export] public bool FinalWaveTank;
+	[Export] public Enemy.Kind FinalEnemyKind = Enemy.Kind.Tank;
 	[Export] public string FinalWaveMessage = "";
 	[Export] public bool HasBoss;
 
 	// Faixas que aparecem quando a luta começa e quando a sala fica limpa (vazio = não mostra).
 	[Export] public string StartBanner = "PORTAS TRANCADAS!";
+
+	// Música desta luta (sounds/music/<nome>.wav). O roteiro da fase pode trocar (ex.: "chefe" na Cantina).
+	public string FightMusic = "luta";
 	[Export] public string ClearBanner = "SALA LIMPA!";
 
 	// Ajuste dos fantasmas desta sala: vida e velocidade (1 = normal).
@@ -88,6 +92,8 @@ public partial class Room : Node2D
 
 	public int AliveEnemies => _enemies.Count;
 	public Vector2 FinalEnemyPosition { get; private set; }
+	// O inimigo especial da última onda, enquanto está vivo (para a barra de vida, a seta...).
+	public Enemy FinalEnemy { get; private set; }
 	public bool IsCleared => _state == State.Cleared;
 	public bool IsFighting => _state == State.Fighting;
 	public float TimeLeft => _timeLeft;
@@ -163,6 +169,7 @@ public partial class Room : Node2D
 		_timeLeft = SurviveTime;
 
 		SetDoorsLocked(true);
+		Music.FightStarted(FightMusic);
 		_player?.TriggerShake(LockShake);
 		if (StartBanner != "")
 			ShowBanner(StartBanner);
@@ -184,6 +191,8 @@ public partial class Room : Node2D
 	// Volta a sala ao estado inicial (usado quando o jogador é reprovado).
 	public void ResetRoom()
 	{
+		if (_state == State.Fighting)
+			Music.FightEnded();
 		FreeEnemies();
 		_spawnFinalEnemy = false;
 		_state = State.Waiting;
@@ -285,8 +294,13 @@ public partial class Room : Node2D
 		{
 			// Inimigo especial da última onda (ex.: o zelador). Guarda onde ele caiu.
 			_spawnFinalEnemy = false;
-			Enemy special = CreateEnemy(Enemy.Kind.Tank, PickSpawnPoint());
-			special.TreeExiting += () => FinalEnemyPosition = special.GlobalPosition;
+			Enemy special = CreateEnemy(FinalEnemyKind, PickSpawnPoint());
+			FinalEnemy = special;
+			special.TreeExiting += () =>
+			{
+				FinalEnemyPosition = special.GlobalPosition;
+				FinalEnemy = null;
+			};
 			return;
 		}
 
@@ -355,6 +369,8 @@ public partial class Room : Node2D
 
 	private void Clear()
 	{
+		if (_state == State.Fighting)
+			Music.FightEnded();
 		_state = State.Cleared;
 		SetDoorsLocked(false);
 		if (ClearBanner != "")
@@ -368,10 +384,40 @@ public partial class Room : Node2D
 		{
 			if (child is not Door door) continue;
 			if (locked)
+			{
+				PushPlayerOutOfDoor(door);
 				door.Lock();
+			}
 			else
 				door.Unlock();
 		}
+	}
+
+	// Metade do corpo do jogador (colisão dos pés) e a folga que ele ganha ao ser empurrado.
+	private static readonly Vector2 PlayerHalfBody = new(20, 8);
+	private const float DoorPushMargin = 12f;
+
+	// A porta vai trancar com o jogador em cima dela (ele ficaria preso dentro da grade/das cadeiras):
+	// empurra o jogador para o lado de dentro da sala, logo depois da porta.
+	private void PushPlayerOutOfDoor(Door door)
+	{
+		if (!IsInstanceValid(_player)) return;
+
+		Rect2 doorRect = new(door.GlobalPosition + new Vector2(-door.Size.X / 2, -door.Size.Y), door.Size);
+		Vector2 p = _player.GlobalPosition;
+		Rect2 body = new(p - PlayerHalfBody, PlayerHalfBody * 2);
+		if (!doorRect.Intersects(body)) return;
+
+		Vector2 roomCenter = GlobalPosition + Size / 2;
+		if (door.Size.Y >= door.Size.X)
+			p.X = roomCenter.X < doorRect.GetCenter().X
+				? doorRect.Position.X - PlayerHalfBody.X - DoorPushMargin
+				: doorRect.End.X + PlayerHalfBody.X + DoorPushMargin;
+		else
+			p.Y = roomCenter.Y < doorRect.GetCenter().Y
+				? doorRect.Position.Y - PlayerHalfBody.Y - DoorPushMargin
+				: doorRect.End.Y + PlayerHalfBody.Y + DoorPushMargin;
+		_player.GlobalPosition = p;
 	}
 
 	private void ShowBanner(string text)

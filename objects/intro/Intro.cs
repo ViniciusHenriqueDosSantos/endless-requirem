@@ -15,6 +15,7 @@ public partial class Intro : Control
 
 	public override void _Ready()
 	{
+		// sem música de fundo aqui: a fanfarra da abertura entra com o letreiro; o tema começa no menu
 		scrollingText = (ShaderMaterial)GetNode<ColorRect>("ScrollingText").Material;
 		scrollingText.SetShaderParameter("text_tex", GetNode<SubViewport>("StoryPage").GetTexture());
 

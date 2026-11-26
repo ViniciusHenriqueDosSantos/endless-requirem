@@ -27,6 +27,7 @@ public partial class MainMenu : Control
 
 	public override void _Ready()
 	{
+		Music.Play("tema");
 		GetNode("SplashBg").AddChild(MenuUi.Logo("res://sprites/ui/menu/logo.png"));
 
 		_home = BuildHome();
