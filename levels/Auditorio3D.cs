@@ -28,19 +28,21 @@ public partial class Auditorio3D : Node
 	private const float TierRise = 0.35f;
 	private static float TierTop(int row) => TierRise * (row + 1);
 	private static float RowZ(int row) => FirstRowZ + row * RowStep;
-	private static readonly float LandingZ = RowZ(Rows - 1) + RowStep / 2;   // começo do patamar do fundo
+	// Cada degrau termina logo atrás do encosto das poltronas da sua fileira: o espaço para as pernas,
+	// na frente de cada fileira, fica todo no mesmo degrau (sem quina no meio, atrás das cadeiras).
+	private const float SeatBack = 0.5f;
+	private static float TierBackZ(int row) => RowZ(row) + SeatBack;
+	private static readonly float LandingZ = TierBackZ(Rows - 1);   // começo do patamar do fundo
 	private static float LandingY => TierTop(Rows);
-	// altura do chão (aproximada, uma rampa) num ponto do corredor
-	private static float RampY(float z) => Mathf.Clamp(TierRise + (z - FirstRowZ) * TierRise / RowStep, 0f, LandingY);
+	// O chão "de verdade" (colisão) da plateia é uma rampa lisa da largura toda, do corredor da frente até o patamar:
+	// os degraus são só visuais, então o jogador nunca trava numa quina, nem nos corredores nem entre as fileiras.
+	private static readonly float RampStartZ = TierBackZ(0) - 1.5f * RowStep;   // no corredor da frente, antes do 1º degrau
+	private static float RampY(float z) => Mathf.Clamp((z - RampStartZ) * LandingY / (LandingZ - RampStartZ), 0f, LandingY);
 	private const float CenterAisleLeft = -1.28f, CenterAisleRight = 1.3f;
 	// 5 poltronas de cada lado (eram 6): os corredores das paredes ficaram com 1,6 m (eram 0,9 m)
 	private const int SeatsPerSide = 5;
 	private const float SeatWidth = 0.72f;
 	private const float LeftSeatsStart = CenterAisleLeft - SeatsPerSide * SeatWidth;
-	private const float RightSeatsEnd = CenterAisleRight + SeatsPerSide * SeatWidth;
-	// A rampa dos corredores entra este tanto por baixo das poltronas e o degrau começa só depois:
-	// o jogador (cápsula de 0,3 m) não esbarra mais na quina do degrau atrás das cadeiras.
-	private const float AisleOverlap = 0.4f;
 	private static readonly Vector3 DiplomaSpot = new(0, StageHeight, -14.4f);
 	private static readonly Vector3 ScreenCenter = new(0, 3.7f, StageBackZ + 0.08f);
 
@@ -194,47 +196,29 @@ public partial class Auditorio3D : Node
 			}
 	}
 
-	// Os degraus da plateia (um por fileira), o patamar do fundo, o tapete vermelho descendo pelo meio e rampas
-	// invisíveis nos corredores (para andar liso, sem travar nos degraus).
+	// Os degraus da plateia (um por fileira, só visuais), o patamar do fundo (com colisão), o tapete vermelho
+	// descendo pelo meio e a rampa invisível da largura toda, que é o chão onde o jogador anda.
 	private void BuildTiers(Node3D world, Material wood)
 	{
 		Material carpet = Textured("carpete", 1f, Colors.White);
-		float[][] blocks =
-		{
-			new[] { LeftSeatsStart + AisleOverlap, CenterAisleLeft - AisleOverlap },
-			new[] { CenterAisleRight + AisleOverlap, RightSeatsEnd - AisleOverlap },
-		};
 		for (int row = 0; row <= Rows; row++)
 		{
 			bool landing = row == Rows;
-			float zFront = RowZ(row) - RowStep / 2;
-			float zBack = landing ? BackZ : zFront + RowStep;
+			float zFront = landing ? LandingZ : TierBackZ(row) - RowStep;
+			float zBack = landing ? BackZ : TierBackZ(row);
 			float top = TierTop(row);
 			float zMid = (zFront + zBack) / 2, depth = zBack - zFront;
 			Block(world, new Vector3(0, top / 2, zMid), new Vector3(HalfWidth * 2, top, depth), wood, landing);
 			Block(world, new Vector3(0, top + 0.01f, zMid), new Vector3(1.4f, 0.02f, depth), carpet, false);
-			if (landing) continue;
-			foreach (float[] b in blocks)   // colisão só debaixo das poltronas (os corredores usam a rampa)
-				Collider(world, new Vector3((b[0] + b[1]) / 2, top / 2, zMid), new Vector3(b[1] - b[0], top, depth));
 		}
-		Block(world, new Vector3(0, 0.01f, (StageFrontZ + RowZ(0) - RowStep / 2) / 2), new Vector3(1.4f, 0.02f, RowZ(0) - RowStep / 2 - StageFrontZ), carpet, false);
+		float firstFront = TierBackZ(0) - RowStep;
+		Block(world, new Vector3(0, 0.01f, (StageFrontZ + firstFront) / 2), new Vector3(1.4f, 0.02f, firstFront - StageFrontZ), carpet, false);
 
-		// rampas invisíveis: do chão da frente até o patamar do fundo
-		// (o corredor do meio começa um pouco antes; os dos lados só depois das escadinhas do palco)
-		float zEnd = LandingZ, rise = LandingY;
-		(float left, float right, float zStart)[] aisles =
-		{
-			(CenterAisleLeft - AisleOverlap, CenterAisleRight + AisleOverlap, FirstRowZ - RowStep),
-			(-HalfWidth, LeftSeatsStart + AisleOverlap, FirstRowZ - RowStep),
-			(RightSeatsEnd - AisleOverlap, HalfWidth, FirstRowZ - RowStep),
-		};
-		foreach ((float left, float right, float zStart) in aisles)
-		{
-			float run = zEnd - zStart;
-			float angle = Mathf.Atan2(rise, run);
-			Collider(world, new Vector3((left + right) / 2, rise / 2 - 0.05f, (zStart + zEnd) / 2),
-				new Vector3(right - left, 0.1f, Mathf.Sqrt(run * run + rise * rise)), new Vector3(-angle, 0, 0));
-		}
+		// rampa invisível: do chão da frente até a beirada do patamar do fundo, de parede a parede
+		float run = LandingZ - RampStartZ, rise = LandingY;
+		float angle = Mathf.Atan2(rise, run);
+		Collider(world, new Vector3(0, rise / 2 - 0.05f, (RampStartZ + LandingZ) / 2),
+			new Vector3(HalfWidth * 2, 0.1f, Mathf.Sqrt(run * run + rise * rise)), new Vector3(-angle, 0, 0));
 	}
 
 	private void BuildStage(Node3D world)
