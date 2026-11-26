@@ -93,6 +93,7 @@ objects/                uma pasta por objeto do jogo
 tools/levelgen/         geradores das plantas (Python). As cenas levels/*.tscn são geradas por eles;
                         mudanças de planta grandes ficam mais fáceis editando o gerador e rodando de novo
   arena_grid/           grade do chão
+tools/audio/music.py    gera as músicas (sounds/music: tema, explorar, luta); objects/music/Music.cs troca a faixa sozinho
 tools/art/              geradores da pixel art (Python). Rode build_all.py para regenerar tudo (ver tools/art/README.md)
 tools/capture/          fotos automáticas de uma fase rodando (para revisar a arte)
 tilesets/               peças de chão e parede (fase1_tileset = arte da Fase 1; placeholder = provisório)

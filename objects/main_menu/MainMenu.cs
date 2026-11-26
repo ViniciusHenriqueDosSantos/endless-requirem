@@ -4,6 +4,7 @@ public partial class MainMenu : Control
 {
 	public override void _Ready()
 	{
+		Music.Play("tema");
 		GetNode<Button>("Buttons/Play").GrabFocus();
 	}
 

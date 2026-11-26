@@ -170,6 +170,7 @@ public partial class Room : Node2D
 		_timeLeft = SurviveTime;
 
 		SetDoorsLocked(true);
+		Music.FightStarted();
 		_player?.TriggerShake(LockShake);
 		if (StartBanner != "")
 			ShowBanner(StartBanner);
@@ -191,6 +192,8 @@ public partial class Room : Node2D
 	// Volta a sala ao estado inicial (usado quando o jogador é reprovado).
 	public void ResetRoom()
 	{
+		if (_state == State.Fighting)
+			Music.FightEnded();
 		FreeEnemies();
 		_spawnFinalEnemy = false;
 		_state = State.Waiting;
@@ -367,6 +370,8 @@ public partial class Room : Node2D
 
 	private void Clear()
 	{
+		if (_state == State.Fighting)
+			Music.FightEnded();
 		_state = State.Cleared;
 		SetDoorsLocked(false);
 		if (ClearBanner != "")

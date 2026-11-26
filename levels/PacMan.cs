@@ -127,6 +127,7 @@ public partial class PacMan : Node2D
 
 	public override void _Ready()
 	{
+		Music.Play("luta");
 		TextureFilter = TextureFilterEnum.Nearest;
 		Input.MouseMode = Input.MouseModeEnum.Visible;
 		_studentTexture = GD.Load<Texture2D>("res://sprites/characters/estudante.png");
