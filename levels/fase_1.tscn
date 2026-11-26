@@ -936,14 +936,14 @@ Solid = false
 [node name="Escopeta" parent="." instance=ExtResource("pickup")]
 position = Vector2(832, 768)
 ItemId = "escopeta"
-DisplayName = "Escopeta"
+DisplayName = "Escopeta de Café"
 Color = Color(0.95, 0.45, 0.2, 1)
 WeaponReward = ExtResource("shotgun")
 StartsHidden = true
 Texture = ExtResource("tex_items_escopeta")
 InspectTexture = ExtResource("tex_items_inspecao_escopeta")
-InspectTitle = "ESCOPETA"
-InspectText = "A Tia guardava embaixo do balcão. Cinco chumbos por tiro: de perto, nenhum fantasma aguenta. Tecla 2."
+InspectTitle = "ESCOPETA DE CAFÉ"
+InspectText = "A garrafa térmica da Tia, com uma colher de pau de coronha. Cinco grãos de café quentinhos por tiro: de perto, nenhum fantasma aguenta. Tecla 2."
 
 [node name="PortaElevador" parent="." instance=ExtResource("door")]
 position = Vector2(192, 512)

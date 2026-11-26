@@ -7,8 +7,8 @@ Jogo de ação e tiro top-down feito em **Godot 4.7.2 (.NET / C#)** para a disci
 > Estado atual: **Fases 1 e 2 completas em cinza**.
 > - Abertura: letreiro no espaço com fanfarra original (`tools/audio/gen_intro.py`).
 > - Menu (logotipo em `tools/art/logo.py`): Jogar → tela NOVO JOGO com o personagem (Téo ou Lia) e a dificuldade (Fácil / Médio / Difícil; Médio = valores originais, ajustes em `GameState`).
-> - Fase 1: Entrada (placas com os comandos) → Portaria → RU (40 s; micro-ondas brilha quando você pega a marmita) → Cantina (Tia da Cantina; o sofá cinza serve de cobertura) → Elevador.
-> - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (chave) → caixas (livro) → devolução → Bibliotecária (surda, enxerga pela luz: furtividade e caçada) → escada desabando atrás de você (8 lances do térreo ao 4º andar, com giro de câmera a cada lance; barricadas, degraus quebrados, lâmpadas caindo e extintores rolando).
+> - Fase 1: Entrada (quadro de comandos na tela) → Portaria → RU (40 s; micro-ondas brilha quando você pega a marmita) → Cantina (Tia da Cantina; o sofá cinza serve de cobertura) → Elevador.
+> - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (ondas + o Zelador, que solta a chave) → armário dos Achados (tarefa 2D estilo Among Us: girar o cadeado com a combinação do post-it e puxar a alavanca: o livro) → devolução → Bibliotecária (ouve tudo, enxerga só pela lanterna: atraia ela com o rádio, o despertador ou a campainha até a frente de uma estante, derrube a estante nela com E e atire enquanto ela está tonta; acordada, ela bloqueia e desvia dos tiros) → Rifle do Silêncio → escada desabando atrás de você (8 lances do térreo ao 4º andar, com giro de câmera a cada lance; barricadas, degraus quebrados, lâmpadas caindo e extintores rolando).
 > - Arte: a **Fase 1 já tem pixel art** baseada no campus de verdade (tour 360° da UNIFESP SJC), à noite e abandonada, com lanterna e luzes piscando. Veja `tools/art/README.md`.
 > - Fase 3 (4º andar, laboratórios, atalho F4): porta de vidro (no pé do corredor de vidro) da área final com senha → câmeras apitam, alarme e fantasmas no corredor, laboratórios destrancam → laboratórios seguros: fiação e distribuidor (Lab 1) e computador com login (aluno/unifesp) e o site da universidade (Lab 2) → senha (sorteada a cada partida) abre a porta e some com os fantasmas. Já tem o auditório (área restrita, porta com E, palco) ligado à área final; o diploma e o chefe vêm depois. Salas de teste (`levels/test_rooms*.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
 
@@ -43,12 +43,12 @@ Na primeira vez, o Godot compila o código C# e pode demorar alguns segundos.
 | Recarregar arma | **R** |
 | Cambalhota (rola e fica invencível) | **Espaço** (rola para onde está andando; parado, para onde mira) |
 | Trocar de arma | **1**, **2**, **3** ou **roda do mouse** |
-| Interagir (fechadura, computador, quadro de energia) | **E** |
+| Interagir (fechadura, computador, quadro de energia, empurrar estante na biblioteca) | **E** |
 | Sair de uma tela (senha, fios, computador) | **Esc** |
 
 **Atalhos de teste** (só rodando pelo editor): **F1** = Fase 1, **F2** = Fase 2, **F3** = escada, **F4** = Fase 3, **F5** = auditório em 3D, **F6** = Pac-Man dentro do telão.
 
-Armas: 1 = Laser · 2 = Escopeta · 3 = Canhão Perfurante. Na Fase 1 você começa só com o Laser; as outras vêm dos chefes.
+Armas (cada uma tem a cara de quem te dá): 1 = Grampeador (o seu: atira grampos) · 2 = Escopeta de Café (da Tia da Cantina: a garrafa térmica dela, atira grãos de café) · 3 = Rifle do Silêncio (da Bibliotecária: silenciador, luneta com os óculos dela, atira marcadores de página). Na Fase 1 você começa só com o Grampeador; as outras vêm dos chefes.
 
 Para pegar itens (crachá, marmita), é só encostar neles. Pilhas de papel se desfazem com tiros.
 
@@ -70,11 +70,11 @@ levels/test_rooms.tscn  sala de teste da MVP 1
 main.tscn / Main.cs     arena antiga de ondas infinitas
 objects/                uma pasta por objeto do jogo
   player/               jogador: movimento, cambalhota, vida, tiro
-  enemy/                inimigos (Normal, Fast, Tank)
+  enemy/                inimigos (Normal, Fast, Tank) e o Zelador (Enemy.Janitor.cs: investida, vassourada, balde)
   bullet/               projétil
   weapon/               armas (cada .tres é uma arma)
   heal_drop/            item de cura
-  hud/                  textos na tela
+  hud/                  textos na tela e a seta de direção (GuideArrow: segue o caminho pelo chão, contornando móveis e portas trancadas)
   obstacle/             obstáculo
   door/                 porta que tranca e abre (pode exigir um item, como a catraca)
   room/                 sala: ondas, sobrevivência por tempo ou segura
@@ -85,7 +85,8 @@ objects/                uma pasta por objeto do jogo
   area_trigger/         área que avisa quando o jogador entra (elevador)
   message_screen/       tela cheia: REPROVADO, fim de fase
   boss/                 chefe (um código só; cada chefe é um .tres, ex.: tia_cantina.tres)
-  librarian/            Bibliotecária (lanterna, caçada) e as luminárias das salas de estudo
+  librarian/            Bibliotecária (lanterna, caçada) e as estantes que tombam (ficam no chão)
+  achados/              tarefa 2D do armário dos Achados e Perdidos (cadeado de disco + alavanca)
   decor/                assinaturas dos alunos nas paredes (Fase 2)
   escada/               escada: desabamento, barricada, lâmpada caindo e extintor rolando
   fase3/                Fase 3: ponto de interagir (E), aparelho que brilha, área segura, telas 2D (senha, fios, site)
@@ -94,6 +95,8 @@ objects/                uma pasta por objeto do jogo
 tools/levelgen/         geradores das plantas (Python). As cenas levels/*.tscn são geradas por eles;
                         mudanças de planta grandes ficam mais fáceis editando o gerador e rodando de novo
   arena_grid/           grade do chão
+tools/audio/music.py    gera as músicas (sounds/music: uma por parte do jogo, a lista está em objects/music/Music.cs, que troca a faixa sozinho)
+tools/audio/sfx.py      gera alguns efeitos (tiro do Rifle do Silêncio, rádio, despertador, campainha)
 tools/art/              geradores da pixel art (Python). Rode build_all.py para regenerar tudo (ver tools/art/README.md)
 tools/capture/          fotos automáticas de uma fase rodando (para revisar a arte)
 tilesets/               peças de chão e parede (fase1_tileset = arte da Fase 1; placeholder = provisório)

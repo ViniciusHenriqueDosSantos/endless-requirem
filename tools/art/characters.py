@@ -244,6 +244,98 @@ def ghost_sheet(kind):
     return sheet(ghost_frames(kind) + ghost_frames(kind, hurt=True)[:1], 5)
 
 
+# ======================================================================== ZELADOR (24x42, no estilo da Bibliotecária)
+# O fantasma do zelador: um senhor de boné, bigode grisalho, macacão azul, molho de chaves no cinto e a vassoura.
+# Das canelas para baixo vira névoa (não tem pés).
+# Quadros: 0..3 andando (flutua), 4 = careta (levou tiro), 5 = vassoura no alto (preparando a vassourada/investida).
+def zelador(frame):
+    cv = Canvas(24, 42)
+    bob = [0, -1, 0, 1, 0, -1][frame]
+    y = 2 + bob
+    hurt, swing = frame == 4, frame == 5
+    SK, SK_D = hexc("cdd6dc"), hexc("9aa8b4")                       # pele pálida de fantasma
+    BLUE, BLUE_D, BLUE_L = hexc("3f63a8"), hexc("2c4680"), hexc("5a7fc4")   # macacão
+    SHIRT, SHIRT_D = hexc("c9c2b0"), hexc("a39c8a")                  # camisa de manga
+    CAP, CAP_D = hexc("26375e"), hexc("1b2645")
+    GRAY, GRAY_D = hexc("b4b0b8"), hexc("7d7884")                    # cabelo e bigode grisalhos
+    GOLD, GOLD_D = hexc("f2c230"), hexc("b8901c")
+    STICK, STICK_D = hexc("b07a46"), hexc("7d5230")
+    STRAW, STRAW_D = hexc("e7c35a"), hexc("b8902e")
+    cv.ellipse(12, 40, 9, 1.6, hexc("000000", 70))
+
+    # vassoura atrás do corpo (parada: em pé ao lado; erguida: por cima da cabeça)
+    if swing:
+        cv.line(23, y + 15, 5, y + 4, STICK); cv.line(23, y + 16, 5, y + 5, STICK_D)
+        for i in range(5):
+            cv.line(i, y + 1 + i, 4, y + 3 + i, STRAW if i % 2 else STRAW_D)
+        cv.hline(4, y + 3, 1, hexc("c0392b")); cv.vline(4, y + 2, 5, hexc("c0392b"))
+    else:
+        cv.vline(21, y + 6, 28, STICK); cv.vline(22, y + 7, 27, STICK_D)
+        cv.rect(19, y + 33, 5, 5, STRAW); cv.vline(19, y + 33, 5, STRAW_D); cv.vline(23, y + 34, 4, STRAW_D)
+        cv.hline(19, y + 33, 5, hexc("c0392b"))                       # amarração vermelha
+
+    # pernas do macacão que viram névoa
+    for yy in range(y + 27, y + 38):
+        w = 5 + (yy - y - 27) // 3
+        for xx in range(12 - w, 12 + w):
+            if yy > y + 32 and (xx + yy + frame) % 3 == 0: continue
+            if yy < y + 33 and xx in (11, 12): continue                 # vão entre as pernas
+            cv.put(xx, yy, BLUE if xx < 12 + w // 2 else BLUE_D)
+
+    # tronco: camisa por baixo, macacão com peitilho, alças e bolso
+    cv.rect(6, y + 14, 12, 14, SHIRT); cv.vline(17, y + 14, 14, SHIRT_D)
+    cv.rect(7, y + 18, 10, 10, BLUE); cv.vline(16, y + 18, 10, BLUE_D); cv.hline(7, y + 18, 10, BLUE_L)
+    cv.vline(8, y + 14, 4, BLUE); cv.vline(15, y + 14, 4, BLUE)       # alças
+    cv.put(8, y + 17, GOLD); cv.put(15, y + 17, GOLD)                 # fivelas
+    cv.rect(10, y + 20, 4, 3, BLUE_D); cv.hline(10, y + 20, 4, BLUE_L)   # bolso
+    cv.hline(7, y + 25, 10, CAP_D)                                    # cinto
+    # molho de chaves pendurado no cinto (balança)
+    sway = frame % 2
+    cv.frame(5, y + 25, 3, 3, GOLD)
+    cv.vline(5 + sway, y + 28, 3, GOLD_D); cv.vline(6, y + 28, 4, GOLD); cv.vline(7 - sway, y + 28, 2, GOLD_D)
+
+    # braços
+    if swing:   # os dois segurando a vassoura no alto
+        cv.rect(17, y + 13, 3, 4, SHIRT); cv.rect(18, y + 11, 3, 3, SK)
+        cv.rect(4, y + 12, 3, 4, SHIRT); cv.rect(5, y + 6, 3, 3, SK)
+    else:       # esquerdo solto, direito segurando o cabo da vassoura
+        cv.rect(4, y + 15, 3, 9, SHIRT); cv.vline(4, y + 15, 9, SHIRT_D); cv.rect(4, y + 24, 3, 2, SK)
+        cv.rect(17, y + 15, 3, 7, SHIRT); cv.rect(19, y + 20, 3, 3, SK)
+
+    # cabeça
+    cv.ellipse(12, y + 8, 6, 6.5, SK); cv.vline(17, y + 5, 6, SK_D)
+    cv.vline(6, y + 5, 4, GRAY); cv.vline(17, y + 5, 4, GRAY)         # costeletas grisalhas
+    # boné (com a aba para a frente e o emblema)
+    cv.rect(6, y, 12, 4, CAP); cv.hline(7, y, 10, hexc("3a5288"))
+    cv.rect(4, y + 4, 15, 1, CAP_D)
+    cv.rect(11, y + 1, 2, 2, GOLD)
+
+    # olhos, bigode e boca
+    if hurt:
+        for ex in (8, 14):
+            cv.put(ex, y + 7, hexc("1b1724")); cv.put(ex + 1, y + 8, hexc("1b1724")); cv.put(ex, y + 9, hexc("1b1724"))
+        cv.rect(10, y + 12, 4, 2, hexc("1b1724"))
+    else:
+        eye = hexc("ffcf3a")
+        for ex in (8, 14):
+            cv.rect(ex, y + 7, 2, 2, hexc("1b1724")); cv.put(ex + 1, y + 7, eye)
+        cv.hline(8, y + 6, 3, GRAY_D); cv.hline(13, y + 6, 3, GRAY_D)  # sobrancelhas grossas
+    cv.hline(8, y + 10, 8, GRAY); cv.hline(7, y + 11, 3, GRAY_D); cv.hline(14, y + 11, 3, GRAY_D)   # bigodão
+    if swing: cv.rect(10, y + 12, 4, 1, hexc("1b1724"))               # grito
+    cv.outline(INK)
+    # um pouco transparente embaixo, como a Bibliotecária (o contorno fica firme)
+    px = cv.img.load()
+    for yy in range(cv.h):
+        for xx in range(cv.w):
+            r_, g, b, a_ = px[xx, yy]
+            if a_ == 255 and (r_, g, b) != INK[:3] and yy > y + 31: px[xx, yy] = (r_, g, b, 200)
+    return cv
+
+
+def zelador_sheet():
+    return sheet([zelador(f) for f in range(6)], 6)
+
+
 # ======================================================================== TIA DA CANTINA (32x40)
 # Quadros: 0 e 1 = parada (respirando), 2 = arremessando salgado, 3 = tonta (escudo caiu)
 def tia(frame):
@@ -312,4 +404,5 @@ if __name__ == "__main__":
     for k in ("normal", "fast", "tank"):
         ghost_sheet(k).save(OUT + f"fantasma_{k}.png")
     tia_sheet().save(OUT + "tia_cantina.png")
+    zelador_sheet().save(OUT + "zelador.png")
     print("personagens ok")

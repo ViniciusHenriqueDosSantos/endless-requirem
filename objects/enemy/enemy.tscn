@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" path="res://sprites/characters/fantasma_fast.png" id="5_fast"]
 [ext_resource type="Texture2D" path="res://sprites/characters/fantasma_tank.png" id="6_tank"]
 [ext_resource type="AudioStream" path="res://sounds/enemy/fantasma.wav" id="7_som"]
+[ext_resource type="Texture2D" path="res://sprites/characters/zelador.png" id="10_zelador"]
 [ext_resource type="AudioStream" path="res://sounds/enemy/acerto.wav" id="8_acerto"]
 [ext_resource type="AudioStream" path="res://sounds/enemy/morte.wav" id="9_morte"]
 
@@ -23,6 +24,7 @@ HealDropScene = ExtResource("3_heal")
 NormalSprite = ExtResource("4_normal")
 FastSprite = ExtResource("5_fast")
 TankSprite = ExtResource("6_tank")
+JanitorSprite = ExtResource("10_zelador")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=927158492]
 position = Vector2(0, -64)

@@ -40,6 +40,8 @@ for name, path in [('player', 'player/player'), ('hud', 'hud/hud'), ('message_sc
     L.res('PackedScene', f'res://objects/{path}.tscn', name)
 L.res('Resource', 'res://objects/librarian/bibliotecario.tres', 'bib')
 L.res('Script', 'res://objects/decor/Signatures.cs', 'sig')
+L.res('Script', 'res://objects/fase3/Interactable.cs', 'interactable')
+L.res('Script', 'res://objects/librarian/NoiseMaker.cs', 'noise_maker')
 L.res('Resource', 'res://objects/weapon/cannon.tres', 'cannon')
 for name, path in [('night_overlay', 'night/night_overlay'), ('flicker_light', 'night/flicker_light'),
                    ('rain', 'weather/rain'), ('item_inspect', 'inspect/item_inspect')]:
@@ -125,7 +127,7 @@ for x, facing in ((23, "1"), (30, "2")):       # 1 = parede da esquerda, 2 = par
 # ---------- Hall das Caronas ----------
 hall = (2 * T, 34 * T)
 L.node("Hall", inst="room", props={"position": v(*hall), "Size": v(22 * T, 7 * T), "Waves": "3", "EnemiesPerWave": "6",
-       "FastChance": "0", "EnemyHealthScale": "0.6", "EnemySpeedScale": "1.1",  "SpawnAnywhere": "true", "FinalWaveTank": "true", "StartOnEnter": "false",
+       "FastChance": "0", "EnemyHealthScale": "0.6", "EnemySpeedScale": "1.1",  "SpawnAnywhere": "true", "FinalWaveTank": "true", "FinalEnemyKind": "3", "StartOnEnter": "false",
        "FinalWaveMessage": '"O ZELADOR CHEGOU!"', "RespawnPoint": 'NodePath("Respawn")'}, node_paths=["RespawnPoint"])
 L.node("Barreira", "Hall", inst="door", props={"position": v(23 * T + 32 - hall[0], 39 * T - hall[1]),
        "Size": v(64, 3 * T), "ChairStyle": "true"})
@@ -173,6 +175,9 @@ L.prop("Armario", "Achados", 35 * T + 32 - ach[0], 18 * T + 40 - ach[1], 60, 130
 L.prop("MesaAchados", "Achados", 33 * T - ach[0], 20 * T + 16 - ach[1], 110, 52, WOOD, depth=36, sprite="mesa_achados")
 L.prop("CadeiraAchados", "Achados", 33 * T - ach[0], 21 * T + 8 - ach[1], 36, 46, col(0.2, 0.2, 0.22), depth=22,
        sprite="cadeira_espera")
+# o livro está no armário trancado: [E] abre a tarefa do cadeado (objects/achados/LockerPuzzle.cs)
+L.node("ArmarioPuzzle", type="Area2D", props={"position": v(35 * T, 19 * T + 16), "script": 'ExtResource("interactable")',
+       "Size": v(2 * T, 2 * T), "Prompt": '"Abrir o cadeado"', "PromptHeight": "120"})
 L.node("Livro", inst="pickup", props={"position": v(32 * T, 20 * T), "ItemId": '"livro"',
        "DisplayName": '"Livro: Cálculo I"', "Color": col(0.85, 0.3, 0.3, 1), "StartsHidden": "true",
        "Texture": L.tex("livro", "items"), "InspectTexture": L.tex("livro", "items/inspecao"), "InspectTitle": '"CÁLCULO I"',
@@ -198,6 +203,11 @@ for i, ty in enumerate([14, 17, 20, 23]):
     L.node(f"Estante{i+1}", "Biblioteca/Estantes", inst="shelf", props={
         "position": v(5 * T - bib[0], ty * T - bib[1]), "Size": v(8 * T, 128), "Color": WOOD, "Depth": "64",
         "Tall": "true", "BlocksGhosts": "true", "Texture": L.tex(f"estante{i}", "props/fase2")})
+# estantes curtas no lado direito: mais coisas para derrubar nela (o que cai fica no chão)
+for i, (tx, ty) in enumerate([(13, 16), (13, 21), (15, 25), (17, 13)]):
+    L.node(f"EstanteCurta{i+1}", "Biblioteca/Estantes", inst="shelf", props={
+        "position": v(tx * T - bib[0], ty * T - bib[1]), "Size": v(4 * T, 128), "Color": WOOD, "Depth": "64",
+        "Tall": "true", "BlocksGhosts": "true", "Texture": L.tex(f"estante{(i + 1) % 4}", "props/fase2")})
 # xadrez gigante: o tapete azul e branco está no piso; as peças ficam em cima (algumas tombadas)
 for i, (tx, ty, spr) in enumerate([(1, 25, "peca_torre"), (3, 26, "peca_rei"), (5, 25, "peca_cavalo"), (2, 28, "peca_peao"),
                                    (4, 29, "peca_caida"), (6, 27, "peca_caida_preta"), (0, 30, "peca_peao")]):
@@ -219,17 +229,35 @@ for i, x in enumerate(STUDY_DOORS):
     L.node(f"PortaSala{i+1}", type="ColorRect", props={"z_index": "-4", "offset_left": f"{x * T + 8}.0",
            "offset_top": f"{5 * T}.0", "offset_right": f"{x * T + 56}.0", "offset_bottom": f"{6 * T}.0",
            "mouse_filter": "2", "color": col(0.55, 0.38, 0.22, 1)})
+# objetos que fazem barulho ([E]): um por estante, num banquinho, para ela parar na frente da estante
+# (objects/librarian/NoiseMaker.cs). Kind: 0 campainha, 1 rádio, 2 despertador, 3 telefone, 4 pilha de livros.
+# As estantes compridas ficam coladas umas nas outras (o corredor da frente de uma é o de trás da outra), então o
+# objeto delas fica no corredor da direita, fora de onde se empurra, e o ponto de isca (lure) puxa a Bibliotecária
+# para a frente da estante. As curtas têm espaço: o objeto fica bem na frente.
+NOISE = [  # nome, tipo, sprite, posição (global), ponto de isca (a partir do objeto)
+    ("Telefone", 3, "telefone", (632, 968), (-110, 30)),      # Estante1
+    ("Radio", 1, "radio", (632, 1160), (-110, 30)),           # Estante2
+    ("Livros", 4, "livros", (632, 1352), (-110, 30)),         # Estante3
+    ("Campainha", 0, "campainha", (632, 1544), (-110, 30)),   # Estante4
+    ("Despertador", 2, "despertador", (780, 1096), (0, 20)),  # EstanteCurta1
+    ("Radio2", 1, "radio", (780, 1415), (0, 20)),             # EstanteCurta2
+    ("Telefone2", 3, "telefone", (1040, 1672), (0, 20)),      # EstanteCurta3
+    ("Despertador2", 2, "despertador", (1100, 904), (0, 20)), # EstanteCurta4
+]
+for name, kind, sprite, (gx, gy), (lx, ly) in NOISE:
+    L.node(name, "Biblioteca", type="Area2D", props={"position": v(gx - bib[0], gy - bib[1]), "script": 'ExtResource("noise_maker")',
+           "Size": v(110, 110), "Kind": str(kind), "Texture": L.tex(sprite, "props/fase2"), "LureOffset": v(lx, ly)})
 # patrulha da Bibliotecária
 L.node("Patrulha", "Biblioteca", type="Node2D")
 for i, (tx, ty) in enumerate([(7, 11), (13, 10), (17, 19), (11, 22), (16, 29), (8, 30), (-1, 27), (10, 16), (-1, 12)]):
     x, y = px(tx, ty)
     L.node(f"Ponto{i+1}", "Biblioteca/Patrulha", type="Marker2D", props={"position": v(x - bib[0], y - bib[1])})
-L.node("Bibliotecario", "Biblioteca", inst="librarian", props={"position": v(14 * T - bib[0], 20 * T - bib[1]),
+L.node("Bibliotecario", "Biblioteca", inst="librarian", props={"position": v(-1 * T + 32 - bib[0], 18 * T - bib[1]),
        "Config": 'ExtResource("bib")', "Patrol": 'NodePath("../Patrulha")', "Shelves": 'NodePath("../Estantes")'},
        node_paths=["Patrol", "Shelves"])
-L.node("Canhao", inst="pickup", props={"position": v(14 * T, 21 * T), "ItemId": '"canhao"', "DisplayName": '"Canhão"',
-       "Color": col(0.3, 0.9, 1, 1), "WeaponReward": 'ExtResource("cannon")', "StartsHidden": "true",
-       "Texture": L.tex("canhao", "weapons")})
+L.node("Canhao", inst="pickup", props={"position": v(14 * T, 21 * T), "ItemId": '"canhao"', "DisplayName": '"Rifle do Silêncio"',
+       "Color": col(0.8, 0.65, 1, 1), "WeaponReward": 'ExtResource("cannon")', "StartsHidden": "true",
+       "Texture": L.tex("rifle_silencio", "weapons")})
 L.node("ChaveEscada", inst="pickup", props={"position": v(15 * T, 21 * T), "ItemId": '"chave_escada"',
        "DisplayName": '"Chave da escada"', "Color": col(1, 0.85, 0.2, 1), "StartsHidden": "true",
        "Texture": L.tex("chave_escada", "items"), "InspectTexture": L.tex("chave_escada", "items/inspecao"),
@@ -316,7 +344,7 @@ L.node("ItemInspect", inst="item_inspect")
 
 paths = {"Player": "Player", "Hud": "Hud", "Screen": "MessageScreen", "PortaBiblioteca": "Biblioteca/PortaBiblioteca",
          "Devolucao": "Devolucao", "PortaAchados": "PortaAchados", "Hall": "Hall", "Chave": "Chave", "Achados": "Achados",
-         "Caixas": "Achados/Caixas", "Livro": "Livro", "Biblioteca": "Biblioteca",
+         "Caixas": "Achados/Caixas", "Livro": "Livro", "Armario": "ArmarioPuzzle", "Biblioteca": "Biblioteca",
          "Bibliotecario": "Biblioteca/Bibliotecario", "Canhao": "Canhao", "ChaveEscada": "ChaveEscada",
          "Escada": "Escada", "CentroHall": "CentroHall",
          "CadeirasDaSaida": "Hall/CadeirasDaSaida"}
