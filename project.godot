@@ -19,6 +19,7 @@ config/icon="res://sprites/icon.svg"
 
 SceneTransition="*res://objects/scene_transition/scene_transition.tscn"
 PauseMenu="*res://objects/pause_menu/pause_menu.tscn"
+Music="*res://objects/music/music.tscn"
 
 [display]
 

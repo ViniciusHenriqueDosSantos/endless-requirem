@@ -209,78 +209,96 @@ def ghost_sheet(kind):
     return sheet(ghost_frames(kind) + ghost_frames(kind, hurt=True)[:1], 5)
 
 
-# ======================================================================== ZELADOR (28x32)
-# O fantasma do zelador: macacão azul, boné, bigode, molho de chaves no cinto e a vassoura.
-# Quadros: 0..3 flutuando, 4 = careta (levou tiro), 5 = vassoura no alto (preparando a vassourada/investida).
-def zelador_bone(cv, frame, bob, cx, top):
-    y = int(top) - 1
-    navy, navy_l = hexc("26375e"), hexc("3a5288")
-    cv.rect(int(cx) - 6, y - 2, 12, 3, navy); cv.hline(int(cx) - 5, y - 2, 10, navy_l)
-    cv.rect(int(cx) - 7, y + 1, 15, 1, hexc("1b2645"))            # aba
-    cv.rect(int(cx) - 1, y - 1, 3, 2, hexc("f2c230"))              # emblema
+# ======================================================================== ZELADOR (24x42, no estilo da Bibliotecária)
+# O fantasma do zelador: um senhor de boné, bigode grisalho, macacão azul, molho de chaves no cinto e a vassoura.
+# Das canelas para baixo vira névoa (não tem pés).
+# Quadros: 0..3 andando (flutua), 4 = careta (levou tiro), 5 = vassoura no alto (preparando a vassourada/investida).
+def zelador(frame):
+    cv = Canvas(24, 42)
+    bob = [0, -1, 0, 1, 0, -1][frame]
+    y = 2 + bob
+    hurt, swing = frame == 4, frame == 5
+    SK, SK_D = hexc("cdd6dc"), hexc("9aa8b4")                       # pele pálida de fantasma
+    BLUE, BLUE_D, BLUE_L = hexc("3f63a8"), hexc("2c4680"), hexc("5a7fc4")   # macacão
+    SHIRT, SHIRT_D = hexc("c9c2b0"), hexc("a39c8a")                  # camisa de manga
+    CAP, CAP_D = hexc("26375e"), hexc("1b2645")
+    GRAY, GRAY_D = hexc("b4b0b8"), hexc("7d7884")                    # cabelo e bigode grisalhos
+    GOLD, GOLD_D = hexc("f2c230"), hexc("b8901c")
+    STICK, STICK_D = hexc("b07a46"), hexc("7d5230")
+    STRAW, STRAW_D = hexc("e7c35a"), hexc("b8902e")
+    cv.ellipse(12, 40, 9, 1.6, hexc("000000", 70))
 
+    # vassoura atrás do corpo (parada: em pé ao lado; erguida: por cima da cabeça)
+    if swing:
+        cv.line(23, y + 15, 5, y + 4, STICK); cv.line(23, y + 16, 5, y + 5, STICK_D)
+        for i in range(5):
+            cv.line(i, y + 1 + i, 4, y + 3 + i, STRAW if i % 2 else STRAW_D)
+        cv.hline(4, y + 3, 1, hexc("c0392b")); cv.vline(4, y + 2, 5, hexc("c0392b"))
+    else:
+        cv.vline(21, y + 6, 28, STICK); cv.vline(22, y + 7, 27, STICK_D)
+        cv.rect(19, y + 33, 5, 5, STRAW); cv.vline(19, y + 33, 5, STRAW_D); cv.vline(23, y + 34, 4, STRAW_D)
+        cv.hline(19, y + 33, 5, hexc("c0392b"))                       # amarração vermelha
 
-def zelador_macacao(cv, frame, bob, cx, top):
-    blue, blue_d = hexc("3f63a8"), hexc("2c4680")
-    y0 = int(top) + 14
-    bottom = cv.h - 3 + bob
-    for y in range(y0, bottom + 1):
-        for x in range(cv.w):
-            if cv.get(x, y)[3]:
-                cv.put(x, y, blue_d if x > cx + 4 else blue)
-    for x in (int(cx) - 5, int(cx) + 4):                            # alças
-        cv.vline(x, int(top) + 9, 5, blue)
-        cv.put(x, int(top) + 9, hexc("f2c230"))
-    cv.rect(int(cx) - 2, y0 + 2, 5, 3, blue_d); cv.hline(int(cx) - 2, y0 + 2, 5, hexc("5a7fc4"))   # bolso
+    # pernas do macacão que viram névoa
+    for yy in range(y + 27, y + 38):
+        w = 5 + (yy - y - 27) // 3
+        for xx in range(12 - w, 12 + w):
+            if yy > y + 32 and (xx + yy + frame) % 3 == 0: continue
+            if yy < y + 33 and xx in (11, 12): continue                 # vão entre as pernas
+            cv.put(xx, yy, BLUE if xx < 12 + w // 2 else BLUE_D)
 
-
-def zelador_bigode(cv, frame, bob, cx, top):
-    y = int(top) + 10
-    c, c_d = hexc("6b6470"), hexc("47414d")
-    cv.hline(int(cx) - 3, y, 6, c); cv.hline(int(cx) - 4, y + 1, 8, c_d)
-    cv.put(int(cx) - 5, y + 2, c_d); cv.put(int(cx) + 4, y + 2, c_d)
-
-
-def zelador_chaves(cv, frame, bob, cx, top):
-    x, y = int(cx) - 8, int(top) + 18
-    gold, gold_d = hexc("f2c230"), hexc("b8901c")
-    cv.frame(x, y, 3, 3, gold)
+    # tronco: camisa por baixo, macacão com peitilho, alças e bolso
+    cv.rect(6, y + 14, 12, 14, SHIRT); cv.vline(17, y + 14, 14, SHIRT_D)
+    cv.rect(7, y + 18, 10, 10, BLUE); cv.vline(16, y + 18, 10, BLUE_D); cv.hline(7, y + 18, 10, BLUE_L)
+    cv.vline(8, y + 14, 4, BLUE); cv.vline(15, y + 14, 4, BLUE)       # alças
+    cv.put(8, y + 17, GOLD); cv.put(15, y + 17, GOLD)                 # fivelas
+    cv.rect(10, y + 20, 4, 3, BLUE_D); cv.hline(10, y + 20, 4, BLUE_L)   # bolso
+    cv.hline(7, y + 25, 10, CAP_D)                                    # cinto
+    # molho de chaves pendurado no cinto (balança)
     sway = frame % 2
-    cv.vline(x - 1 + sway, y + 3, 3, gold_d); cv.vline(x + 1, y + 3, 4, gold); cv.vline(x + 3 - sway, y + 3, 2, gold_d)
+    cv.frame(5, y + 25, 3, 3, GOLD)
+    cv.vline(5 + sway, y + 28, 3, GOLD_D); cv.vline(6, y + 28, 4, GOLD); cv.vline(7 - sway, y + 28, 2, GOLD_D)
 
+    # braços
+    if swing:   # os dois segurando a vassoura no alto
+        cv.rect(17, y + 13, 3, 4, SHIRT); cv.rect(18, y + 11, 3, 3, SK)
+        cv.rect(4, y + 12, 3, 4, SHIRT); cv.rect(5, y + 6, 3, 3, SK)
+    else:       # esquerdo solto, direito segurando o cabo da vassoura
+        cv.rect(4, y + 15, 3, 9, SHIRT); cv.vline(4, y + 15, 9, SHIRT_D); cv.rect(4, y + 24, 3, 2, SK)
+        cv.rect(17, y + 15, 3, 7, SHIRT); cv.rect(19, y + 20, 3, 3, SK)
 
-def zelador_vassoura(swing):
-    def draw(cv, frame, bob, cx, top):
-        stick, stick_d = hexc("b07a46"), hexc("7d5230")
-        straw, straw_d = hexc("e7c35a"), hexc("b8902e")
-        if swing:   # vassoura erguida por cima da cabeça
-            cv.line(cv.w - 4, int(top) + 16, 4, int(top) - 2, stick)
-            cv.line(cv.w - 3, int(top) + 16, 5, int(top) - 2, stick_d)
-            for i in range(5):
-                cv.line(1 + i, int(top) - 3 - (i % 2), 3 + i, int(top) + 2, straw if i % 2 else straw_d)
-        else:
-            x = cv.w - 3
-            cv.vline(x, int(top) + 4, cv.h - 9 - int(top) + bob, stick); cv.vline(x + 1, int(top) + 5, cv.h - 10 - int(top) + bob, stick_d)
-            by = cv.h - 6 + bob
-            cv.rect(x - 2, by, 6, 4, straw); cv.vline(x - 2, by, 4, straw_d); cv.vline(x + 2, by + 1, 3, straw_d)
-            cv.hline(x - 2, by, 6, hexc("c0392b"))                   # amarração vermelha
-        cv.rect(cv.w - 6, int(top) + 15, 3, 3, hexc("bccbd8"))       # mão
-    return draw
+    # cabeça
+    cv.ellipse(12, y + 8, 6, 6.5, SK); cv.vline(17, y + 5, 6, SK_D)
+    cv.vline(6, y + 5, 4, GRAY); cv.vline(17, y + 5, 4, GRAY)         # costeletas grisalhas
+    # boné (com a aba para a frente e o emblema)
+    cv.rect(6, y, 12, 4, CAP); cv.hline(7, y, 10, hexc("3a5288"))
+    cv.rect(4, y + 4, 15, 1, CAP_D)
+    cv.rect(11, y + 1, 2, 2, GOLD)
 
-
-def zelador_frames():
-    body, m, d = hexc("e2ebf1"), hexc("b9c8d6"), hexc("8a9cb3")
-    frames = []
-    for f in range(6):
-        hurt, swing = f == 4, f == 5
-        extras = {"draw": [zelador_macacao, zelador_bone, zelador_bigode, zelador_chaves, zelador_vassoura(swing)],
-                  "top": 3, "eye_dy": -5, "hurt": hurt}
-        frames.append(ghost(28, 32, f % 4, body, m, d, hexc("ffcf3a"), extras))
-    return frames
+    # olhos, bigode e boca
+    if hurt:
+        for ex in (8, 14):
+            cv.put(ex, y + 7, hexc("1b1724")); cv.put(ex + 1, y + 8, hexc("1b1724")); cv.put(ex, y + 9, hexc("1b1724"))
+        cv.rect(10, y + 12, 4, 2, hexc("1b1724"))
+    else:
+        eye = hexc("ffcf3a")
+        for ex in (8, 14):
+            cv.rect(ex, y + 7, 2, 2, hexc("1b1724")); cv.put(ex + 1, y + 7, eye)
+        cv.hline(8, y + 6, 3, GRAY_D); cv.hline(13, y + 6, 3, GRAY_D)  # sobrancelhas grossas
+    cv.hline(8, y + 10, 8, GRAY); cv.hline(7, y + 11, 3, GRAY_D); cv.hline(14, y + 11, 3, GRAY_D)   # bigodão
+    if swing: cv.rect(10, y + 12, 4, 1, hexc("1b1724"))               # grito
+    cv.outline(INK)
+    # um pouco transparente embaixo, como a Bibliotecária (o contorno fica firme)
+    px = cv.img.load()
+    for yy in range(cv.h):
+        for xx in range(cv.w):
+            r_, g, b, a_ = px[xx, yy]
+            if a_ == 255 and (r_, g, b) != INK[:3] and yy > y + 31: px[xx, yy] = (r_, g, b, 200)
+    return cv
 
 
 def zelador_sheet():
-    return sheet(zelador_frames(), 6)
+    return sheet([zelador(f) for f in range(6)], 6)
 
 
 # ======================================================================== TIA DA CANTINA (32x40)

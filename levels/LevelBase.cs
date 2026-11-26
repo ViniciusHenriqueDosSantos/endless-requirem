@@ -19,6 +19,7 @@ public partial class LevelBase : Node2D
 
 	public override void _Ready()
 	{
+		Music.Play("explorar");
 		StartPosition = Player.GlobalPosition;
 		Player.Died += OnPlayerDied;
 		Screen.Closed += OnScreenClosed;

@@ -11,6 +11,7 @@ public partial class Intro : Control
 
 	public override void _Ready()
 	{
+		Music.Play("tema");
 		scrollingText = (ShaderMaterial)GetNode<ColorRect>("ScrollingText").Material;
 		scrollingText.SetShaderParameter("text_tex", GetNode<SubViewport>("StoryPage").GetTexture());
 
