@@ -41,7 +41,7 @@ Na primeira vez, o Godot compila o código C# e pode demorar alguns segundos.
 | Recarregar arma | **R** |
 | Cambalhota (rola e fica invencível) | **Espaço** (rola para onde está andando; parado, para onde mira) |
 | Trocar de arma | **1**, **2**, **3** ou **roda do mouse** |
-| Interagir (fechadura, computador, quadro de energia) | **E** |
+| Interagir (fechadura, computador, quadro de energia, empurrar estante na biblioteca) | **E** |
 | Sair de uma tela (senha, fios, computador) | **Esc** |
 
 **Atalhos de teste** (só rodando pelo editor): **F1** = Fase 1, **F2** = Fase 2, **F3** = escada, **F4** = Fase 3, **F5** = auditório em 3D, **F6** = Pac-Man dentro do telão.

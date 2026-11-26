@@ -8,7 +8,7 @@ using System.Collections.Generic;
 //   - Barulho: qualquer barulho perto (tiro do jogador, livros caindo de uma estante) faz ela ir até lá ver.
 //     Tiro faz pouco barulho (só quem está perto ouve); livros caindo se ouvem na biblioteca inteira.
 //   - Armadilha: atire numa estante (os livros caem e fazem barulho), dê a volta por trás dela sem ser vista e,
-//     quando a Bibliotecária parar na frente para olhar, empurre ([Espaço]): a estante tomba em cima dela.
+//     quando a Bibliotecária parar na frente para olhar, empurre ([E]): a estante tomba em cima dela.
 //   - Acordada, ela se defende dos tiros: bloqueia com um livro (às vezes rebatendo o tiro de volta)
 //     ou dá um passo para o lado. Só leva dano de tiro enquanto está TONTA.
 //   - Estante na cabeça dá pouco dano, mas deixa ela tonta: é a hora de descarregar a arma nela.
@@ -38,7 +38,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 	// Segundos fora da vista dela para ela desistir da caçada.
 	[Export] public float HuntTime = 7f;
 	// Dano de uma estante na cabeça (pouco: o forte é atirar enquanto ela está tonta).
-	[Export] public int CrashDamage = 8;
+	[Export] public int CrashDamage = 10;
 	// Até onde ela ouve um tiro (px). Estante balançando é bem mais alto (ToppleShelf.NoiseRadius).
 	[Export] public float GunNoiseRadius = 320f;
 	// Para onde ela olha quando a luta começa (graus; -90 = para cima, de costas para a entrada).

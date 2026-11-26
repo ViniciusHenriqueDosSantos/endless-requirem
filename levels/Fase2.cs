@@ -289,7 +289,7 @@ public partial class Fase2 : LevelBase
 		if (Bibliotecario.InStealth)
 		{
 			Hud.SetObjective(Bibliotecario.IsInvestigating
-				? $"Ela ouviu! Dê a volta por trás da estante e, quando ela parar na frente, empurre com [Espaço] ({Bibliotecario.ShelvesLeft} de pé)"
+				? $"Ela ouviu! Dê a volta por trás da estante e, quando ela parar na frente, empurre com [E] ({Bibliotecario.ShelvesLeft} de pé)"
 				: $"Silêncio... Atire numa estante para os livros caírem e atraí-la ({Bibliotecario.ShelvesLeft} de pé)");
 			Hud.SetBoss(Bibliotecario.DisplayName, Bibliotecario.HealthRatio, false);
 			ToppleShelf shelf = Bibliotecario.NearestShelf(Player.GlobalPosition);

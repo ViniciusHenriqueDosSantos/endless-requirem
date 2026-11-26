@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 // Estante bamba da biblioteca: a arma contra a Bibliotecária.
 //   - Tiro na estante: os livros caem lá de cima e fazem BARULHO (ela vem ver o que foi). A estante não cai com tiro.
-//   - Empurrar: atrás da estante (do lado de cima), [Espaço] empurra e ela tomba para a frente.
+//   - Empurrar: atrás da estante (do lado de cima), [E] empurra e ela tomba para a frente.
 //     Quem estiver na frente (FallZone) é esmagado. Dá para empurrar sem ela ver: a estante tapa a visão.
 //   - Caída, vira entulho no chão e fica lá (ReriseTime > 0 faz ela voltar a ficar de pé sozinha).
 //   - Size.X menor que o desenho: estante mais curta (mostra só o meio do desenho).
@@ -47,7 +47,7 @@ public partial class ToppleShelf : Prop, IHittable
 		SetProcess(true);
 		if (Engine.IsEditorHint()) return;
 		All.Add(this);
-		// dica "[Espaço] Empurrar": num filho que aparece no escuro
+		// dica "[E] Empurrar": num filho que aparece no escuro
 		_hint = new Node2D { Material = SharedMaterials.Unshaded, ZIndex = 20, Visible = false };
 		AddChild(_hint);
 		_hint.Draw += DrawHint;
@@ -55,7 +55,7 @@ public partial class ToppleShelf : Prop, IHittable
 
 	public override void _ExitTree() => All.Remove(this);
 
-	// Chamado pelo jogador ao apertar [Espaço]: empurra a estante de pé que ele está atrás. Se empurrou, não rola.
+	// Chamado pelo jogador ao apertar [E]: empurra a estante de pé que ele está atrás.
 	public static bool TryPush(Node2D player)
 	{
 		foreach (ToppleShelf shelf in All)
@@ -202,7 +202,7 @@ public partial class ToppleShelf : Prop, IHittable
 	private void DrawHint()
 	{
 		Font font = ThemeDB.FallbackFont;
-		string hint = "[Espaço] Empurrar a estante";
+		string hint = "[E] Empurrar a estante";
 		float w = font.GetStringSize(hint, HorizontalAlignment.Left, -1, 18).X;
 		float y = -Texture.GetSize().Y * PixelScale - 30;
 		_hint.DrawRect(new Rect2(-w / 2 - 8, y - 4, w + 16, 28), new Color(0, 0, 0, 0.65f));
