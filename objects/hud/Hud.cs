@@ -23,7 +23,7 @@ public partial class Hud : CanvasLayer
 	private ScreenPointer _pointer;
 	private Label _counter;
 
-	// Quadro de comandos (tecla + para que serve), à esquerda. A Fase 1 mostra no começo; H mostra/esconde.
+	// Quadro de comandos (tecla + para que serve), pequeno, à direita. A Fase 1 mostra no começo; H mostra/esconde.
 	private static readonly (string Key, string Use)[] Controls =
 	{
 		("W A S D", "andar"),
@@ -32,7 +32,7 @@ public partial class Hud : CanvasLayer
 		("ESPAÇO", "rolar: desvia de tiros e fantasmas"),
 		("R", "recarregar a arma"),
 		("E", "pegar itens, usar portas e aparelhos"),
-		("1 2 3 / RODA", "trocar de arma"),
+		("1 2 3 / SCROLL", "trocar de arma"),
 		("ESC", "pausar"),
 	};
 	private Control _controls;
@@ -84,31 +84,32 @@ public partial class Hud : CanvasLayer
 		{
 			BgColor = new Color(Caption.Ink, 0.85f),
 			BorderColor = Caption.Yellow,
-			ContentMarginLeft = 16, ContentMarginRight = 16, ContentMarginTop = 10, ContentMarginBottom = 10,
+			ContentMarginLeft = 10, ContentMarginRight = 10, ContentMarginTop = 6, ContentMarginBottom = 6,
 		};
 		box.SetBorderWidthAll(2);
 		box.SetCornerRadiusAll(6);
 		panel.AddThemeStyleboxOverride("panel", box);
-		panel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.CenterLeft);
+		panel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.CenterRight);
+		panel.GrowHorizontal = Control.GrowDirection.Begin;
 		panel.GrowVertical = Control.GrowDirection.Both;
-		panel.OffsetLeft = 20;
+		panel.OffsetRight = -16;
 		AddChild(panel);
 
 		VBoxContainer column = new() { MouseFilter = Control.MouseFilterEnum.Ignore };
-		column.AddThemeConstantOverride("separation", 6);
+		column.AddThemeConstantOverride("separation", 3);
 		panel.AddChild(column);
-		column.AddChild(ControlsLabel("COMANDOS", 18, Caption.Yellow));
+		column.AddChild(ControlsLabel("COMANDOS", 13, Caption.Yellow));
 
 		GridContainer grid = new() { Columns = 2, MouseFilter = Control.MouseFilterEnum.Ignore };
-		grid.AddThemeConstantOverride("h_separation", 14);
-		grid.AddThemeConstantOverride("v_separation", 4);
+		grid.AddThemeConstantOverride("h_separation", 10);
+		grid.AddThemeConstantOverride("v_separation", 1);
 		foreach ((string key, string use) in Controls)
 		{
-			grid.AddChild(ControlsLabel(key, 15, Caption.Green));
-			grid.AddChild(ControlsLabel(use, 15, Caption.Cream));
+			grid.AddChild(ControlsLabel(key, 11, Caption.Green));
+			grid.AddChild(ControlsLabel(use, 11, Caption.Cream));
 		}
 		column.AddChild(grid);
-		column.AddChild(ControlsLabel("H: mostrar / esconder", 12, new Color(Caption.Cream, 0.6f)));
+		column.AddChild(ControlsLabel("H: mostrar / esconder", 10, new Color(Caption.Cream, 0.6f)));
 		_controls = panel;
 	}
 
