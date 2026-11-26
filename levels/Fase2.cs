@@ -222,7 +222,7 @@ public partial class Fase2 : LevelBase
 		Biblioteca.FinishFight();
 		Hud.HideBoss();
 		RevealRewards(Bibliotecario.GlobalPosition);
-		Hud.ShowMessage("A Bibliotecária caiu! Ela deixou o Rifle de Precisão e uma chave.", 4f);
+		Hud.ShowMessage("A Bibliotecária caiu! Ela deixou o Rifle do Silêncio e uma chave.", 4f);
 	}
 
 	private void RevealRewards(Vector2 around)
@@ -249,6 +249,8 @@ public partial class Fase2 : LevelBase
 
 		if (room == Biblioteca)
 		{
+			foreach (Node node in GetTree().GetNodesInGroup("noise_makers"))
+				(node as NoiseMaker)?.ResetMaker();
 			Bibliotecario.ResetBoss();
 			Hud.HideBoss();
 		}
@@ -267,6 +269,7 @@ public partial class Fase2 : LevelBase
 	// o jogador descobre sozinho pelas mensagens das portas. Na biblioteca, a tela ajuda na luta.
 	private void UpdateObjective()
 	{
+		UpdateLibraryMusic();
 		if (Bibliotecario.IsHunting)
 		{
 			int seconds = Mathf.CeilToInt(Bibliotecario.HuntTimeLeft);
@@ -288,13 +291,21 @@ public partial class Fase2 : LevelBase
 
 		if (Bibliotecario.InStealth)
 		{
-			Hud.SetObjective(Bibliotecario.IsInvestigating
-				? $"Ela ouviu! Dê a volta por trás da estante e, quando ela parar na frente, empurre com [E] ({Bibliotecario.ShelvesLeft} de pé)"
-				: $"Silêncio... Atire numa estante para os livros caírem e atraí-la ({Bibliotecario.ShelvesLeft} de pé)");
 			Hud.SetBoss(Bibliotecario.DisplayName, Bibliotecario.HealthRatio, false);
-			ToppleShelf shelf = Bibliotecario.NearestShelf(Player.GlobalPosition);
-			if (shelf != null)
-				Hud.PointTo(shelf.GlobalPosition + new Vector2(0, -150), "ESTANTE");
+			ToppleShelf trap = Bibliotecario.TrapShelf;
+			if (Bibliotecario.IsInvestigating)
+			{
+				// ela vai ver o barulho: a seta leva para trás da estante que fica na frente dele
+				Hud.SetObjective($"Ela ouviu! Vá para trás da estante e, quando ela parar na frente, empurre com [E] ({Bibliotecario.ShelvesLeft} de pé)");
+				ToppleShelf shelf = trap ?? Bibliotecario.NearestShelf(Player.GlobalPosition);
+				if (shelf != null)
+					Hud.PointTo(shelf.PushZone.GetCenter(), "ATRÁS DA ESTANTE");
+				return;
+			}
+			Hud.SetObjective($"Silêncio... Faça barulho com um objeto da biblioteca [E] para atraí-la ({Bibliotecario.ShelvesLeft} estantes de pé)");
+			NoiseMaker maker = NearestNoiseMaker();
+			if (maker != null)
+				Hud.PointTo(maker.GlobalPosition, "OBJETO");
 			return;
 		}
 
@@ -331,6 +342,29 @@ public partial class Fase2 : LevelBase
 	}
 
 	private bool _janitorShown;
+
+	// Luta da Bibliotecária: música sombria enquanto ela patrulha (e você se esconde); a da caçada quando ela
+	// te vê, está brava ou na luta aberta. Fora da luta, a música normal da fase.
+	private void UpdateLibraryMusic()
+	{
+		if (!Bibliotecario.IsFighting)
+			Music.Override("");
+		else if (Bibliotecario.IsHunting || Bibliotecario.IsAttacking || Bibliotecario.IsTired)
+			Music.Override("cacada");
+		else
+			Music.Override("biblioteca");
+	}
+
+	// Objeto que faz barulho mais perto do jogador, que ainda dá para usar.
+	private NoiseMaker NearestNoiseMaker()
+	{
+		NoiseMaker best = null;
+		foreach (Node node in GetTree().GetNodesInGroup("noise_makers"))
+			if (node is NoiseMaker maker && maker.Enabled
+				&& (best == null || maker.GlobalPosition.DistanceTo(Player.GlobalPosition) < best.GlobalPosition.DistanceTo(Player.GlobalPosition)))
+				best = maker;
+		return best;
+	}
 
 	// Fora das lutas: a seta sempre aponta para o próximo passo da fase.
 	// O texto fica curto de propósito: o porquê de cada passo vem das mensagens das portas.

@@ -1,6 +1,7 @@
 # Gera as músicas do jogo (chiptune simples, combinando com a pixel art). Só usa a biblioteca padrão do Python.
 # Uso (na raiz do projeto): python tools/audio/music.py
-# Saída: sounds/music/tema.wav (intro, menu, final), explorar.wav (andando pelas fases) e luta.wav (ondas e chefes).
+# Saída: sounds/music/tema.wav (intro, menu, final), explorar.wav (andando pelas fases), luta.wav (ondas e chefes),
+#        biblioteca.wav (Bibliotecária patrulhando: furtividade) e cacada.wav (Bibliotecária te caçando).
 # Cada música é um loop: o fim emenda no começo (o rabo do eco volta para o início).
 import math, os, random, struct, wave
 
@@ -251,7 +252,96 @@ def luta():
     tr.save("luta.wav", 0.75)
 
 
+def tick(vol=0.05):
+    """Tique do relógio da biblioteca: estalinho seco de madeira."""
+    n = int(0.03 * RATE)
+    return [vol * math.sin(2 * math.pi * 2400 * i / RATE) * math.exp(-i / RATE * 180) for i in range(n)]
+
+
+def music_box(f, dur=1.8, vol=0.07):
+    """Caixinha de música velha: um pouco desafinada (dois senos que batem) e com o brilho que some."""
+    n = int(dur * RATE)
+    return [vol * (math.sin(2 * math.pi * f * i / RATE) + 0.7 * math.sin(2 * math.pi * f * 1.012 * i / RATE)
+                   + 0.25 * math.sin(2 * math.pi * f * 3 * i / RATE)) * math.exp(-4 * i / RATE / dur) * env(i, n, 0.002, 0.08)
+            for i in range(n)]
+
+
+def drone(f, dur, vol=0.1):
+    """Zumbido grave que respira devagar."""
+    n = int(dur * RATE)
+    return [vol * (math.sin(2 * math.pi * f * i / RATE) + 0.5 * math.sin(2 * math.pi * f * 1.5 * i / RATE))
+            * (0.75 + 0.25 * math.sin(2 * math.pi * 0.12 * i / RATE)) * env(i, n, 1.5, 1.5) for i in range(n)]
+
+
+def biblioteca():
+    """Furtividade na biblioteca: quase silêncio. Relógio, drone grave e uma caixinha de música desafinada.
+    Ré frígio (o Mi bemol deixa tudo esquisito), 60 bpm, 16 compassos."""
+    rng = random.Random(21)
+    bpm = 60
+    beat = 60 / bpm
+    bar = 4 * beat
+    bars = 16
+    tr = Track(bars * bar)
+    tr.add(0, drone(freq("D2"), bars * bar + 2, 0.09))
+    for b in range(bars):
+        t0 = b * bar
+        # pad grave com a segunda menor (Ré + Mi bemol) entrando e saindo
+        if b % 4 in (1, 2):
+            tr.add(t0, pad(freq("D#3"), bar + 0.6, 0.03))
+        tr.add(t0, pad(freq("A2"), bar + 0.6, 0.025))
+        for k in range(4):   # tique-taque do relógio (o "tac" mais fraco)
+            tr.add(t0 + k * beat, tick(0.05 if k % 2 == 0 else 0.03))
+        # caixinha de música: poucas notas, longe uma da outra
+        phrase = ["D5", "D#5", "A4", None, "F5", "D#5", "D5", None,
+                  "A5", None, "G#4", "A4", "D5", None, None, "D#5"]
+        m = phrase[b]
+        if m:
+            tr.add(t0 + rng.choice([0, beat, 2 * beat]), music_box(freq(m), 2.4, 0.06))
+        if b % 8 == 7:   # um sino distante de vez em quando
+            tr.add(t0 + 2 * beat, bell(freq("D#6"), 3.0, 0.035))
+    tr.echo(0.53, 0.55, 0.45)
+    tr.save("biblioteca.wav", 0.6)
+
+
+def cacada():
+    """A Bibliotecária te viu: coração disparado e um ostinato grave que não resolve.
+    Dó sustenido menor com a segunda menor (Ré), 112 bpm, 16 compassos. Sem melodia alegre."""
+    rng = random.Random(9)
+    bpm = 112
+    beat = 60 / bpm
+    bar = 4 * beat
+    bars = 16
+    tr = Track(bars * bar)
+    ost = ["C#2", "C#2", "D2", "C#2", "C#2", "G#1", "C#2", "D2"]
+    for b in range(bars):
+        t0 = b * bar
+        tr.add(t0, pad(freq("C#3"), bar + 0.3, 0.035))
+        tr.add(t0, pad(freq("D4") if b % 2 else freq("G#3"), bar + 0.3, 0.025))
+        for k in range(8):
+            tr.add(t0 + k * beat / 2, bass(freq(ost[k]), beat / 2 * 0.7, 0.2))
+        # coração: tum-tum, tum-tum
+        for k in (0, 2):
+            tr.add(t0 + k * beat, kick(0.45))
+            tr.add(t0 + k * beat + 0.18, kick(0.3))
+        if b % 2 == 1:
+            tr.add(t0 + 3.5 * beat, snare(rng, 0.14))
+        # cordas nervosas: nota aguda tremendo (tremolo) na segunda metade
+        if b >= 8:
+            f = freq(["G#4", "A4", "G#4", "C#5", "D5", "C#5", "A4", "G#4"][b - 8])
+            n = int(bar * RATE)
+            trem = [0.05 * (1 if (i / RATE * f) % 1 < 0.5 else -1) * (0.5 + 0.5 * math.sin(2 * math.pi * 12 * i / RATE)) * env(i, n, 0.3, 0.2)
+                    for i in range(n)]
+            tr.add(t0, trem)
+        for k in range(8):
+            if k % 2 == 1:
+                tr.add(t0 + k * beat / 2, hat(rng, 0.035))
+    tr.echo(0.27, 0.35, 0.3)
+    tr.save("cacada.wav", 0.72)
+
+
 if __name__ == "__main__":
     tema()
     explorar()
     luta()
+    biblioteca()
+    cacada()

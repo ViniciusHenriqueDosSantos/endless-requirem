@@ -5,10 +5,13 @@ using System.Collections.Generic;
 //
 // Ela enxerga pouco (só o cone da lanterninha dela) mas OUVE TUDO. A luta é de furtividade:
 //   - Patrulha: anda pelos corredores das estantes. Estantes e paredes tapam a visão dela.
-//   - Barulho: qualquer barulho perto (tiro do jogador, livros caindo de uma estante) faz ela ir até lá ver.
-//     Tiro faz pouco barulho (só quem está perto ouve); livros caindo se ouvem na biblioteca inteira.
-//   - Armadilha: atire numa estante (os livros caem e fazem barulho), dê a volta por trás dela sem ser vista e,
+//   - Barulho: qualquer barulho perto faz ela ir até lá ver. Tiro faz pouco barulho (só quem está perto ouve);
+//     os objetos da biblioteca (rádio, despertador, campainha: NoiseMaker, com [E]) se ouvem na biblioteca inteira.
+//   - Armadilha: os objetos ficam na frente das estantes. Use um, dê a volta por trás da estante sem ser vista e,
 //     quando a Bibliotecária parar na frente para olhar, empurre ([E]): a estante tomba em cima dela.
+//   - Esperta: mira para onde você está indo, joga rajadas e um círculo de livros se você chega perto,
+//     e, acordada e te vendo, não para na frente de uma estante com você atrás dela.
+//     Perdendo você de vista, vai para onde você estava indo e vasculha atrás das estantes mais próximas.
 //   - Acordada, ela se defende dos tiros: bloqueia com um livro (às vezes rebatendo o tiro de volta)
 //     ou dá um passo para o lado. Só leva dano de tiro enquanto está TONTA.
 //   - Estante na cabeça dá pouco dano, mas deixa ela tonta: é a hora de descarregar a arma nela.
@@ -74,6 +77,18 @@ public partial class Librarian : CharacterBody2D, IHittable
 	private const float TurnSpeed = 5f;
 	private const float FeelHitTime = 1.4f;
 
+	// Inteligência: mira adiantada, rajada, círculo de livros e busca atrás das estantes.
+	private const float AimLeadFactor = 0.85f;
+	private const float MaxAimLead = 260f;
+	private const float BurstGap = 0.16f;
+	private const float RingRange = 190f;
+	private const float RingCooldown = 4.5f;
+	private const int RingBooks = 12;
+	private const float SearchRadius = 520f;
+	private const int SearchSpots = 2;
+	private const float SearchLookTime = 1.3f;
+	private const float SuspectedLead = 0.8f;   // segundos: para onde você estava indo quando sumiu
+
 	private const float KeepMinDistance = 220f;
 	private const float KeepMaxDistance = 360f;
 	private const float RepathInterval = 0.3f;
@@ -107,6 +122,12 @@ public partial class Librarian : CharacterBody2D, IHittable
 	private float _throwTimer;
 	private float _time;
 	private Vector2 _home;
+	private Vector2 _lastSeenVelocity;
+	private int _burstLeft;
+	private float _burstTimer;
+	private float _ringCooldown;
+	private bool _useBurstNext;
+	private readonly Queue<Vector2> _searchSpots = new();
 
 	private Player _player;
 	private CollisionShape2D _collision;
@@ -141,6 +162,19 @@ public partial class Librarian : CharacterBody2D, IHittable
 	private bool _tired;
 	// Quanto mais machucada, mais rápida.
 	private float Speed => Config.MoveSpeed * (1f + 0.35f * (1f - HealthRatio));
+
+	// Indo ver um barulho que fica na frente de uma estante de pé: essa é a estante para derrubar nela.
+	public ToppleShelf TrapShelf
+	{
+		get
+		{
+			if (_phase != Phase.Investigate) return null;
+			foreach (ToppleShelf shelf in _shelves)
+				if (shelf.IsStanding && shelf.FallZone.HasPoint(_investigateAt))
+					return shelf;
+			return null;
+		}
+	}
 
 	// Estante de pé mais perto de um ponto (para a seta de objetivo).
 	public ToppleShelf NearestShelf(Vector2 from)
@@ -216,7 +250,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 		_patrolIndex = 0;
 		_facing = _targetFacing = Mathf.DegToRad(StartFacingDegrees);
 		StartPatrol();
-		ShowMessage("Ela quase não enxerga, mas ouve TUDO. Derrube estantes em cima dela... e atire enquanto ela estiver tonta.", 5f);
+		ShowMessage("Ela quase não enxerga, mas ouve TUDO. Faça barulho com os objetos da biblioteca para ela parar na frente de uma estante... e derrube a estante nela.", 5.5f);
 	}
 
 	private void StartPatrol()
@@ -229,6 +263,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 
 	private void StartInvestigate(Vector2 at)
 	{
+		_searchSpots.Clear();
 		_phase = Phase.Investigate;
 		_investigateAt = at;
 		_arrived = false;
@@ -371,6 +406,9 @@ public partial class Librarian : CharacterBody2D, IHittable
 		_tired = false;
 		_fansSinceRest = 0;
 		_dodgeTimer = _dodgeCooldown = _deflectTimer = _blockTimer = 0;
+		_burstLeft = 0;
+		_ringCooldown = 0;
+		_searchSpots.Clear();
 		GlobalPosition = _home;
 		Velocity = Vector2.Zero;
 		_facing = _targetFacing = Mathf.DegToRad(StartFacingDegrees);
@@ -489,8 +527,47 @@ public partial class Librarian : CharacterBody2D, IHittable
 		_pauseTimer -= dt;
 		_targetFacing += Mathf.Sin(_time * 3f) * 2.4f * dt;
 		StandStill();
-		if (_pauseTimer <= 0)
-			StartPatrol();
+		if (_pauseTimer > 0) return;
+
+		// Ainda tem esconderijo para vasculhar (atrás das estantes perto de onde te perdeu)?
+		if (_searchSpots.Count > 0)
+		{
+			GoInvestigate(_searchSpots.Dequeue(), SearchLookTime);
+			return;
+		}
+		StartPatrol();
+	}
+
+	// Vai até um ponto e fica olhando em volta (sem mexer na lista de esconderijos).
+	private void GoInvestigate(Vector2 at, float lookTime)
+	{
+		_phase = Phase.Investigate;
+		_investigateAt = at;
+		_arrived = false;
+		_travelTimer = 0;
+		_pauseTimer = lookTime;
+		_repathTimer = 0;
+	}
+
+	// Perdeu você de vista: vai para onde você estava indo e depois olha atrás das estantes mais perto dali
+	// (onde o jogador costuma se esconder para empurrar).
+	private void StartSearch()
+	{
+		Vector2 lead = (_lastSeenVelocity * SuspectedLead).LimitLength(260f);
+		Vector2 guess = _investigateAt + lead;
+		if (!GhostNav.TryNearestFreeFloor(this, guess, out guess))
+			guess = _investigateAt;
+
+		_searchSpots.Clear();
+		List<Vector2> spots = new();
+		foreach (ToppleShelf shelf in _shelves)
+			if (shelf.IsStanding && shelf.PushZone.GetCenter().DistanceTo(guess) < SearchRadius)
+				spots.Add(shelf.PushZone.GetCenter());
+		spots.Sort((a, b) => a.DistanceTo(guess).CompareTo(b.DistanceTo(guess)));
+		for (int i = 0; i < spots.Count && i < SearchSpots; i++)
+			_searchSpots.Enqueue(spots[i]);
+
+		GoInvestigate(guess, LookAroundTime * 0.6f);
 	}
 
 	private void Spotted()
@@ -554,6 +631,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 		{
 			_huntTimer = HuntTime;
 			_investigateAt = _player.GlobalPosition;
+			_lastSeenVelocity = _player.Velocity;
 			_targetFacing = toPlayer.Angle();
 		}
 		else
@@ -563,16 +641,17 @@ public partial class Librarian : CharacterBody2D, IHittable
 
 		if (_huntTimer <= 0)
 		{
-			// Perdeu de vista: vai procurar onde te viu por último.
-			ShowMessage("Ela te perdeu de vista... e foi procurar.", 2.5f);
-			StartInvestigate(_investigateAt);
+			// Perdeu de vista: vai para onde você estava indo e vasculha atrás das estantes.
+			ShowMessage("Ela te perdeu de vista... e está vasculhando atrás das estantes.", 2.5f);
+			StartSearch();
 			return;
 		}
 
 		if (seen)
 			Chase(dt, distance, toPlayer, true);
 		else
-			MoveTowards(_investigateAt, Speed * HuntSpeedFactor, dt);
+			// sem te ver: corre para onde você estava indo (não só onde te viu)
+			MoveTowards(_investigateAt + (_lastSeenVelocity * 0.4f).LimitLength(160f), Speed * HuntSpeedFactor, dt);
 	}
 
 	// ---------- Tonta (estante na cabeça) ----------
@@ -637,15 +716,80 @@ public partial class Librarian : CharacterBody2D, IHittable
 		if (GetSlideCollisionCount() > 0)
 			_strafeSign = -_strafeSign;
 
+		// Esperta: não fica na frente de uma estante com você atrás dela.
+		target = AvoidTrapZones(target);
 		MoveTowards(target, Speed * HuntSpeedFactor, dt, faceMovement: false);
 
-		_fireTimer -= dt;
-		if (_fireTimer <= 0 && canShoot)
+		if (!canShoot) return;
+		_ringCooldown -= dt;
+
+		// rajada em andamento: livros rápidos, um atrás do outro, mirando adiantado
+		if (_burstLeft > 0)
 		{
-			FireFan();
-			_fansSinceRest++;
-			_fireTimer = Config.FireInterval * (HealthRatio < 0.5f ? 0.7f : 1f);
+			_burstTimer -= dt;
+			if (_burstTimer <= 0)
+			{
+				_burstLeft--;
+				_burstTimer = BurstGap;
+				_throwTimer = ThrowPoseTime;
+				Vector2 origin = GlobalPosition + Eye;
+				SpawnBook(origin, (AimPoint(origin) - origin).Normalized(), 1.45f);
+			}
+			return;
 		}
+
+		_fireTimer -= dt;
+		if (_fireTimer > 0) return;
+
+		if (distance < RingRange && _ringCooldown <= 0)
+		{
+			// chegou perto demais: "SHHHH!" e um círculo de livros para todo lado
+			FireRing();
+			_ringCooldown = RingCooldown;
+		}
+		else if (_useBurstNext)
+		{
+			_burstLeft = HealthRatio < 0.5f ? 4 : 3;
+			_burstTimer = 0;
+		}
+		else
+			FireFan();
+		_useBurstNext = !_useBurstNext;
+		_fansSinceRest++;
+		_fireTimer = Config.FireInterval * (HealthRatio < 0.5f ? 0.7f : 1f);
+	}
+
+	// Para onde mirar: onde você vai estar quando o livro chegar (não onde você está agora).
+	private Vector2 AimPoint(Vector2 origin)
+	{
+		Vector2 target = _player.GlobalPosition + new Vector2(0, -32);
+		float time = origin.DistanceTo(target) / Mathf.Max(1f, Config.ProjectileSpeed * 1.45f);
+		return target + (_player.Velocity * time * AimLeadFactor).LimitLength(MaxAimLead);
+	}
+
+	// Se o destino fica na frente de uma estante de pé e você está atrás dela (ou perto de lá),
+	// ela para antes, fora do alcance do tombo.
+	private Vector2 AvoidTrapZones(Vector2 target)
+	{
+		foreach (ToppleShelf shelf in _shelves)
+		{
+			if (!shelf.IsStanding) continue;
+			Rect2 zone = shelf.FallZone.Grow(24f);
+			if (!zone.HasPoint(target) && !zone.HasPoint(GlobalPosition)) continue;
+			if (shelf.PushZone.Grow(120f).HasPoint(_player.GlobalPosition))
+				return new Vector2(target.X, zone.End.Y + 30f);   // sai pela frente, longe do tombo
+		}
+		return target;
+	}
+
+	private void FireRing()
+	{
+		_throwTimer = ThrowPoseTime;
+		ShowMessage("SHHHHHH!", 1.2f);
+		Vector2 origin = GlobalPosition + Eye;
+		float offset = GD.Randf() * Mathf.Tau;
+		for (int i = 0; i < RingBooks; i++)
+			SpawnBook(origin, Vector2.FromAngle(offset + i * Mathf.Tau / RingBooks), 0.85f);
 	}
 
 	// ---------- Movimento e tiro ----------
@@ -706,7 +850,7 @@ public partial class Librarian : CharacterBody2D, IHittable
 	{
 		_throwTimer = ThrowPoseTime;
 		Vector2 origin = GlobalPosition + Eye;
-		Vector2 aim = (_player.GlobalPosition + new Vector2(0, -32) - origin).Normalized();
+		Vector2 aim = (AimPoint(origin) - origin).Normalized();
 
 		for (int i = 0; i < Config.Pellets; i++)
 		{
@@ -715,11 +859,11 @@ public partial class Librarian : CharacterBody2D, IHittable
 		}
 	}
 
-	private void SpawnBook(Vector2 origin, Vector2 direction)
+	private void SpawnBook(Vector2 origin, Vector2 direction, float speedScale = 1f)
 	{
 		BossProjectile projectile = ProjectileScene.Instantiate<BossProjectile>();
 		projectile.Direction = direction;
-		projectile.Speed = Config.ProjectileSpeed;
+		projectile.Speed = Config.ProjectileSpeed * speedScale;
 		projectile.Color = Config.ProjectileColor;
 		if (Config.ProjectileSprite != null)
 		{

@@ -2,7 +2,7 @@ using Godot;
 using System.Collections.Generic;
 
 // Estante bamba da biblioteca: a arma contra a Bibliotecária.
-//   - Tiro na estante: os livros caem lá de cima e fazem BARULHO (ela vem ver o que foi). A estante não cai com tiro.
+//   - Tiro na estante: ela balança, mas não cai nem chama a Bibliotecária (quem chama são os objetos: NoiseMaker).
 //   - Empurrar: atrás da estante (do lado de cima), [E] empurra e ela tomba para a frente.
 //     Quem estiver na frente (FallZone) é esmagado. Dá para empurrar sem ela ver: a estante tapa a visão.
 //   - Caída, vira entulho no chão e fica lá (ReriseTime > 0 faz ela voltar a ficar de pé sozinha).
@@ -67,13 +67,12 @@ public partial class ToppleShelf : Prop, IHittable
 		return false;
 	}
 
+	// Tiro na estante: ela só balança (não chama mais a Bibliotecária: quem chama são os objetos que fazem
+	// barulho, NoiseMaker). O tiro em si ainda faz o barulhinho de tiro, que ela ouve só de perto.
 	public void TakeHit(int damage, Vector2 direction)
 	{
-		if (!IsStanding || _noiseTimer > 0) return;
+		if (!IsStanding) return;
 		_wobble = 1f;
-		_noiseTimer = NoiseCooldown;
-		Noise.Make(this, NoisePoint, NoiseRadius);
-		(GetTree().GetFirstNodeInGroup("player") as Player)?.TriggerShake(3f);
 	}
 
 	public void Topple()

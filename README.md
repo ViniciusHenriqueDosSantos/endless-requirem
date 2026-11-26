@@ -6,7 +6,7 @@ Jogo de ação e tiro top-down feito em **Godot 4.7.2 (.NET / C#)** para a disci
 
 > Estado atual: **Fases 1 e 2 completas em cinza**.
 > - Fase 1: Entrada → Portaria → RU → Corredor → Cantina (Tia da Cantina) → Elevador.
-> - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (ondas + o Zelador, que solta a chave) → armário dos Achados (tarefa 2D estilo Among Us: girar o cadeado com a combinação do post-it e puxar a alavanca: o livro) → devolução → Bibliotecária (surda, enxerga pela luz: derrube estantes nela e atire enquanto ela está tonta; acordada, ela bloqueia e desvia dos tiros) → escada desabando atrás de você (8 lances do térreo ao 4º andar, com giro de câmera a cada lance; barricadas, degraus quebrados, lâmpadas caindo e extintores rolando).
+> - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (ondas + o Zelador, que solta a chave) → armário dos Achados (tarefa 2D estilo Among Us: girar o cadeado com a combinação do post-it e puxar a alavanca: o livro) → devolução → Bibliotecária (ouve tudo, enxerga só pela lanterna: atraia ela com o rádio, o despertador ou a campainha até a frente de uma estante, derrube a estante nela com E e atire enquanto ela está tonta; acordada, ela bloqueia e desvia dos tiros) → Rifle do Silêncio → escada desabando atrás de você (8 lances do térreo ao 4º andar, com giro de câmera a cada lance; barricadas, degraus quebrados, lâmpadas caindo e extintores rolando).
 > - Arte: a **Fase 1 já tem pixel art** baseada no campus de verdade (tour 360° da UNIFESP SJC), à noite e abandonada, com lanterna e luzes piscando. Veja `tools/art/README.md`.
 > - Fase 3 (4º andar, laboratórios, atalho F4): porta de vidro (no pé do corredor de vidro) da área final com senha → câmeras apitam, alarme e fantasmas no corredor, laboratórios destrancam → laboratórios seguros: fiação e distribuidor (Lab 1) e computador com login (aluno/unifesp) e o site da universidade (Lab 2) → senha (sorteada a cada partida) abre a porta e some com os fantasmas. Já tem o auditório (área restrita, porta com E, palco) ligado à área final; o diploma e o chefe vêm depois. Salas de teste (`levels/test_rooms*.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
 
@@ -93,7 +93,8 @@ objects/                uma pasta por objeto do jogo
 tools/levelgen/         geradores das plantas (Python). As cenas levels/*.tscn são geradas por eles;
                         mudanças de planta grandes ficam mais fáceis editando o gerador e rodando de novo
   arena_grid/           grade do chão
-tools/audio/music.py    gera as músicas (sounds/music: tema, explorar, luta); objects/music/Music.cs troca a faixa sozinho
+tools/audio/music.py    gera as músicas (sounds/music: tema, explorar, luta, biblioteca, cacada); objects/music/Music.cs troca a faixa sozinho
+tools/audio/sfx.py      gera alguns efeitos (tiro do Rifle do Silêncio, rádio, despertador, campainha)
 tools/art/              geradores da pixel art (Python). Rode build_all.py para regenerar tudo (ver tools/art/README.md)
 tools/capture/          fotos automáticas de uma fase rodando (para revisar a arte)
 tilesets/               peças de chão e parede (fase1_tileset = arte da Fase 1; placeholder = provisório)
