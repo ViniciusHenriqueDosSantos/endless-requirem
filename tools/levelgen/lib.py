@@ -74,19 +74,6 @@ class Level:
         lines = [head] + [f"{k} = {v}" for k, v in (props or {}).items()]
         self.nodes.append("\n".join(lines))
 
-    def tile_layers(self):
-        self.res('TileSet', 'res://tilesets/placeholder_tileset.tres', 'tiles')
-        self.res('TileSet', 'res://tilesets/placeholder_tileset_outer.tres', 'tiles_outer')
-        self.node("Floor", type="TileMapLayer", groups=["floor"], props={
-            "z_index": "-10", "texture_filter": "1", "scale": v(4, 4),
-            "tile_map_data": f'PackedByteArray("{self.tile_data(self.floor_tiles)}")', "tile_set": 'ExtResource("tiles")'})
-        self.node("Walls", type="TileMapLayer", groups=["obstacles"], props={
-            "y_sort_enabled": "true", "texture_filter": "1", "scale": v(4, 4),
-            "tile_map_data": f'PackedByteArray("{self.tile_data(self.inner_walls)}")', "tile_set": 'ExtResource("tiles")'})
-        self.node("OuterWalls", type="TileMapLayer", groups=["obstacles", "outer_walls"], props={
-            "y_sort_enabled": "true", "texture_filter": "1", "scale": v(4, 4),
-            "tile_map_data": f'PackedByteArray("{self.tile_data(self.outer_walls)}")', "tile_set": 'ExtResource("tiles_outer")'})
-
     def tex(self, name, folder):
         """Textura de sprites/<folder>/<name>.png como ExtResource."""
         path = f"res://sprites/{folder}/{name}.png"

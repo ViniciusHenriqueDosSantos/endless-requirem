@@ -9,7 +9,7 @@ using System.Collections.Generic;
 //
 // Estilo "Temple Run": o chão desaba ATRÁS de você, quase na sua velocidade, e acelera se você abrir vantagem
 // (fica sempre no seu calcanhar). Se alcançar, você cai (REPROVADO) e volta ao térreo. Sem fantasmas.
-// Obstáculos por lance (tabela Lances, abaixo): barricada (1 tiro de Canhão), degrau quebrado, lance pela metade,
+// Obstáculos por lance (tabela Lances, abaixo): barricada (1 tiro do Rifle do Silêncio), degrau quebrado, lance pela metade,
 // lâmpada caindo do teto e extintor rolando. Perto do buraco a tela treme, o barulho sobe e a borda fica vermelha.
 // A porta do 4º andar só aparece quando você chega lá.
 // Peças em levels/escada.tscn (gerada por tools/levelgen/gen_escada.py).
@@ -52,7 +52,6 @@ public partial class Escada : LevelBase
 
 	private const string NextScene = "res://levels/fase_3.tscn";
 	private const int Flights = 8;
-	private const int LastFloor = 4;
 	private const float Tile = 64f;
 	private const float IntroTime = 1.3f;
 	private const float SpinTime = 0.4f;
@@ -95,7 +94,7 @@ public partial class Escada : LevelBase
 
 	protected override void SetupDefaultLoadout()
 	{
-		// Aberta direto (F3): todas as armas, como se tivesse vencido a Fase 2 (o Canhão é a arma desta parte).
+		// Aberta direto (F3): todas as armas, como se tivesse vencido a Fase 2 (o Rifle do Silêncio é a arma desta parte).
 		for (int i = 1; i < Player.Weapons.Count; i++)
 			Player.AddWeapon(Player.Weapons[i]);
 	}

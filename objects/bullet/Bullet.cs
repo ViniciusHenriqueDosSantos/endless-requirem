@@ -61,7 +61,7 @@ public partial class Bullet : Area2D
 			return;
 		}
 
-		// Barricada da escada: o Canhão derruba; a Escopeta e o Laser quase não fazem nada.
+		// Barricada da escada: o Rifle do Silêncio derruba; a Escopeta de Café e o Grampeador quase não fazem nada.
 		if (body is Barricade barricade && !barricade.IsDestroyed)
 		{
 			barricade.TakeHit(Weapon, Direction);

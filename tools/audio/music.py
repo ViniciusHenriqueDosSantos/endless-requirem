@@ -1,11 +1,11 @@
 # Gera as músicas do jogo (chiptune simples, combinando com a pixel art). Só usa a biblioteca padrão do Python.
 # Uso (na raiz do projeto): python tools/audio/music.py
-# Saída: sounds/music/tema.wav (intro, menu, final), explorar.wav (andando pelas fases), luta.wav (ondas e chefes),
+# Saída (OGG; WAV se não tiver ffmpeg): sounds/music/tema.wav (intro, menu, final), explorar.wav (andando pelas fases), luta.wav (ondas e chefes),
 #        biblioteca.wav (Bibliotecária patrulhando: furtividade), cacada.wav (Bibliotecária te caçando),
 #        chefe.wav (Tia da Cantina), fuga.wav (escada desabando), laboratorio.wav (Fase 3), alarme.wav (Fase 3 com
 #        o alarme), sia.wav (auditório 3D com a S.I.A.), arcade.wav (Pac-Man dentro do telão) e final.wav (o final).
 # Cada música é um loop: o fim emenda no começo (o rabo do eco volta para o início).
-import math, os, random, struct, wave
+import math, os, random, struct, subprocess, wave
 
 RATE = 22050
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -54,6 +54,16 @@ class Track:
             w.setsampwidth(2)
             w.setframerate(RATE)
             w.writeframes(b"".join(struct.pack("<h", int(max(-1, min(1, v * k)) * 32767)) for v in self.buf))
+        # vira OGG (10x menor); sem o ffmpeg instalado, fica o WAV (o Music.cs aceita os dois)
+        wav_path = os.path.join(OUT, name)
+        ogg_path = wav_path[:-4] + ".ogg"
+        try:
+            subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", wav_path, "-c:a", "libvorbis", "-q:a", "5", ogg_path],
+                           check=True)
+            os.remove(wav_path)
+            name = os.path.basename(ogg_path)
+        except (OSError, subprocess.CalledProcessError):
+            print("  (sem ffmpeg: mantido em WAV)")
         print("ok", name, f"{self.n / RATE:.1f} s")
 
 

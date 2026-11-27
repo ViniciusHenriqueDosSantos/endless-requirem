@@ -109,11 +109,11 @@ public partial class MainMenu : Control
 	// ---------- novo jogo: personagem e dificuldade ----------
 	private Control BuildNewGame()
 	{
-		PanelContainer panel = MenuUi.Panel(MenuUi.Yellow);
+		PanelContainer panel = MenuUi.Panel(Palette.Yellow);
 		VBoxContainer column = new();
 		column.AddThemeConstantOverride("separation", 10);
 		panel.AddChild(column);
-		column.AddChild(MenuUi.Text("NOVO JOGO", 24, MenuUi.Yellow));
+		column.AddChild(MenuUi.Text("NOVO JOGO", 24, Palette.Yellow));
 
 		// duas colunas: personagem à esquerda, dificuldade à direita
 		HBoxContainer sides = new();
@@ -123,7 +123,7 @@ public partial class MainMenu : Control
 		VBoxContainer left = new();
 		left.AddThemeConstantOverride("separation", 8);
 		sides.AddChild(left);
-		left.AddChild(MenuUi.Text("PERSONAGEM", 16, MenuUi.Green));
+		left.AddChild(MenuUi.Text("PERSONAGEM", 16, Palette.Green));
 		HBoxContainer characters = new() { Alignment = BoxContainer.AlignmentMode.Center };
 		characters.AddThemeConstantOverride("separation", 14);
 		left.AddChild(characters);
@@ -156,7 +156,7 @@ public partial class MainMenu : Control
 		VBoxContainer right = new();
 		right.AddThemeConstantOverride("separation", 8);
 		sides.AddChild(right);
-		right.AddChild(MenuUi.Text("DIFICULDADE", 16, MenuUi.Green));
+		right.AddChild(MenuUi.Text("DIFICULDADE", 16, Palette.Green));
 		VBoxContainer levels = new();
 		levels.AddThemeConstantOverride("separation", 6);
 		right.AddChild(levels);
@@ -175,7 +175,7 @@ public partial class MainMenu : Control
 			_difficultyButtons[i] = button;
 		}
 
-		_difficultyHint = MenuUi.Text("", 13, MenuUi.Cream);
+		_difficultyHint = MenuUi.Text("", 13, Palette.Cream);
 		_difficultyHint.CustomMinimumSize = new Vector2(200, 0);
 		_difficultyHint.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 		right.AddChild(_difficultyHint);
@@ -217,13 +217,13 @@ public partial class MainMenu : Control
 	// ---------- controles ----------
 	private Control BuildControls()
 	{
-		PanelContainer panel = MenuUi.Panel(MenuUi.Green);
+		PanelContainer panel = MenuUi.Panel(Palette.Green);
 		VBoxContainer column = new();
 		column.AddThemeConstantOverride("separation", 8);
 		panel.AddChild(column);
-		column.AddChild(MenuUi.Text("CONTROLES", 22, MenuUi.Yellow));
+		column.AddChild(MenuUi.Text("CONTROLES", 22, Palette.Yellow));
 		column.AddChild(MenuUi.ControlsList(15));
-		column.AddChild(MenuUi.Text("No jogo, H mostra ou esconde este quadro.", 13, MenuUi.Cream));
+		column.AddChild(MenuUi.Text("No jogo, H mostra ou esconde este quadro.", 13, Palette.Cream));
 		Button back = BackButton();
 		back.Name = "Primeiro";
 		column.AddChild(back);
@@ -233,15 +233,15 @@ public partial class MainMenu : Control
 	// ---------- opções ----------
 	private Control BuildOptions()
 	{
-		PanelContainer panel = MenuUi.Panel(MenuUi.Green);
+		PanelContainer panel = MenuUi.Panel(Palette.Green);
 		VBoxContainer column = new();
 		column.AddThemeConstantOverride("separation", 14);
 		panel.AddChild(column);
-		column.AddChild(MenuUi.Text("OPÇÕES", 26, MenuUi.Yellow));
+		column.AddChild(MenuUi.Text("OPÇÕES", 26, Palette.Yellow));
 
 		HBoxContainer volumeRow = new();
 		volumeRow.AddThemeConstantOverride("separation", 16);
-		Label volumeLabel = MenuUi.Text("Volume", 18, MenuUi.Cream, false);
+		Label volumeLabel = MenuUi.Text("Volume", 18, Palette.Cream, false);
 		volumeLabel.CustomMinimumSize = new Vector2(90, 0);
 		volumeRow.AddChild(volumeLabel);
 		HSlider volume = new()
@@ -264,7 +264,7 @@ public partial class MainMenu : Control
 
 		HBoxContainer brightnessRow = new();
 		brightnessRow.AddThemeConstantOverride("separation", 16);
-		Label brightnessLabel = MenuUi.Text("Brilho", 18, MenuUi.Cream, false);
+		Label brightnessLabel = MenuUi.Text("Brilho", 18, Palette.Cream, false);
 		brightnessLabel.CustomMinimumSize = new Vector2(90, 0);
 		brightnessRow.AddChild(brightnessLabel);
 		HSlider brightness = new()

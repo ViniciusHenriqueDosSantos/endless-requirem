@@ -1,14 +1,8 @@
 using Godot;
 
-// Peças de interface usadas pelo menu principal e pelo menu de pausa (cores da paleta do jogo).
+// Peças de interface usadas pelo menu principal e pelo menu de pausa (cores em Palette).
 public static class MenuUi
 {
-	public static readonly Color Ink = new(0.11f, 0.10f, 0.13f);           // ink 1c1a22
-	public static readonly Color Frame = new(0.23f, 0.25f, 0.28f);         // uni_text 3a3f48
-	public static readonly Color Yellow = new(0.95f, 0.76f, 0.19f);        // tassel f2c230
-	public static readonly Color Cream = new(0.89f, 0.87f, 0.82f);         // plaza_l e3ddd1
-	public static readonly Color Green = new(0.17f, 0.71f, 0.45f);         // lanyard 2bb673
-
 	private static readonly PackedScene ArrowButtonScene = GD.Load<PackedScene>("res://objects/arrow_button/arrow_button.tscn");
 
 	// Botão grande do menu ("> Jogar"), centralizado.
@@ -25,7 +19,7 @@ public static class MenuUi
 	public static PanelContainer Panel(Color border)
 	{
 		PanelContainer panel = new() { MouseFilter = Control.MouseFilterEnum.Stop };
-		panel.AddThemeStyleboxOverride("panel", Box(new Color(Ink, 0.88f), border, 3, 20));
+		panel.AddThemeStyleboxOverride("panel", Box(new Color(Palette.Ink, 0.88f), border, 3, 20));
 		return panel;
 	}
 
@@ -36,7 +30,7 @@ public static class MenuUi
 		label.AddThemeFontSizeOverride("font_size", size);
 		label.AddThemeColorOverride("font_color", color);
 		label.AddThemeConstantOverride("outline_size", 4);
-		label.AddThemeColorOverride("font_outline_color", Ink);
+		label.AddThemeColorOverride("font_outline_color", Palette.Ink);
 		return label;
 	}
 
@@ -48,8 +42,8 @@ public static class MenuUi
 		grid.AddThemeConstantOverride("v_separation", 6);
 		foreach ((string key, string use) in Hud.Controls)
 		{
-			grid.AddChild(Text(key, size, Green, false));
-			grid.AddChild(Text(use, size, Cream, false));
+			grid.AddChild(Text(key, size, Palette.Green, false));
+			grid.AddChild(Text(use, size, Palette.Cream, false));
 		}
 		return grid;
 	}
@@ -57,16 +51,16 @@ public static class MenuUi
 	// Botão de escolha (personagem, dificuldade): borda amarela quando escolhido.
 	public static void Choice(Button button, bool chosen)
 	{
-		Color border = chosen ? Yellow : Frame;
+		Color border = chosen ? Palette.Yellow : Palette.Frame;
 		Color face = chosen ? new Color(0.17f, 0.16f, 0.2f) : new Color(0.13f, 0.12f, 0.15f);
 		button.AddThemeStyleboxOverride("normal", Box(face, border, 3, 8));
-		button.AddThemeStyleboxOverride("hover", Box(face.Lightened(0.1f), chosen ? Yellow : Cream, 3, 8));
-		button.AddThemeStyleboxOverride("pressed", Box(face.Darkened(0.2f), Yellow, 3, 8));
+		button.AddThemeStyleboxOverride("hover", Box(face.Lightened(0.1f), chosen ? Palette.Yellow : Palette.Cream, 3, 8));
+		button.AddThemeStyleboxOverride("pressed", Box(face.Darkened(0.2f), Palette.Yellow, 3, 8));
 		button.AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
-		Color text = chosen ? Yellow : Cream;
+		Color text = chosen ? Palette.Yellow : Palette.Cream;
 		button.AddThemeColorOverride("font_color", text);
 		button.AddThemeColorOverride("font_hover_color", text);
-		button.AddThemeColorOverride("font_pressed_color", Yellow);
+		button.AddThemeColorOverride("font_pressed_color", Palette.Yellow);
 		button.Modulate = chosen ? Colors.White : new Color(1, 1, 1, 0.75f);
 	}
 

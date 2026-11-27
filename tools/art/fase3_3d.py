@@ -3,7 +3,7 @@
 #   madeira   tábuas do chão e do palco (32 x 32)        parede   painel acústico da parede (32 x 32)
 #   carpete   tapete vermelho do corredor (16 x 16)        poltrona tecido vermelho das poltronas (16 x 16)
 #   tela_off  o telão desligado (64 x 36)                  sia      o rosto da S.I.A. no telão (64 x 36)
-#   diploma   o papel do diploma (32 x 16)                 cortina  cortina vermelha (16 x 32)
+#   cortina   cortina vermelha (16 x 32)
 from pix import Canvas, rng, shade, hexc, text, text_center
 from palette import C
 
@@ -76,15 +76,6 @@ def tela(on):
     return cv
 
 
-def diploma():
-    cv = Canvas(32, 16)
-    cv.rect(0, 0, 32, 16, hexc("f4ecd6")); cv.frame(1, 1, 30, 14, hexc("c9a34a"))
-    for y in (5, 8, 11): cv.hline(6, y, 20, hexc("b7ab8e"))
-    cv.rect(14, 2, 4, 2, hexc("6b4a1a"))
-    cv.rect(25, 10, 4, 4, hexc("c8322b"))                                   # selo
-    return cv
-
-
 madeira().save(OUT + "madeira.png")
 parede().save(OUT + "parede.png")
 carpete().save(OUT + "carpete.png")
@@ -92,4 +83,3 @@ poltrona().save(OUT + "poltrona.png")
 cortina().save(OUT + "cortina.png")
 tela(False).save(OUT + "tela_off.png")
 tela(True).save(OUT + "sia.png")
-diploma().save(OUT + "diploma.png")

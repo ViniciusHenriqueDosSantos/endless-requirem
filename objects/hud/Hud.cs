@@ -81,8 +81,8 @@ public partial class Hud : CanvasLayer
 		PanelContainer panel = new() { MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
 		StyleBoxFlat box = new()
 		{
-			BgColor = new Color(Caption.Ink, 0.85f),
-			BorderColor = Caption.Yellow,
+			BgColor = new Color(Palette.Ink, 0.85f),
+			BorderColor = Palette.Yellow,
 			ContentMarginLeft = 10, ContentMarginRight = 10, ContentMarginTop = 6, ContentMarginBottom = 6,
 		};
 		box.SetBorderWidthAll(2);
@@ -97,18 +97,18 @@ public partial class Hud : CanvasLayer
 		VBoxContainer column = new() { MouseFilter = Control.MouseFilterEnum.Ignore };
 		column.AddThemeConstantOverride("separation", 3);
 		panel.AddChild(column);
-		column.AddChild(ControlsLabel("COMANDOS", 13, Caption.Yellow));
+		column.AddChild(ControlsLabel("COMANDOS", 13, Palette.Yellow));
 
 		GridContainer grid = new() { Columns = 2, MouseFilter = Control.MouseFilterEnum.Ignore };
 		grid.AddThemeConstantOverride("h_separation", 10);
 		grid.AddThemeConstantOverride("v_separation", 1);
 		foreach ((string key, string use) in Controls)
 		{
-			grid.AddChild(ControlsLabel(key, 11, Caption.Green));
-			grid.AddChild(ControlsLabel(use, 11, Caption.Cream));
+			grid.AddChild(ControlsLabel(key, 11, Palette.Green));
+			grid.AddChild(ControlsLabel(use, 11, Palette.Cream));
 		}
 		column.AddChild(grid);
-		column.AddChild(ControlsLabel("H: mostrar / esconder", 10, new Color(Caption.Cream, 0.6f)));
+		column.AddChild(ControlsLabel("H: mostrar / esconder", 10, new Color(Palette.Cream, 0.6f)));
 		_controls = panel;
 	}
 
@@ -118,7 +118,7 @@ public partial class Hud : CanvasLayer
 		label.AddThemeFontSizeOverride("font_size", size);
 		label.AddThemeColorOverride("font_color", color);
 		label.AddThemeConstantOverride("outline_size", 4);
-		label.AddThemeColorOverride("font_outline_color", Caption.Ink);
+		label.AddThemeColorOverride("font_outline_color", Palette.Ink);
 		return label;
 	}
 

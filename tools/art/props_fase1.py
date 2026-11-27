@@ -785,15 +785,6 @@ def mastros():
     return cv
 
 
-def corrimao(h=80):
-    """Guarda-corpo de tubo de aço ao lado da rampa (visto de cima: o tubo e os postes)."""
-    cv = Canvas(4, h)
-    for y in range(h):
-        cv.put(1, y, hexc("d4d9dd")); cv.put(2, y, hexc("8f969d"))
-    for y in range(2, h, 12): cv.rect(0, y, 4, 3, hexc("5d636a"))
-    return cv
-
-
 def jardim_lateral(tiles, lamps=(), seed=0):
     """Canteiro comprido junto ao prédio, como na foto da praça: borda de concreto, palmeiras, agaves e globos."""
     w, h = 16, tiles * 16
@@ -952,7 +943,7 @@ SPRITES = {
     "carro0": lambda: carro(0), "carro1": lambda: carro(1), "carro2": lambda: carro(2),
     "mesa_ru_longa": mesa_ru_longa, "mesa_ru_cadeiras": mesa_ru_cadeiras, "lixeiras_pedal": lixeiras_pedal,
     "catraca_ru": catraca_ru, "cadeira_caida": cadeira_caida, "entulho": entulho,
-    "portaria": portaria, "anexo": anexo, "portao_estac": lambda: portao_estac(), "gradil_curto": lambda: gradil(w=80), "mastros": mastros, "corrimao": corrimao,
+    "portaria": portaria, "anexo": anexo, "portao_estac": lambda: portao_estac(), "gradil_curto": lambda: gradil(w=80), "mastros": mastros,
     "jardim_lateral_a": lambda: jardim_lateral(15, lamps=((40, True), (200, False)), seed=1),
     "jardim_lateral_b": lambda: jardim_lateral(4, lamps=((50, True),), seed=2),
     "jardim_lateral_c": lambda: jardim_lateral(15, lamps=((120, False), (220, True)), seed=3),

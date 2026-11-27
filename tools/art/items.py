@@ -59,12 +59,6 @@ def cafezinho():
 
 
 # ---------------------------------------------------------------- armas na mão do jogador (apontando para a direita)
-def laser():
-    cv = Canvas(11, 6)
-    cv.rect(1, 1, 8, 3, hexc("e8e9ec")); cv.hline(1, 1, 8, hexc("ffffff")); cv.hline(1, 3, 8, hexc("a8acb4"))
-    cv.rect(8, 1, 2, 2, hexc("f2c230")); cv.rect(2, 3, 2, 3, hexc("3a3d44")); cv.put(5, 2, C["uni_blue"])
-    cv.outline(INK)
-    return cv
 
 
 def escopeta():
@@ -79,15 +73,6 @@ def escopeta():
     cv.rect(4, 1, 9, 3, RED); cv.hline(4, 1, 9, RED_L); cv.hline(4, 3, 9, RED_D)   # garrafa térmica
     cv.vline(8, 1, 3, hexc("efeadd"))                                    # faixa branca
     cv.rect(13, 1, 3, 3, CHROME); cv.vline(15, 1, 3, CHROME_D)           # tampa cromada (a boca)
-    cv.outline(INK)
-    return cv
-
-
-def canhao():
-    cv = Canvas(15, 8)
-    cv.rect(2, 1, 11, 5, hexc("39404a")); cv.hline(2, 1, 11, hexc("5d6672"))
-    for x in (5, 8, 11): cv.vline(x, 2, 3, hexc("53e0ff"))
-    cv.rect(12, 2, 2, 3, hexc("9ff1ff")); cv.rect(3, 6, 3, 2, hexc("2a2b30"))
     cv.outline(INK)
     return cv
 
@@ -130,16 +115,6 @@ def marcador():
 
 
 # ---------------------------------------------------------------- projéteis (brancos: a cor vem da arma)
-def bolt():
-    cv = Canvas(7, 3)
-    cv.hline(0, 1, 7, hexc("ffffff", 160)); cv.rect(2, 0, 5, 3, hexc("ffffff", 200)); cv.hline(3, 1, 4, hexc("ffffff"))
-    return cv
-
-
-def pellet():
-    cv = Canvas(3, 3)
-    cv.rect(0, 0, 3, 3, hexc("ffffff", 170)); cv.put(1, 1, hexc("ffffff"))
-    return cv
 
 
 def grao_cafe():
@@ -171,13 +146,6 @@ def grampo():
     cv = Canvas(5, 3)
     cv.hline(0, 0, 4, hexc("ffffff")); cv.hline(0, 2, 4, hexc("ffffff")); cv.vline(4, 0, 3, hexc("ffffff"))
     cv.hline(1, 1, 3, hexc("ffffff", 60))
-    return cv
-
-
-def orb():
-    cv = Canvas(7, 7)
-    cv.ellipse(3.5, 3.5, 3.5, 3.5, hexc("ffffff", 120)); cv.ellipse(3.5, 3.5, 2.3, 2.3, hexc("ffffff", 220))
-    cv.ellipse(3.5, 3.5, 1.2, 1.2, hexc("ffffff"))
     return cv
 
 
@@ -439,15 +407,12 @@ def escopeta_grande():
 if __name__ == "__main__":
     for name, fn in {"cracha": cracha, "marmita": marmita, "escopeta": escopeta_item, "cafezinho": cafezinho}.items():
         fn().save(f"sprites/items/{name}.png".replace("sprites", "sprites", 1))
-    for name, fn in {"laser": laser, "escopeta": escopeta, "canhao": canhao}.items():
-        fn().save(f"sprites/weapons/{name}.png")
+    escopeta().save("sprites/weapons/escopeta.png")
     rifle_silencio().save("sprites/weapons/rifle_silencio.png")
     grampeador().save("sprites/weapons/grampeador.png")
     grampo().save("sprites/fx/grampo.png")
     grao_cafe().save("sprites/fx/grao_cafe.png")
     marcador().save("sprites/fx/marcador.png")
-    for name, fn in {"bolt": bolt, "pellet": pellet, "orb": orb}.items():
-        fn().save(f"sprites/fx/{name}.png")
     salgados().save("sprites/fx/salgados.png")
     for i in range(3): pilha(i).save(f"sprites/objects/pilha_{i}.png")
     sheet([alvo(0), alvo(1)], 2).save("sprites/objects/alvo.png")

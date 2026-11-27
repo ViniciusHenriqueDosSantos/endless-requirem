@@ -601,7 +601,7 @@ ext = [
     ('PackedScene', 'res://objects/boss/boss.tscn', 'boss'),
     ('PackedScene', 'res://objects/boss/boss_target.tscn', 'boss_target'),
     ('Resource', 'res://objects/boss/tia_cantina.tres', 'tia'),
-    ('Resource', 'res://objects/weapon/shotgun.tres', 'shotgun'),
+    ('Resource', 'res://objects/weapon/escopeta_cafe.tres', 'shotgun'),
     ('Script', 'res://objects/fase3/GlowingDevice.cs', 'glow'),
 ]
 with open(OUT, "w") as f:

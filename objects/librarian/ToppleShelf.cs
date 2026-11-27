@@ -16,7 +16,6 @@ public partial class ToppleShelf : Prop, IHittable
 	[Export] public float FallDepth = 130f;      // até onde ela cai, para a frente (px)
 	[Export] public float NoiseRadius = 1300f;
 	[Export] public float ReriseTime = 0f;        // segundos caída até voltar a ficar de pé (0 = nunca)
-	[Export] public float NoiseCooldown = 1.5f;   // um barulho por vez (tiro de escopeta não vira cinco)
 
 	public enum State { Standing, Falling, Fallen, Rising }
 	public State Current { get; private set; } = State.Standing;
