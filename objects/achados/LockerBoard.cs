@@ -4,7 +4,9 @@ using Godot;
 // Na porta de metal do armário: um cadeado de disco (0 a 39), três luzinhas e a alavanca.
 // Colado na porta, o post-it do zelador com a combinação e o sentido de cada número (sorteada a cada partida):
 //   "→ 12   ← 30   → 7" = gire para a DIREITA até o 12, para a ESQUERDA até o 30, para a DIREITA até o 7.
-// Arraste o disco com o mouse (ou A/D, setas). Parando no número certo, girando no sentido certo, a luz acende.
+// Arraste o disco com o mouse (ou A/D, setas). Parando no número certo (ou a 1 dele), girando no sentido certo,
+// a luz acende e o disco encaixa no número. Vale segurando o mouse parado ou soltando.
+// O sentido é o da volta que você está dando: uma tremidinha para trás (menos de um número e meio) não conta.
 // Com as três acesas, a alavanca destrava: puxe para baixo e a porta abre.
 //   Click: um número acertado.  Wrong: parou no número certo, mas girando para o lado errado.  Completed: porta aberta.
 public partial class LockerBoard : Control
@@ -18,7 +20,9 @@ public partial class LockerBoard : Control
 	private const float DialRadius = 120f;
 	private const int Numbers = 40;
 	private const float Step = Mathf.Tau / Numbers;
-	private const float SettleTime = 0.45f;     // parado assim no número, ele conta
+	private const float SettleTime = 0.35f;     // parado assim no número, ele conta
+	private const int Tolerance = 1;            // aceita o número certo ou um vizinho (e encaixa no certo)
+	private const float ReverseThreshold = 1.5f * Step;   // voltar menos que isso não muda o sentido da volta
 	private const float WrongFlashTime = 0.4f;
 
 	private static readonly Rect2 HandleTrack = new(520, 250, 44, 130);
@@ -28,7 +32,8 @@ public partial class LockerBoard : Control
 	private readonly int[] _direction = { 1, -1, 1 };   // 1 = direita (horário), -1 = esquerda
 	private int _stage;                                // quantos números já acertou (3 = alavanca)
 	private float _rotation;                           // radianos; positivo = horário
-	private int _lastDir;
+	private int _lastDir;                              // sentido da volta atual (ignora tremidinhas)
+	private float _reverse;                            // quanto já voltou contra o sentido atual
 	private float _still;
 	private int _lastNumber = -1;
 	private bool _counted;
@@ -43,6 +48,10 @@ public partial class LockerBoard : Control
 	private float _time;
 
 	public bool IsComplete => _open;
+	// Número da vez e quantos já acertou (para a tela e para testes).
+	public int CurrentTarget => _stage < 3 ? _combo[_stage] : -1;
+	public int Stage => _stage;
+	public int Number => CurrentNumber;
 
 	public override void _Ready()
 	{
@@ -70,9 +79,37 @@ public partial class LockerBoard : Control
 	{
 		if (Mathf.IsZeroApprox(amount)) return;
 		_rotation += amount;
-		_lastDir = amount > 0 ? 1 : -1;
-		_still = 0;
-		_counted = false;
+
+		// O sentido só muda quando a volta para o outro lado é de verdade (não uma tremida do mouse).
+		int dir = amount > 0 ? 1 : -1;
+		if (_lastDir == 0 || dir == _lastDir)
+		{
+			_lastDir = dir;
+			_reverse = 0;
+		}
+		else
+		{
+			_reverse += Mathf.Abs(amount);
+			if (_reverse >= ReverseThreshold)
+			{
+				_lastDir = dir;
+				_reverse = 0;
+			}
+		}
+		QueueRedraw();
+	}
+
+	// Distância (em números, na volta do disco) entre dois números.
+	private static int NumberDistance(int a, int b)
+	{
+		int d = Mathf.Abs(a - b) % Numbers;
+		return Mathf.Min(d, Numbers - d);
+	}
+
+	// Ao soltar o disco, ele se ajeita no número mais perto (sem mudar o sentido da volta).
+	private void SnapToNearest()
+	{
+		_rotation = -Mathf.RoundToInt(-_rotation / Step) * Step;
 		QueueRedraw();
 	}
 
@@ -83,23 +120,26 @@ public partial class LockerBoard : Control
 		if (_wrongFlash > 0) _wrongFlash -= dt;
 		if (_open && _doorAnim < 1f) _doorAnim = Mathf.Min(1f, _doorAnim + dt * 2.5f);
 
-		// Parou num número: confere (uma vez por parada).
-		if (_stage < 3 && !_draggingDial)
+		// Parou num número (soltando o mouse ou segurando parado): confere uma vez por parada.
+		if (_stage < 3)
 		{
 			_still += dt;
 			int number = CurrentNumber;
-			if (number != _lastNumber) { _lastNumber = number; _still = 0; }
+			if (number != _lastNumber) { _lastNumber = number; _still = 0; _counted = false; }
 			if (!_counted && _still >= SettleTime && _lastDir != 0)
 			{
 				_counted = true;
-				if (number == _combo[_stage] && _lastDir == _direction[_stage])
+				int target = _combo[_stage];
+				bool near = NumberDistance(number, target) <= Tolerance;
+				if (near && _lastDir == _direction[_stage])
 				{
 					// encaixa certinho no número e acende a luz
-					_rotation = -number * Step;
+					_rotation = -target * Step;
+					_lastNumber = target;
 					_stage++;
 					EmitSignal(SignalName.Click);
 				}
-				else if (number == _combo[_stage])
+				else if (near)
 				{
 					// número certo, mas chegou girando para o lado errado: não conta
 					_wrongFlash = WrongFlashTime;
@@ -130,6 +170,8 @@ public partial class LockerBoard : Control
 			}
 			else
 			{
+				if (_draggingDial)
+					SnapToNearest();
 				_draggingDial = false;
 				if (_draggingHandle)
 				{
