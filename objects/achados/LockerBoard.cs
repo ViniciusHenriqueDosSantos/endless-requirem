@@ -2,17 +2,14 @@ using Godot;
 
 // O painel do armário dos Achados e Perdidos (estilo Among Us), usado pela tela LockerPuzzle.
 // Na porta de metal do armário: um cadeado de disco (0 a 39), três luzinhas e a alavanca.
-// Colado na porta, o post-it do zelador com a combinação e o sentido de cada número (sorteada a cada partida):
-//   "→ 12   ← 30   → 7" = gire para a DIREITA até o 12, para a ESQUERDA até o 30, para a DIREITA até o 7.
-// Arraste o disco com o mouse (ou A/D, setas). Parando no número certo (ou a 1 dele), girando no sentido certo,
-// a luz acende e o disco encaixa no número. Vale segurando o mouse parado ou soltando.
-// O sentido é o da volta que você está dando: uma tremidinha para trás (menos de um número e meio) não conta.
+// Colado na porta, o post-it do zelador com a combinação (sorteada a cada partida):
+// Arraste o disco com o mouse (ou A/D, setas) até cada número e solte.
+// Aceita o número certo ou a 1 número de distância e encaixa sozinho no número certo; nunca tenta confirmar enquanto segura o mouse.
 // Com as três acesas, a alavanca destrava: puxe para baixo e a porta abre.
-//   Click: um número acertado.  Wrong: parou no número certo, mas girando para o lado errado.  Completed: porta aberta.
+//   Click: um número acertado.  Completed: porta aberta.
 public partial class LockerBoard : Control
 {
 	[Signal] public delegate void ClickEventHandler();
-	[Signal] public delegate void WrongEventHandler();
 	[Signal] public delegate void CompletedEventHandler();
 
 	private static readonly Vector2 BoardSize = new(620, 420);
@@ -20,25 +17,19 @@ public partial class LockerBoard : Control
 	private const float DialRadius = 120f;
 	private const int Numbers = 40;
 	private const float Step = Mathf.Tau / Numbers;
-	private const float SettleTime = 0.25f;     // parado assim no número, ele conta
+	private const float SettleTime = 0.35f;     // parado assim no número (no teclado), ele conta
 	private const int Tolerance = 1;            // aceita o número certo ou um vizinho (e encaixa no certo)
-	private const float WrongReverseThreshold = 4.5f * Step;   // voltar até ~4 números não perde o sentido certo (tolera passar do ponto)
-	private const float CorrectReverseThreshold = 1.5f * Step; // virar para o sentido certo conta rápido
-	private const float WrongFlashTime = 0.4f;
 
 	private static readonly Rect2 HandleTrack = new(520, 250, 44, 130);
 	private const float HandleGrab = 40f;
 
 	private readonly int[] _combo = new int[3];
-	private readonly int[] _direction = { 1, -1, 1 };   // 1 = direita (horário), -1 = esquerda
 	private int _stage;                                // quantos números já acertou (3 = alavanca)
-	private float _rotation;                           // radianos; positivo = horário
-	private int _lastDir;                              // sentido da volta atual (ignora tremidinhas)
-	private float _reverse;                            // quanto já voltou contra o sentido atual
+	private float _rotation;                           // radianos
 	private float _still;
 	private int _lastNumber = -1;
 	private bool _counted;
-	private float _wrongFlash;
+	private bool _moved;
 
 	private bool _draggingDial;
 	private float _dragAngle;
@@ -49,9 +40,8 @@ public partial class LockerBoard : Control
 	private float _time;
 
 	public bool IsComplete => _open;
-	// Número da vez, sentido esperado e quantos já acertou (para a tela e para testes).
+	// Número da vez e quantos já acertou (para a tela e para testes).
 	public int CurrentTarget => _stage < 3 ? _combo[_stage] : -1;
-	public int CurrentDirection => _stage < 3 ? _direction[_stage] : 0;
 	public int Stage => _stage;
 	public int Number => CurrentNumber;
 
@@ -62,52 +52,28 @@ public partial class LockerBoard : Control
 		ClipContents = true;   // a porta abrindo some pela borda do painel
 		RandomNumberGenerator rng = new();
 		rng.Randomize();
-		_combo[0] = rng.RandiRange(6, 22);
-		_combo[1] = Mathf.PosMod(_combo[0] - rng.RandiRange(6, 22), Numbers);
-		_combo[2] = Mathf.PosMod(_combo[1] + rng.RandiRange(6, 22), Numbers);
+		_combo[0] = rng.RandiRange(5, 39);
+		do _combo[1] = rng.RandiRange(0, 39); while (Mathf.Abs(_combo[1] - _combo[0]) < 6);
+		do _combo[2] = rng.RandiRange(0, 39); while (Mathf.Abs(_combo[2] - _combo[1]) < 6);
 	}
 
-	// Número que está embaixo da marca do alto (cresce girando no sentido horário →).
-	private int CurrentNumber => Mathf.PosMod(Mathf.RoundToInt(_rotation / Step), Numbers);
+	// Número que está embaixo da marca do alto.
+	private int CurrentNumber => Mathf.PosMod(Mathf.RoundToInt(-_rotation / Step), Numbers);
 
 	// Gira o disco (teclado: um número por toque).
 	public void Turn(int dir)
 	{
 		if (_stage >= 3) return;
 		Rotate(dir * Step);
+		_moved = true;
 	}
 
 	private void Rotate(float amount)
 	{
 		if (Mathf.IsZeroApprox(amount)) return;
-		int prevNumber = CurrentNumber;
 		_rotation += amount;
-		if (CurrentNumber != prevNumber)
-		{
-			_still = 0;
-			_counted = false;
-		}
-
-		// O sentido só muda quando a volta para o outro lado é de verdade (não uma tremida ou pequeno recuo após passar do ponto).
-		int dir = amount > 0 ? 1 : -1;
-		int wanted = _stage < 3 ? _direction[_stage] : 0;
-		float threshold = dir == wanted ? CorrectReverseThreshold : WrongReverseThreshold;
-		if (_lastDir == 0 || dir == _lastDir)
-		{
-			_lastDir = dir;
-			_reverse = 0;
-		}
-		else
-		{
-			_reverse += Mathf.Abs(amount);
-			if (_reverse >= threshold)
-			{
-				_lastDir = dir;
-				_reverse = 0;
-				_still = 0;
-				_counted = false;
-			}
-		}
+		_still = 0;
+		_counted = false;
 		QueueRedraw();
 	}
 
@@ -118,10 +84,10 @@ public partial class LockerBoard : Control
 		return Mathf.Min(d, Numbers - d);
 	}
 
-	// Ao soltar o disco, ele se ajeita no número mais perto (sem mudar o sentido da volta).
+	// Ao soltar o disco, ele se ajeita no número mais perto.
 	private void SnapToNearest()
 	{
-		_rotation = Mathf.RoundToInt(_rotation / Step) * Step;
+		_rotation = -Mathf.RoundToInt(-_rotation / Step) * Step;
 		QueueRedraw();
 	}
 
@@ -129,16 +95,15 @@ public partial class LockerBoard : Control
 	{
 		float dt = (float)delta;
 		_time += dt;
-		if (_wrongFlash > 0) _wrongFlash -= dt;
 		if (_open && _doorAnim < 1f) _doorAnim = Mathf.Min(1f, _doorAnim + dt * 2.5f);
 
-		// Parou num número (soltando o mouse ou segurando parado): confere uma vez por parada.
-		if (_stage < 3)
+		// Só confere automaticamente quando NÃO estiver segurando o mouse (teclado ou após soltar).
+		if (_stage < 3 && !_draggingDial && _moved)
 		{
 			_still += dt;
 			int number = CurrentNumber;
 			if (number != _lastNumber) { _lastNumber = number; _still = 0; _counted = false; }
-			if (!_counted && _still >= SettleTime && _lastDir != 0)
+			if (!_counted && _still >= SettleTime)
 				TryConfirm();
 		}
 		QueueRedraw();
@@ -146,26 +111,18 @@ public partial class LockerBoard : Control
 
 	private void TryConfirm()
 	{
-		if (_stage >= 3 || _lastDir == 0) return;
+		if (_stage >= 3) return;
 		_counted = true;
 		int target = _combo[_stage];
-		bool near = NumberDistance(CurrentNumber, target) <= Tolerance;
-		if (near && _lastDir == _direction[_stage])
+		if (NumberDistance(CurrentNumber, target) <= Tolerance)
 		{
 			// encaixa certinho no número e acende a luz
-			_rotation = target * Step;
+			_rotation = -target * Step;
 			_lastNumber = target;
 			_stage++;
-			_lastDir = 0;
-			_reverse = 0;
+			_moved = false;
 			_still = 0;
 			EmitSignal(SignalName.Click);
-		}
-		else if (near)
-		{
-			// número certo, mas chegou girando para o lado errado: não conta
-			_wrongFlash = WrongFlashTime;
-			EmitSignal(SignalName.Wrong);
 		}
 	}
 
@@ -191,12 +148,12 @@ public partial class LockerBoard : Control
 			{
 				if (_draggingDial)
 				{
+					_draggingDial = false;
 					SnapToNearest();
 					_lastNumber = CurrentNumber;
 					_still = SettleTime;
-					TryConfirm();
+					if (_moved) TryConfirm();
 				}
-				_draggingDial = false;
 				if (_draggingHandle)
 				{
 					_draggingHandle = false;
@@ -212,9 +169,11 @@ public partial class LockerBoard : Control
 		{
 			if (_draggingDial)
 			{
+				if ((motion.Position - DialCenter).LengthSquared() < 16f) { AcceptEvent(); return; }
 				float angle = (motion.Position - DialCenter).Angle();
 				Rotate(Mathf.Wrap(angle - _dragAngle, -Mathf.Pi, Mathf.Pi));
 				_dragAngle = angle;
+				_moved = true;
 			}
 			else if (_draggingHandle)
 			{
@@ -280,16 +239,16 @@ public partial class LockerBoard : Control
 
 	private void DrawDial(Font font)
 	{
-		Color ring = _wrongFlash > 0 ? new Color(1f, 0.25f, 0.2f) : _stage >= 3 ? new Color(0.35f, 1f, 0.55f) : new Color(0.85f, 0.87f, 0.9f);
+		Color ring = _stage >= 3 ? new Color(0.35f, 1f, 0.55f) : new Color(0.85f, 0.87f, 0.9f);
 		DrawCircle(DialCenter + new Vector2(4, 6), DialRadius + 14, new Color(0, 0, 0, 0.35f));
 		DrawCircle(DialCenter, DialRadius + 14, new Color(0.2f, 0.21f, 0.23f));
 		DrawArc(DialCenter, DialRadius + 13, 0, Mathf.Tau, 64, ring, 4f);
 		DrawCircle(DialCenter, DialRadius, new Color(0.12f, 0.12f, 0.14f));
 
-		// números e riscos, girando com o disco (o 0 fica no alto quando _rotation = 0 e cresce no sentido horário)
+		// números e riscos, girando com o disco (o 0 fica no alto quando _rotation = 0)
 		for (int n = 0; n < Numbers; n++)
 		{
-			float a = -Mathf.Pi / 2 - n * Step + _rotation;
+			float a = -Mathf.Pi / 2 + n * Step + _rotation;
 			Vector2 dir = Vector2.FromAngle(a);
 			bool major = n % 5 == 0;
 			DrawLine(DialCenter + dir * (DialRadius - (major ? 20 : 12)), DialCenter + dir * (DialRadius - 4),
@@ -306,25 +265,6 @@ public partial class LockerBoard : Control
 		DrawCircle(DialCenter, 34, new Color(0.38f, 0.4f, 0.44f));
 		Vector2 grip = Vector2.FromAngle(-Mathf.Pi / 2 + _rotation);
 		DrawLine(DialCenter - grip * 30, DialCenter + grip * 30, new Color(0.7f, 0.73f, 0.77f), 10f);
-
-		// seta curva ao redor do disco mostrando para qual lado girar agora
-		if (_stage < 3)
-		{
-			int expectedDir = _direction[_stage];
-			float pulse = 0.5f + 0.5f * Mathf.Sin(_time * 5f);
-			Color arrowColor = _wrongFlash > 0
-				? new Color(1f, 0.3f, 0.25f)
-				: new Color(1f, 0.85f, 0.35f, 0.7f + 0.3f * pulse);
-			float r = DialRadius + 24f;
-			float aStart = expectedDir > 0 ? -1.25f : -Mathf.Pi + 1.25f;
-			float aEnd = expectedDir > 0 ? -0.35f : -Mathf.Pi + 0.35f;
-			DrawArc(DialCenter, r, Mathf.Min(aStart, aEnd), Mathf.Max(aStart, aEnd), 18, arrowColor, 4f);
-			Vector2 tip = DialCenter + Vector2.FromAngle(aEnd) * r;
-			Vector2 tangent = Vector2.FromAngle(aEnd + expectedDir * Mathf.Pi / 2f);
-			Vector2 radial = Vector2.FromAngle(aEnd);
-			Vector2[] head = { tip + tangent * 7f, tip - tangent * 6f + radial * 7f, tip - tangent * 6f - radial * 7f };
-			DrawColoredPolygon(head, arrowColor);
-		}
 
 		// a marca fixa no alto e o número atual
 		Vector2 top = DialCenter + new Vector2(0, -DialRadius - 16);
@@ -344,12 +284,11 @@ public partial class LockerBoard : Control
 		DrawString(font, local.Position + new Vector2(10, 32), "não esquecer!!", HorizontalAlignment.Left, -1, 13, new Color(0.3f, 0.25f, 0.2f));
 		for (int i = 0; i < 3; i++)
 		{
-			string arrow = _direction[i] > 0 ? "→" : "←";
-			Vector2 at = local.Position + new Vector2(10 + i * 62, 70);
+			Vector2 at = local.Position + new Vector2(20 + i * 60, 70);
 			Color ink = i < _stage ? new Color(0.2f, 0.55f, 0.25f) : new Color(0.15f, 0.2f, 0.5f);
-			DrawString(font, at, $"{arrow}{_combo[i]}", HorizontalAlignment.Left, -1, 20, ink);
+			DrawString(font, at, _combo[i].ToString("00"), HorizontalAlignment.Left, -1, 22, ink);
 			if (i == _stage && _stage < 3)
-				DrawLine(at + new Vector2(0, 6), at + new Vector2(46, 6), new Color(0.85f, 0.2f, 0.2f), 2f);
+				DrawLine(at + new Vector2(0, 6), at + new Vector2(30, 6), new Color(0.85f, 0.2f, 0.2f), 2f);
 		}
 		DrawSetTransform(new Vector2(_doorAnim * BoardSize.X * 0.85f, 0));
 	}
@@ -361,7 +300,7 @@ public partial class LockerBoard : Control
 			Vector2 at = new(405 + i * 26, 275);
 			bool on = i < _stage;
 			DrawCircle(at, 10, new Color(0.15f, 0.15f, 0.17f));
-			DrawCircle(at, 7, on ? new Color(0.35f, 1f, 0.55f) : _wrongFlash > 0 ? new Color(0.8f, 0.2f, 0.15f) : new Color(0.25f, 0.3f, 0.27f));
+			DrawCircle(at, 7, on ? new Color(0.35f, 1f, 0.55f) : new Color(0.25f, 0.3f, 0.27f));
 		}
 	}
 
