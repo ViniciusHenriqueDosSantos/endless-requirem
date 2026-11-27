@@ -169,8 +169,6 @@ public partial class Fase1 : Node2D
 			Hud.PointTo(Marmita.GlobalPosition, "MARMITA");
 		else if (!Ru.IsCleared)
 			Hud.PointTo(Microondas.GlobalPosition, "MICRO-ONDAS");
-		else if (!Corredor.IsCleared)
-			Hud.PointTo(Corredor.GlobalPosition + Corredor.Size / 2, "CORREDOR");
 		else if (!Tia.IsDefeated)
 			Hud.PointTo(DoorPoint(CantinaPorta1), "CANTINA");
 		else if (!Escopeta.IsCollected)
