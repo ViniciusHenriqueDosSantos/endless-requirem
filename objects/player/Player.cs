@@ -475,7 +475,7 @@ public partial class Player : CharacterBody2D
 		Vector2 aim = (GetGlobalMousePosition() - hand).Normalized();
 		if (aim == Vector2.Zero) aim = Vector2.Right;
 		float gunLength = _gun.Texture != null ? (_gun.Texture.GetWidth() - 3) * 4f : 0f;
-		Vector2 muzzle = hand + aim * (GunDistance + gunLength);
+		float muzzleDistance = GunDistance + gunLength;
 
 		_fireCooldown = Weapon.Cooldown;
 
@@ -485,7 +485,7 @@ public partial class Player : CharacterBody2D
 			Bullet bullet = BulletScene.Instantiate<Bullet>();
 			bullet.Weapon = Weapon;
 			bullet.Direction = aim.Rotated(Mathf.DegToRad(spread));
-			bullet.GlobalPosition = muzzle;
+			bullet.GlobalPosition = PointBlankSpawn(hand, hand + bullet.Direction * muzzleDistance);
 			GetParent().AddChild(bullet);
 		}
 		_knockback -= aim * Weapon.Recoil;
@@ -502,6 +502,31 @@ public partial class Player : CharacterBody2D
 		shot.VolumeDb = Weapon.ShotVolumeDb;
 		shot.Play();
 		Fired?.Invoke();
+	}
+
+	// Tiro à queima-roupa: o tiro nasce na boca do cano, mas um fantasma colado no jogador fica ENTRE a mão e a
+	// boca do cano (quanto maior a sprite da arma, maior esse trecho) e o tiro nascia depois dele, errando.
+	// Se houver um alvo (fantasma, alvo do chefe, extintor...) nesse trecho, o tiro nasce em cima dele.
+	// Paredes não contam aqui (continuam como antes: o tiro nasce na boca do cano).
+	private Vector2 PointBlankSpawn(Vector2 hand, Vector2 muzzle)
+	{
+		PhysicsRayQueryParameters2D query = PhysicsRayQueryParameters2D.Create(hand, muzzle);
+		query.CollideWithAreas = true;
+		query.CollideWithBodies = false;
+		query.HitFromInside = true;   // a mão já dentro do fantasma também conta
+		Godot.Collections.Array<Rid> skip = new();
+		PhysicsDirectSpaceState2D space = GetWorld2D().DirectSpaceState;
+		for (int i = 0; i < 8; i++)   // pula áreas que não são alvo (gatilhos de sala, itens, a HurtBox do próprio jogador)
+		{
+			query.Exclude = skip;
+			Godot.Collections.Dictionary hit = space.IntersectRay(query);
+			if (hit.Count == 0) break;
+			if (hit["collider"].AsGodotObject() is Area2D area
+				&& (area.GetParent() is Enemy || area is IHittable || area.GetParent() is IHittable))
+				return (Vector2)hit["position"];
+			skip.Add(hit["rid"].AsRid());
+		}
+		return muzzle;
 	}
 
 	private void StartReload()
