@@ -42,7 +42,7 @@ L.res('Resource', 'res://objects/librarian/bibliotecario.tres', 'bib')
 L.res('Script', 'res://objects/decor/Signatures.cs', 'sig')
 L.res('Script', 'res://objects/fase3/Interactable.cs', 'interactable')
 L.res('Script', 'res://objects/librarian/NoiseMaker.cs', 'noise_maker')
-L.res('Resource', 'res://objects/weapon/cannon.tres', 'cannon')
+L.res('Resource', 'res://objects/weapon/rifle_silencio.tres', 'cannon')
 for name, path in [('night_overlay', 'night/night_overlay'), ('flicker_light', 'night/flicker_light'),
                    ('rain', 'weather/rain'), ('item_inspect', 'inspect/item_inspect')]:
     L.res('PackedScene', f'res://objects/{path}.tscn', name)

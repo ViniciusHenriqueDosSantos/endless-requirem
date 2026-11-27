@@ -49,12 +49,12 @@ public partial class PauseMenu : CanvasLayer
 		center.OffsetTop = 236;   // abaixo do título
 		AddChild(center);
 
-		PanelContainer panel = MenuUi.Panel(MenuUi.Green);
+		PanelContainer panel = MenuUi.Panel(Palette.Green);
 		center.AddChild(panel);
 		VBoxContainer column = new();
 		column.AddThemeConstantOverride("separation", 8);
 		panel.AddChild(column);
-		column.AddChild(MenuUi.Text("CONTROLES", 22, MenuUi.Yellow));
+		column.AddChild(MenuUi.Text("CONTROLES", 22, Palette.Yellow));
 		column.AddChild(MenuUi.ControlsList(15));
 		Button back = MenuUi.BigButton("Voltar", 24);
 		back.Name = "Voltar";

@@ -24,7 +24,7 @@ public partial class Player : CharacterBody2D
 	private float _flashFlickerTimer;
 	private const float FlashlightEnergy = 1.25f;
 
-	// Todas as armas do jogo, em ordem. A primeira é a inicial (Laser).
+	// Todas as armas do jogo, em ordem. A primeira é a inicial (Grampeador).
 	[Export] public Godot.Collections.Array<Weapon> Weapons = new();
 
 	// Ligado: começa com todas as armas (bom para testes).
@@ -61,7 +61,6 @@ public partial class Player : CharacterBody2D
 
 	// Itens carregados: nome interno -> nome mostrado na tela.
 	private readonly Dictionary<string, string> _items = new();
-	public IReadOnlyCollection<string> ItemNames => _items.Values;
 
 	private float _invulnerableTimer = 0f;
 	private float _rollTimer = 0f;
@@ -70,7 +69,6 @@ public partial class Player : CharacterBody2D
 	private float _rollBufferTimer = 0f;
 	private Vector2 _rollDirection = Vector2.Right;
 
-	public bool IsRolling => _rollTimer > 0;
 	private float _fireCooldown = 0f;
 	private float _reloadTimer = 0f;
 	private readonly Dictionary<Weapon, int> _ammo = new();

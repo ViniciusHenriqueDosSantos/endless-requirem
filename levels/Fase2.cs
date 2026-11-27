@@ -11,7 +11,7 @@ using System.Collections.Generic;
 //      girar o disco até a combinação do post-it do zelador e puxar a alavanca)
 //      (as caixas do chão da sala ainda podem ser quebradas: coisas perdidas e alguns fantasmas)
 //   -> devolução do livro -> biblioteca abre
-//   -> Bibliotecária (furtividade: barulho atrai, empurrar a estante esmaga) -> Canhão + chave da escada
+//   -> Bibliotecária (furtividade: barulho atrai, empurrar a estante esmaga) -> Rifle do Silêncio (nó "Canhao") + chave da escada
 //   -> porta da escada -> escada até o 4º andar (levels/escada.tscn).
 public partial class Fase2 : LevelBase
 {
@@ -70,7 +70,7 @@ public partial class Fase2 : LevelBase
 
 	protected override void SetupDefaultLoadout()
 	{
-		// Aberta direto (F6): Laser + Escopeta, como se tivesse vencido a Fase 1.
+		// Aberta direto (F2): Grampeador + Escopeta de Café, como se tivesse vencido a Fase 1.
 		if (Player.Weapons.Count > 1)
 			Player.AddWeapon(Player.Weapons[1]);
 	}

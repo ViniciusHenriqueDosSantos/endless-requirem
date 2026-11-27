@@ -53,7 +53,7 @@ public partial class Room : Node2D
 	// Faixas que aparecem quando a luta começa e quando a sala fica limpa (vazio = não mostra).
 	[Export] public string StartBanner = "PORTAS TRANCADAS!";
 
-	// Música desta luta (sounds/music/<nome>.wav). O roteiro da fase pode trocar (ex.: "chefe" na Cantina).
+	// Música desta luta (sounds/music/<nome>.ogg). O roteiro da fase pode trocar (ex.: "chefe" na Cantina).
 	public string FightMusic = "luta";
 	[Export] public string ClearBanner = "SALA LIMPA!";
 

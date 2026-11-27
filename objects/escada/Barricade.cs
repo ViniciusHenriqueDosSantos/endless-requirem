@@ -1,7 +1,7 @@
 using Godot;
 
 // Barricada da escada: carteiras tombadas, tábuas e fita zebrada fechando a faixa toda.
-// O Canhão derruba com 1 tiro; a Escopeta e o Laser fazem pouco dano (Weapon.BarricadeDamage).
+// O Rifle do Silêncio derruba com 1 tiro; a Escopeta de Café e o Grampeador fazem pouco dano (Weapon.BarricadeDamage).
 // O jogador e os tiros batem nela. Reset() põe de volta (jogador reprovado).
 [Tool]
 public partial class Barricade : StaticBody2D

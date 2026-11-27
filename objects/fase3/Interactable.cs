@@ -22,8 +22,6 @@ public partial class Interactable : Area2D
 	private Label _label;
 	private float _time;
 
-	public bool PlayerInside => _playerInside;
-
 	public override void _Ready()
 	{
 		// Continua rodando com o jogo pausado só para esconder o "[E]" atrás das telas.

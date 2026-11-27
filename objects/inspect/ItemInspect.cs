@@ -107,13 +107,6 @@ public partial class ItemInspect : CanvasLayer
 		label.Size = new Vector2(w, h);
 	}
 
-	private void Place(Label label, float y, float height, float margin = 40)
-	{
-		Vector2 screen = GetViewport().GetVisibleRect().Size;
-		label.Position = new Vector2(margin, y);
-		label.Size = new Vector2(screen.X - margin * 2, height);
-	}
-
 	public override void _Process(double delta)
 	{
 		if (!_open) return;

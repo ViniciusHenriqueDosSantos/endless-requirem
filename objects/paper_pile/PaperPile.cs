@@ -26,7 +26,6 @@ public partial class PaperPile : StaticBody2D
 
 	// Ligados pelo roteiro da fase.
 	public bool HidesItem;
-	public bool HidesGhost;
 
 	private static readonly Vector2 PileSize = new(72, 56);
 	private const float Depth = 36f;

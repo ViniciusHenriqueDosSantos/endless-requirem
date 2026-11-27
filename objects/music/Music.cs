@@ -117,11 +117,17 @@ public partial class Music : Node
 		tween.Chain().TweenCallback(Callable.From(() => { if (_other.VolumeDb <= Silent + 1) _other.Stop(); }));
 	}
 
-	// As faixas são WAV: liga a repetição aqui (o fim de cada uma já emenda no começo).
+	// As faixas são OGG (WAV se alguém gerar de novo sem o ffmpeg): liga a repetição aqui
+	// (o fim de cada uma já emenda no começo).
 	private static AudioStream Load(string track)
 	{
-		AudioStream stream = GD.Load<AudioStream>($"res://sounds/music/{track}.wav");
-		if (stream is AudioStreamWav wav && wav.LoopMode == AudioStreamWav.LoopModeEnum.Disabled)
+		string path = $"res://sounds/music/{track}.ogg";
+		if (!ResourceLoader.Exists(path))
+			path = $"res://sounds/music/{track}.wav";
+		AudioStream stream = GD.Load<AudioStream>(path);
+		if (stream is AudioStreamOggVorbis ogg)
+			ogg.Loop = true;
+		else if (stream is AudioStreamWav wav && wav.LoopMode == AudioStreamWav.LoopModeEnum.Disabled)
 		{
 			wav.LoopMode = AudioStreamWav.LoopModeEnum.Forward;
 			wav.LoopBegin = 0;

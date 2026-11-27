@@ -1,7 +1,7 @@
 # Props da Fase 3 (4º andar): a porta de vidro da área final, a fechadura de senha, o computador do Laboratório 2
 # e o quadro de energia do Laboratório 1. 1 pixel da arte = 4 do jogo.
 # Saída: sprites/props/fase3/
-#   porta_vidro_fechada / porta_vidro_aberta  porta dupla de vidro com moldura de alumínio (64 x 28 = 4 tiles)
+#   porta_vidro_estreita_fechada / _aberta  porta de vidro com moldura de alumínio (32 de largura)
 #   fechadura       teclado numérico de parede, com visor e luz (9 x 13)
 #   monitor0/1      monitor em cima da bancada: apagado com cursor / aceso piscando (12 x 10)
 #   quadro_energia  quadro de força aberto, fios soltos e faísca (14 x 20); quadro_energia_ok: fechado, luz verde
@@ -491,8 +491,7 @@ distribuidor(True).save(OUT + "distribuidor_ok.png")
 eva(hexc("2d5d95")).save(OUT + "eva_azul.png")
 eva(hexc("2e7a4e")).save(OUT + "eva_verde.png")
 for name, color in [("vermelho", "d1453b"), ("amarelo", "e8be2e"), ("roxo", "8a4fc9"), ("laranja", "ec8a2f"),
-                    ("rosa", "e66aa8"), ("turquesa", "2fb3a8"), ("azul", "3f7fe0"), ("verde", "5cc05a"),
-                    ("cinza", "8a8f98")]:
+                    ("rosa", "e66aa8"), ("turquesa", "2fb3a8"), ("azul", "3f7fe0"), ("verde", "5cc05a")]:
     puff(hexc(color)).save(OUT + f"puff_{name}.png")
 pingpong().save(OUT + "pingpong.png")
 lousa(1).save(OUT + "lousa1.png")
@@ -500,7 +499,6 @@ lousa(2).save(OUT + "lousa2.png")
 poltrona().save(OUT + "poltrona.png")
 palco().save(OUT + "palco.png")
 pulpito().save(OUT + "pulpito.png")
-porta(False).save(OUT + "porta_vidro_fechada.png")
 porta(False, 32).save(OUT + "porta_vidro_estreita_fechada.png")
 porta(True, 32).save(OUT + "porta_vidro_estreita_aberta.png")
 for estado in ("trancada", "fechada", "aberta"):
@@ -508,7 +506,6 @@ for estado in ("trancada", "fechada", "aberta"):
 camera(False).save(OUT + "camera0.png")
 camera(True).save(OUT + "camera1.png")
 vidro_lateral().save(OUT + "vidro_lateral.png")
-porta(True).save(OUT + "porta_vidro_aberta.png")
 fechadura().save(OUT + "fechadura.png")
 monitor(False).save(OUT + "monitor0.png")
 monitor(True).save(OUT + "monitor1.png")

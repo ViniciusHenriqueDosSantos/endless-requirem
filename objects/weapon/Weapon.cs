@@ -17,7 +17,7 @@ public partial class Weapon : Resource
 	[Export] public int Pellets = 1;
 	[Export] public float SpreadDegrees;
 
-	// Quanto do dano vale contra as barricadas da escada (1 = dano cheio). Só o Canhão derruba de verdade.
+	// Quanto do dano vale contra as barricadas da escada (1 = dano cheio). Só o Rifle do Silêncio derruba de verdade.
 	[Export] public float BarricadeDamage = 0.25f;
 
 	// Pixel art (1 pixel da arte = 4 do jogo). Vazios = desenho provisório.

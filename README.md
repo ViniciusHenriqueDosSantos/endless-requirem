@@ -2,15 +2,15 @@
 
 Jogo de ação e tiro top-down feito em **Godot 4.7.2 (.NET / C#)** para a disciplina de games.
 
-2061. A IA chamada MENTORA fechou as faculdades. Você volta ao campus abandonado, cheio de fantasmas de alunos que nunca se formaram, para buscar o seu diploma.
+2061. A IA chamada S.I.A. fechou as faculdades. Você volta ao campus abandonado, cheio de fantasmas de alunos que nunca se formaram, para buscar o seu diploma.
 
-> Estado atual: **Fases 1 e 2 completas em cinza**.
+> Estado atual: **jogo completo, do começo ao fim**, com pixel art nas três fases.
 > - Abertura: letreiro no espaço com fanfarra original (`tools/audio/gen_intro.py`).
 > - Menu (logotipo em `tools/art/logo.py`): Jogar → tela NOVO JOGO com o personagem (Téo ou Lia) e a dificuldade (Fácil / Médio / Difícil; Médio = valores originais, ajustes em `GameState`).
 > - Fase 1: Entrada (quadro de comandos na tela) → Portaria → RU (40 s; micro-ondas brilha quando você pega a marmita) → Cantina (Tia da Cantina; o sofá cinza serve de cobertura) → Elevador.
 > - Fase 2: Biblioteca fechada → Achados e Perdidos → Hall das Caronas (ondas + o Zelador, que solta a chave) → armário dos Achados (tarefa 2D estilo Among Us: girar o cadeado com a combinação do post-it e puxar a alavanca: o livro) → devolução → Bibliotecária (ouve tudo, enxerga só pela lanterna: atraia ela com o rádio, o despertador ou a campainha até a frente de uma estante, derrube a estante nela com E e atire enquanto ela está tonta; acordada, ela bloqueia e desvia dos tiros) → Rifle do Silêncio → escada desabando atrás de você (8 lances do térreo ao 4º andar, com giro de câmera a cada lance; barricadas, degraus quebrados, lâmpadas caindo e extintores rolando).
 > - Arte: a **Fase 1 já tem pixel art** baseada no campus de verdade (tour 360° da UNIFESP SJC), à noite e abandonada, com lanterna e luzes piscando. Veja `tools/art/README.md`.
-> - Fase 3 (4º andar, laboratórios, atalho F4): porta de vidro (no pé do corredor de vidro) da área final com senha → câmeras apitam, alarme e fantasmas no corredor, laboratórios destrancam → laboratórios seguros: fiação e distribuidor (Lab 1) e computador com login (aluno/unifesp) e o site da universidade (Lab 2) → senha (sorteada a cada partida) abre a porta e some com os fantasmas. Já tem o auditório (área restrita, porta com E, palco) ligado à área final; o diploma e o chefe vêm depois. Salas de teste (`levels/test_rooms*.tscn`) e a arena antiga (`main.tscn`) continuam no projeto.
+> - Fase 3 (4º andar, laboratórios, atalho F4): porta de vidro (no pé do corredor de vidro) da área final com senha → câmeras apitam, alarme e fantasmas no corredor, laboratórios destrancam → laboratórios seguros: fiação e distribuidor (Lab 1) e computador com login (aluno/unifesp) e o site da universidade (Lab 2) → senha (sorteada a cada partida) abre a porta e some com os fantasmas. Depois, o auditório (área restrita, porta com E) em 3D, com o diploma no palco e a S.I.A. no telão, que puxa você para o Pac-Man final.
 
 ---
 
@@ -45,6 +45,8 @@ Na primeira vez, o Godot compila o código C# e pode demorar alguns segundos.
 | Trocar de arma | **1**, **2**, **3** ou **roda do mouse** |
 | Interagir (fechadura, computador, quadro de energia, empurrar estante na biblioteca) | **E** |
 | Sair de uma tela (senha, fios, computador) | **Esc** |
+| Pausar (Continuar, Controles, Voltar ao menu) | **Esc** |
+| Mostrar/esconder o quadro de comandos | **H** |
 
 **Atalhos de teste** (só rodando pelo editor): **F1** = Fase 1, **F2** = Fase 2, **F3** = escada, **F4** = Fase 3, **F5** = auditório em 3D, **F6** = Pac-Man dentro do telão.
 
@@ -55,9 +57,9 @@ Para pegar itens (crachá, marmita), é só encostar neles. Pilhas de papel se d
 ## 4. Como o código está organizado
 
 ```
-levels/fase_1.tscn      Fase 1 (é a que abre com F5)
+levels/fase_1.tscn      Fase 1 (o jogo abre na abertura, objects/intro, e no menu)
 levels/Fase1.cs         roteiro da Fase 1: objetivos e o que destranca o quê
-levels/fase_2.tscn      Fase 2 (Biblioteca); para testar direto, abra a cena e aperte F6
+levels/fase_2.tscn      Fase 2 (Biblioteca); para testar direto, F2 durante o jogo
 levels/Fase2.cs         roteiro da Fase 2
 levels/escada.tscn      escada (fim da Fase 2): vão com 2 colunas de lances, 8 lances (2 por andar), o chão desaba atrás
 levels/fase_3.tscn      Fase 3 (4º andar): corredor, laboratórios, hall do elevador e convivência
@@ -66,16 +68,13 @@ levels/auditorio_3d.tscn  auditório em 3D (primeira pessoa): o diploma no palco
 levels/pacman.tscn      dentro do telão: Pac-Man da S.I.A. (PacMan.cs), uma rodada, cada fantasma com seu jeito
 levels/Escada.cs        roteiro da escada
 levels/LevelBase.cs     o que toda fase faz igual (REPROVADO, fim de fase, levar armas)
-levels/test_rooms.tscn  sala de teste da MVP 1
-main.tscn / Main.cs     arena antiga de ondas infinitas
 objects/                uma pasta por objeto do jogo
   player/               jogador: movimento, cambalhota, vida, tiro
   enemy/                inimigos (Normal, Fast, Tank) e o Zelador (Enemy.Janitor.cs: investida, vassourada, balde)
   bullet/               projétil
-  weapon/               armas (cada .tres é uma arma)
+  weapon/               armas (cada .tres é uma arma: grampeador, escopeta_cafe, rifle_silencio)
   heal_drop/            item de cura
-  hud/                  textos na tela e a seta de direção (GuideArrow: segue o caminho pelo chão, contornando móveis e portas trancadas)
-  obstacle/             obstáculo
+  hud/                  vida/arma, legendas (Caption), quadro de comandos (H) e a seta de direção (GuideArrow: segue o caminho pelo chão, contornando móveis e portas trancadas)
   door/                 porta que tranca e abre (pode exigir um item, como a catraca)
   room/                 sala: ondas, sobrevivência por tempo ou segura
   prop/                 bloco de cenário provisório (mesa, balcão, letreiro...)
@@ -90,19 +89,21 @@ objects/                uma pasta por objeto do jogo
   decor/                assinaturas dos alunos nas paredes (Fase 2)
   escada/               escada: desabamento, barricada, lâmpada caindo e extintor rolando
   fase3/                Fase 3: ponto de interagir (E), aparelho que brilha, área segura, telas 2D (senha, fios, site)
-  game_state/           o que passa de uma fase para a outra (armas, pontos, tempo)
+  game_state/           o que passa de uma fase para a outra (armas, pontos, tempo) e as escolhas do menu (personagem, dificuldade, brilho)
+  main_menu/            menu principal e telas de Novo jogo, Controles e Opções (MenuUi: peças de interface)
+  common/               Palette (cores da interface) e materiais compartilhados
   night/                noite: luzes que piscam e a camada de tela (vinheta, granulado, neblina)
 tools/levelgen/         geradores das plantas (Python). As cenas levels/*.tscn são geradas por eles;
                         mudanças de planta grandes ficam mais fáceis editando o gerador e rodando de novo
-  arena_grid/           grade do chão
 tools/audio/music.py    gera as músicas (sounds/music: uma por parte do jogo, a lista está em objects/music/Music.cs, que troca a faixa sozinho)
+tools/audio/gen_intro.py  gera a fanfarra da abertura (sounds/intro/abertura.ogg)
 tools/audio/sfx.py      gera alguns efeitos (tiro do Rifle do Silêncio, rádio, despertador, campainha)
 tools/art/              geradores da pixel art (Python). Rode build_all.py para regenerar tudo (ver tools/art/README.md)
 tools/capture/          fotos automáticas de uma fase rodando (para revisar a arte)
-tilesets/               peças de chão e parede (fase1_tileset = arte da Fase 1; placeholder = provisório)
+tilesets/               peças de chão e parede (fase1_tileset, usado nas três fases)
 sprites/                imagens (geradas por tools/art; 1 pixel da arte = 4 pixels do jogo)
   tiles/ props/ characters/ items/ weapons/ fx/ objects/
-fonts/                  fonte pixel do jogo (Pixelify Sans, licença OFL)
+fonts/                  fontes (Pixelify Sans, Press Start 2P e Inter, licença OFL)
 ```
 
 ---
