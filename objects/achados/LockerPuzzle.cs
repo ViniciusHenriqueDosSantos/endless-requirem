@@ -13,6 +13,8 @@ public partial class LockerPuzzle : OverlayScreen
 
 	public bool IsSolved => _board.IsComplete;
 
+	protected override float DimAlpha => 0.95f;
+
 	protected override void BuildUi()
 	{
 		CloseWithInteract = false;
@@ -34,15 +36,10 @@ public partial class LockerPuzzle : OverlayScreen
 			if (_board.IsComplete) return;
 			_status.Text = "Clique! Agora o próximo número do post-it.";
 		};
-		_board.Wrong += () =>
-		{
-			PlaySound("erro");
-			_status.Text = "Sentido errado! Veja a seta do post-it: → é para a direita, ← para a esquerda.";
-		};
 		_board.Completed += OnCompleted;
 		column.AddChild(_board);
 
-		_status = MakeLabel("Gire o disco no sentido da seta do post-it e pare em cada número", 18, new Color(0.8f, 0.82f, 0.85f));
+		_status = MakeLabel("Gire o disco até cada número do post-it e solte", 18, new Color(0.8f, 0.82f, 0.85f));
 		column.AddChild(_status);
 		column.AddChild(MakeLabel("Mouse: girar o disco e puxar a alavanca  •  A/D ou setas: girar  •  Esc: sair", 13,
 			new Color(0.5f, 0.52f, 0.55f)));
